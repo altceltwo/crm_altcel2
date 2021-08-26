@@ -1,5 +1,6 @@
 @extends('layouts.octopus')
 @section('content')
+<!-- dfddfg -->
 <header class="page-header">
     <h2>Pago de Servicios <strong>con Tarjeta</strong></h2>
     <div class="right-wrapper pull-right">
