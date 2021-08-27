@@ -226,6 +226,9 @@ class AltanController extends Controller
         $type = $request->post('type');
         $user_id = $request->post('user_id');
         $amount = $request->post('amount');
+        $comment = $request->post('comment');
+        $reason = $request->post('reason');
+        $status = $request->post('status');
         $date = date('Y-m-d H:i:s');
         
         if($address == null){
@@ -250,7 +253,7 @@ class AltanController extends Controller
             $http_code = 1;
             $message = 'Cambio interno realizado con éxito.';
 
-        }else if($type == 'internalExternalChange'){
+        }else if($type == 'internalExternalChange' || $type == 'internalExternalChangeCollect'){
             // return $request;
             $response = AltanController::changeProductResponse($msisdn,$offerID,$address,$scheduleDate);
             $http_code = $response['http_code'];
@@ -268,7 +271,10 @@ class AltanController extends Controller
                     "rate_id" => $rate_id,
                     "who_did_id" => $user_id,
                     "amount" => $amount,
-                    "date" => $date
+                    "date" => $date,
+                    "comment" => $comment,
+                    "reason" => $reason,
+                    "status" => $status
                 ]);
 
                 if(!$x){
@@ -323,6 +329,9 @@ class AltanController extends Controller
         $price = $request->get('price');
         $offer_id = $request->get('offer_id');
         $rate_id = $request->get('rate_id');
+        $comment = $request->get('comment');
+        $reason = $request->get('reason');
+        $status = $request->get('status');
         $date = date('Y-m-d H:i:s');
         
         $dataNumber = Number::where('MSISDN',$msisdn)->first();
@@ -356,7 +365,10 @@ class AltanController extends Controller
                         "rate_id" => $rate_id,
                         "who_did_id" => $user_id,
                         "amount" => $price,
-                        "date" => $date
+                        "date" => $date,
+                        "comment" => $comment,
+                        "reason" => $reason,
+                        "status" => $status
                     ]);
                 }else{
                     $message = $response['description'];
