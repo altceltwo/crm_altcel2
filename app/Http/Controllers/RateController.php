@@ -64,6 +64,18 @@ class RateController extends Controller
                     ->join('offers','offers.id','=','rates.alta_offer_id')
                     ->where('offers.product','=',$product)
                     ->where('rates.status','activo')
+                    ->where('offers.type','normal')
+                    ->select('rates.*','offers.name AS offer_name','offers.id AS offer_id','offers.product AS offer_product', 'offers.offerID')
+                    ->get();
+        return $rates;
+    }
+
+    public function getRatesAltaApi(Request $request) {
+        $product = $request->post('product');
+        $rates = DB::table('rates')
+                    ->join('offers','offers.id','=','rates.alta_offer_id')
+                    ->where('offers.product','=',$product)
+                    ->where('rates.status','activo')
                     ->where('rates.type','publico')
                     ->where('offers.type','normal')
                     ->select('rates.*','offers.name AS offer_name','offers.id AS offer_id','offers.product AS offer_product', 'offers.offerID')

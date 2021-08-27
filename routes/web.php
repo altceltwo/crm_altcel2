@@ -103,7 +103,7 @@ Route::get('/status', 'AltanController@statusImei')->name('status');
 // Rates Routes
 Route::post('/get-rates', 'RateController@getRates')->name('get-rates.post');
 Route::post('/get-rates-alta', 'RateController@getRatesAlta')->name('get-rates-alta.post');
-Route::post('/get-rates-alta-api', 'RateController@getRatesAlta');
+Route::post('/get-rates-alta-api', 'RateController@getRatesAltaApi');
 Route::post('/get-politics-rates','RateController@getPoliticsRates')->name('get-politics-rates.post');
 
 // Ethernet Admin
