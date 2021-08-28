@@ -229,6 +229,7 @@ class AltanController extends Controller
         $comment = $request->post('comment');
         $reason = $request->post('reason');
         $status = $request->post('status');
+        $pay_id = $request->post('pay_id');
         $date = date('Y-m-d H:i:s');
         
         if($address == null){
@@ -274,7 +275,8 @@ class AltanController extends Controller
                     "date" => $date,
                     "comment" => $comment,
                     "reason" => $reason,
-                    "status" => $status
+                    "status" => $status,
+                    "pay_id" => $pay_id
                 ]);
 
                 if(!$x){
@@ -294,7 +296,7 @@ class AltanController extends Controller
             // return $accessTokenResponse;
         if($accessTokenResponse['status'] == 'approved'){
             $accessToken = $accessTokenResponse['accessToken'];
-            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn;
+            $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
                 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken,

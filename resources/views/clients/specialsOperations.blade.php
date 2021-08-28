@@ -919,7 +919,7 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
         let referencestype = $('#referencestype_id').val();
         let comment = $('#commentChangeProduct').val();
         let reason = '', status = '';
-        let pay_id = '';
+        let pay_id = null;
 
         if(scheduleDateFirst.length == 0 || /^\s+$/.test(scheduleDateFirst)){
             scheduleDate = '';
@@ -992,7 +992,8 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
                     amount: amount,
                     comment:comment,
                     reason:reason,
-                    status:status
+                    status:status,
+                    pay_id:pay_id
                 }
                 route = "{{route('changeProduct.post')}}";
             }

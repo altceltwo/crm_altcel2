@@ -18,7 +18,6 @@ use \Carbon\Carbon;
     </div>
 </header>
 
-
 <section class="panel">
     <header class="panel-heading">
         <div class="panel-actions">
@@ -333,7 +332,6 @@ use \Carbon\Carbon;
         let url = "{{route('facturacion.index')}}";
         let user_id = $('#user_id').val();
         let data = {
-            token:token,
             service: service,
             payID: payID,
             monto: monto,

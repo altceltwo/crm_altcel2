@@ -13,6 +13,7 @@ use App\Pack;
 use App\Rate;
 use App\Instalation;
 use App\Activation;
+use App\User;
 use Illuminate\Http\Request;
 
 class WebhookController extends Controller
@@ -369,6 +370,11 @@ class WebhookController extends Controller
         $montoExtra = $request['montoExtra'];
         $user_id = $request['user_id'];
 
+        $dataUser = User::find($user_id);
+        $role = $dataUser->role_id;
+        $who_consigned = $role == 1 || $role == 5 ? $user_id : null;
+        $status_consigned = $role == 1 || $role == 5 ? 'completado' : 'pendiente';
+
         if($service == 'Telmex' || $service == 'Conecta'){
             $payment_data = Ethernetpay::where('id',$payID)->first();
             $payment_amountReceived = $payment_data->amount_received;
@@ -379,7 +385,11 @@ class WebhookController extends Controller
                 'status' => $estadoPay,
                 'amount_received' => $monto_recibido,
                 'type_pay' => $typePay,
-                'folio_pay' => $folioPay
+                'folio_pay' => $folioPay,
+                'who_did_id' => $user_id,
+                'extra' => $montoExtra,
+                'status_consigned' => $status_consigned,
+                'who_consigned' => $who_consigned
             ]);
 
             if($montoExtra != 0){
@@ -411,13 +421,17 @@ class WebhookController extends Controller
             $payment_amountReceived = $payment_amountReceived == null ? 0 : $payment_amountReceived;
             $monto_recibido = $payment_amountReceived+$monto;
 
+            
+
             $x = Pay::where('id',$payID)->update([
                 'status' => $estadoPay,
                 'amount_received' => $monto_recibido,
                 'type_pay' => $typePay,
                 'folio_pay' => $folioPay,
                 'who_did_id' => $user_id,
-                'extra' => $montoExtra
+                'extra' => $montoExtra,
+                'status_consigned' => $status_consigned,
+                'who_consigned' => $who_consigned
             ]);
 
             if($montoExtra != 0){
@@ -450,6 +464,12 @@ class WebhookController extends Controller
         }else{
             return 0;
         }
+    }
+
+    public function searchFind(Request $request){
+        $user_id = $request->get('user_id');
+        $x = User::find($user_id);
+        return $x->role_id;
     }
 
     public function notificationWHkConekta(Request $request){
