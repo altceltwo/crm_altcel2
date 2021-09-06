@@ -993,7 +993,8 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
                     comment:comment,
                     reason:reason,
                     status:status,
-                    pay_id:pay_id
+                    pay_id:pay_id,
+                    reference_id:null
                 }
                 route = "{{route('changeProduct.post')}}";
             }
@@ -1603,7 +1604,7 @@ $('#msisdn_locked').on('input', function () {
 });
 
 $('#consultIMEI').click(function(){
-    let msisdn = $('#msisdn_locke').val();
+    let msisdn_imei = $('#msisdn_locked').val();
     
     Swal.fire({
         title: 'Estamos consultando la información...',
@@ -1613,7 +1614,7 @@ $('#consultIMEI').click(function(){
             $.ajax({
                 url: "{{route('status')}}",
                 method: "GET",
-                data: {msisdn:msisdn},
+                data: {msisdn:msisdn_imei},
                 success: function(response){
                     Swal.close();
                     $('#imei').html('<b>IMEI: '+response.imei+'</b>');
@@ -1643,9 +1644,9 @@ $('#consultIMEI').click(function(){
 $("#locked, #unlocked").click(function(){
     let imei = $('#imeiFromConsult').val();
     let status = $('#statusIMEIValue').val();
-    let msisdn = $('#msisdn_locked').val();
+    let msisdn_imei = $('#msisdn_locked').val();
     let token = $('meta[name="csrf-token"]').attr('content');
-    let data = {_token:token,imei:imei, status:status, msisdn:msisdn};
+    let data = {_token:token,imei:imei, status:status, msisdn:msisdn_imei};
 
     Swal.fire({
         title: 'Estamos trabajando en ello...',

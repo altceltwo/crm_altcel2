@@ -154,13 +154,13 @@ class AltanController extends Controller
         }
     }
 
-    public function consultUF(){
+    public function consultUF($msisdn){
         $accessTokenResponse = AltanController::accessTokenRequestPost();
 
         if($accessTokenResponse['status'] == 'approved'){
             $accessToken = $accessTokenResponse['accessToken'];
             
-            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/3339064244/profile';
+            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn.'/profile';
                     
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
@@ -230,6 +230,7 @@ class AltanController extends Controller
         $reason = $request->post('reason');
         $status = $request->post('status');
         $pay_id = $request->post('pay_id');
+        $reference_id = $request->post('reference_id');
         $date = date('Y-m-d H:i:s');
         
         if($address == null){
@@ -276,7 +277,8 @@ class AltanController extends Controller
                     "comment" => $comment,
                     "reason" => $reason,
                     "status" => $status,
-                    "pay_id" => $pay_id
+                    "pay_id" => $pay_id,
+                    "reference_id" => $reference_id
                 ]);
 
                 if(!$x){
@@ -296,7 +298,7 @@ class AltanController extends Controller
             // return $accessTokenResponse;
         if($accessTokenResponse['status'] == 'approved'){
             $accessToken = $accessTokenResponse['accessToken'];
-            $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn;
                 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken,
