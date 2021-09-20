@@ -487,6 +487,10 @@
                                                     </li>
                                                 </ul>
                                             </li>
+
+                                            <li >
+                                                <a href="{{route('dealer.index')}}">Distribuidores</a>
+                                            </li>
                                         </ul>
                                     </li>
 
@@ -708,14 +712,14 @@
                                             <li>
                                                 <a href="{{route('devices.index')}}">Dispositivos</a>
                                             </li>
-					                <li class="nav-parent">
-                                                <a href="#">Facturación</a>
-                                                <ul class="nav nav-children">
-                                                    <li>
-                                                        <a href="{{route('facturacion.index')}}">Facturar</a>
+                                            <li class="nav-parent">
+                                                        <a href="#">Facturación</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('facturacion.index')}}">Facturar</a>
+                                                            </li>
+                                                        </ul>
                                                     </li>
-                                                </ul>
-                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">
@@ -737,6 +741,12 @@
                                                 <a href="{{route('webhook-payments-pending.get')}}">Vencidos</a>
                                             </li>
                                         </ul>
+                                    </li>
+                                    <li class="nav-parent">
+                                        <a href="{{route('dealer.index')}}">
+                                            <i class="fa fa-money" aria-hidden="true"></i>
+                                            <span>Distribuidores</span>
+                                        </a>
                                     </li>
                                 @elseif(Auth::user()->role_id == 6)
                                     <li class="nav-parent">

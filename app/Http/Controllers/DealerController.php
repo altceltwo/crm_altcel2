@@ -13,10 +13,30 @@ use DB;
 class DealerController extends Controller
 {
     public function index(){
-        $data['dealers'] = DB::table('dealers')
-                              ->join('users','users.id','=','dealers.user_id')
-                              ->select('dealers.*','users.name AS user_name')
-                              ->get();
+        $data['users'] = DB::table('users')
+                         ->select('id','name','lastname','email')
+                         ->orderBy('name', 'asc')
+                         ->get();
+
+        $dealers = DB::table('dealers')
+                            ->join('users','users.id','=','dealers.user_id')
+                            ->select('users.name','users.lastname','users.email','dealers.balance', 'dealers.who_created', 'dealers.id AS dealer_id')
+                            ->get();
+                        
+        $data['dealers'] = array();
+        foreach ($dealers as $dealer) {
+            $user = $dealer->who_created;
+            $userData = User::where('id',$user)->first();
+
+            array_push($data['dealers'],array(
+                'dealer' => $dealer->name.' '.$dealer->lastname,
+                'email' => $dealer->email,
+                'balance' => $dealer->balance,
+                'who_created' => $userData->name.' '.$userData->lastname,
+                'dealer_id' => $dealer->dealer_id
+            ));
+        }
+// return $data['dealers'];
         return view('dealers.index',$data);
     }
 
@@ -25,49 +45,57 @@ class DealerController extends Controller
     }
 
     public function store(Request $request){
-        $time = time();
-        $h = date("g", $time);
-        $pass =  'dealer'.date("Ymd").$h.date("is", $time);
-        $pass1 = Hash::make($pass);
-        User::insert([
-            'name' => $request->post('name'),
-            'email' => $request->post('email'),
-            'password' => $pass1,
-            'role_id' => 5,
-            'remember_token' => $pass
-        ]);
+        $userDealer = $request->post('user_id');
+        $newDealerData = $request->post('newDealerData');
 
-        $user_id = User::where('email',$request->post('email'))->first();
-        $user_id = $user_id->id;
+        $request = $request->except('_token','newDealerData');
 
-        Dealer::insert([
-            'name' => $request->post('asociation'),
-            'address' => $request->post('address'),
-            'phone' => $request->post('phone'),
-            'rfc' => $request->post('rfc'),
-            'user_id' => $user_id,
-            'who_did_id' => $request->post('who_did_id')
-        ]);
-        // Falta envío de correos
-        return redirect('/dealers');
+        $exists = Dealer::where('user_id',$userDealer)->exists();
+
+        if($exists){
+            $status = 'warning';
+            $message = 'El distribuidor <strong>'.$newDealerData.'</strong> que desea añadir ya existe.';
+        }else{
+            $x = Dealer::insert($request);
+
+            if($x){
+                $status = 'success';
+                $message = 'Distribuidor añadido con éxito.';
+            }else{
+                $status = 'error';
+                $message = 'Ocurrió un error, vuelve a intentarlo o consulta a Desarrollo.';
+            }
+        }
+
+        return back()->with($status,$message);
     }
 
-    public function show($dealer){
-        $data['dealer'] = Dealer::where('id',$dealer)->first();
-        $data['packs'] = Pack::all()->where('service_name','Conecta');
-        $data['myPacks'] = DB::table('dealers')
-                              ->join('packsdealers','packsdealers.dealer_id','=','dealers.id')
-                              ->join('packs','packs.id','=','packsdealers.pack_id')
-                              ->where('dealers.id',$dealer)
-                              ->select('packs.name AS pack_name','packs.price AS pack_price','packsdealers.comission AS pack_comission','packsdealers.myMoney AS pack_total')
-                              ->get();
+    public function update($dealer, Request $request){
+        $request = $request->except('_token','_method');
+        
+        $x = Dealer::where('id',$dealer)->update($request);
+        
+        if($x){
+            return response()->json(['http_code' => 1, 'message' => 'Actualizado con éxito.']);
+        }else{
+            return response()->json(['http_code' => 0, 'message' => 'Hubo un error, intente de nuevo o consulte a Desarrollo.']);
+        }
+    }
+
+    public function show(Dealer $dealer){
+        $data['dealer'] = $dealer;
+        $data['dataDealer'] = User::where('id',$dealer->user_id)->first();
+        $balance = $dealer->balance;
+
+        if($balance == 0){
+            $data['icon'] = "fa fa-frown-o";
+        }else if($balance > 0 && $balance <= 30){
+            $data['icon'] = "fa fa-meh-o";
+        }else if($balance > 30){
+            $data['icon'] = "fa fa-smile-o";
+        }
+        // return $data;
         return view('dealers.show',$data);
-    }
-
-    public function addPackDealer(Request $request){
-        $route = '/dealers'.'/'.$request->post('dealer_id');
-        $request = request()->except('_token');
-        Packsdealer::insert($request);
-        return redirect($route);
+        
     }
 }
