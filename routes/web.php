@@ -174,3 +174,10 @@ Route::get('serviciabilidad','AltanController@serviciabilidad')->name('serv');
 
 Route::get('change-product', 'PaymentController@changeProductPayment')->name('changeProduct');
 Route::get('excedentes', 'PaymentController@excedentes')->name('excedentes');
+
+//admin
+Route::get('concesiones', 'AdminController@concesionesGeneral')->name('concesiones');
+Route::get('/cortes/{id}', 'AdminController@consulta')->name('cortes.get');
+Route::post('consultaCortes', 'AdminController@consultaCortes')->name('consulta.post');
+Route::post('updateStatusCortes', 'AdminController@statusCortes')->name('status.update');
+Route::post('payAll','AdminController@payAll')->name('payAll');

@@ -157,6 +157,7 @@ class RateController extends Controller
                              ->get();
         
         $offer_id = $dataActivation[0]->offer_id;
+        
         $offer_name = $dataActivation[0]->offer_name;
         $rate_id = $dataActivation[0]->rate_id;
         $rate_name = $dataActivation[0]->rate_name;

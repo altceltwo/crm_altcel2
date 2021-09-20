@@ -1374,7 +1374,7 @@ function getOffersSurplus(msisdn){
             packsSurplus = response.packsSurplus;
             console.log(dataMSISDN);
 
-            $('#namePurchase').val(dataMSISDN.name_user);
+            $('#namePurchase').val(dataMSISDN.name_user); 
             $('#lastnamePurchase').val(dataMSISDN.lastname_user);
             $('#emailPurchase').val(dataMSISDN.email_user);
             $('#cellphonePurchase').val(dataMSISDN.cellphone_user);

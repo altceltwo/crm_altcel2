@@ -26,6 +26,9 @@ class VerifyCsrfToken extends Middleware
         '/activationsGeneralApi',
         '/rollback-preactivate-api/*',
         '/activate-deactivate/DN-api',
-        '/purchase-api'
+        '/purchase-api',
+        'consultaCortes',
+        'updateStatusCortes',
+        'payAll'
     ];
 }

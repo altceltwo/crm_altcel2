@@ -504,6 +504,17 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-dollar" aria-hidden="true"></i>
+                                            <span>Finanzas</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('concesiones')}}">Cortes</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 @elseif(Auth::user()->role_id == 2)
                                     <li class="nav-parent">
                                         <a>
@@ -735,6 +746,17 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('webhook-payments-pending.get')}}">Vencidos</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-dollar" aria-hidden="true"></i>
+                                            <span>Finanzas</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                            <a href="{{route('concesiones')}}">Cortes</a>
                                             </li>
                                         </ul>
                                     </li>
