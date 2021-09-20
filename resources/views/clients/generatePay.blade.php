@@ -267,8 +267,7 @@ var dataPay, referenceWhatsapp = '';
                 concepto: concepto, type: type, channel: channel, rate_id: rate_id, user_id: user_id,
                 client_id: client_id, pay_id: pay_id, quantity: 1
             };
-            console.log(mochila);
-            return false;
+            
             if(channel == 0){
                 Swal.fire({
                     icon: 'error',

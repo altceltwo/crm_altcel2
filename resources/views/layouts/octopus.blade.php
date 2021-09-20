@@ -487,6 +487,10 @@
                                                     </li>
                                                 </ul>
                                             </li>
+
+                                            <li >
+                                                <a href="{{route('dealer.index')}}">Distribuidores</a>
+                                            </li>
                                         </ul>
                                     </li>
 
@@ -719,14 +723,14 @@
                                             <li>
                                                 <a href="{{route('devices.index')}}">Dispositivos</a>
                                             </li>
-					                <li class="nav-parent">
-                                                <a href="#">Facturación</a>
-                                                <ul class="nav nav-children">
-                                                    <li>
-                                                        <a href="{{route('facturacion.index')}}">Facturar</a>
+                                            <li class="nav-parent">
+                                                        <a href="#">Facturación</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('facturacion.index')}}">Facturar</a>
+                                                            </li>
+                                                        </ul>
                                                     </li>
-                                                </ul>
-                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">
@@ -759,6 +763,10 @@
                                             <a href="{{route('concesiones')}}">Cortes</a>
                                             </li>
                                         </ul>
+                                        <a href="{{route('dealer.index')}}">
+                                            <i class="fa fa-money" aria-hidden="true"></i>
+                                            <span>Distribuidores</span>
+                                        </a>
                                     </li>
                                 @elseif(Auth::user()->role_id == 6)
                                     <li class="nav-parent">
@@ -805,7 +813,59 @@
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="{{route('ethernet-admin.get')}}">Internet</a>
+                                                <a href="{{route('show-users.get')}}">Usuarios</a>
+                                            </li>
+                                            <li class="nav-parent">
+                                                <a>Productos</a>
+                                                <ul class="nav nav-children">
+                                                    <li class="nav-parent">
+                                                        <a>Ofertas Altán</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('offers.index')}}">Ver</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="{{route('offers.create')}}">Crear</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="nav-parent">
+                                                        <a>Planes Altán</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('rates.index')}}">Ver</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="{{route('rates.create')}}">Crear</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{route('ethernet-admin.get')}}">Internet</a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('politicRate.create')}}">Políticas</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('devices.index')}}">Dispositivos</a>
+                                            </li>
+					                        <li class="nav-parent">
+                                                <a>Facturación</a>
+                                                <ul class="nav nav-children">
+                                                    <li>
+                                                        <a href="{{route('facturacion.index')}}">Facturar</a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-parent">
+                                                <a>Promotores</a>
+                                                <ul class="nav nav-children">
+                                                    <li>
+                                                        <a href="{{route('promoters.get')}}">Ver</a>
+                                                    </li>
+                                                </ul>
                                             </li>
                                         </ul>
                                     </li>

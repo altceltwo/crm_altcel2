@@ -377,6 +377,9 @@
         let id = $(this).attr('data-id');
         let type = $(this).attr('data-type');
         // let attrID = $(this).attr('id');
+        console.log(id);
+        console.log(type);
+        return false;
         let amount_total = 0;
 
         $.ajax({

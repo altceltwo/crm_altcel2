@@ -154,13 +154,13 @@ class AltanController extends Controller
         }
     }
 
-    public function consultUF(){
+    public function consultUF($msisdn){
         $accessTokenResponse = AltanController::accessTokenRequestPost();
 
         if($accessTokenResponse['status'] == 'approved'){
             $accessToken = $accessTokenResponse['accessToken'];
             
-            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/3339064244/profile';
+            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn.'/profile';
                     
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
@@ -226,6 +226,11 @@ class AltanController extends Controller
         $type = $request->post('type');
         $user_id = $request->post('user_id');
         $amount = $request->post('amount');
+        $comment = $request->post('comment');
+        $reason = $request->post('reason');
+        $status = $request->post('status');
+        $pay_id = $request->post('pay_id');
+        $reference_id = $request->post('reference_id');
         $date = date('Y-m-d H:i:s');
         
         if($address == null){
@@ -250,7 +255,7 @@ class AltanController extends Controller
             $http_code = 1;
             $message = 'Cambio interno realizado con éxito.';
 
-        }else if($type == 'internalExternalChange'){
+        }else if($type == 'internalExternalChange' || $type == 'internalExternalChangeCollect'){
             // return $request;
             $response = AltanController::changeProductResponse($msisdn,$offerID,$address,$scheduleDate);
             $http_code = $response['http_code'];
@@ -268,7 +273,12 @@ class AltanController extends Controller
                     "rate_id" => $rate_id,
                     "who_did_id" => $user_id,
                     "amount" => $amount,
-                    "date" => $date
+                    "date" => $date,
+                    "comment" => $comment,
+                    "reason" => $reason,
+                    "status" => $status,
+                    "pay_id" => $pay_id,
+                    "reference_id" => $reference_id
                 ]);
 
                 if(!$x){
@@ -323,6 +333,9 @@ class AltanController extends Controller
         $price = $request->get('price');
         $offer_id = $request->get('offer_id');
         $rate_id = $request->get('rate_id');
+        $comment = $request->get('comment');
+        $reason = $request->get('reason');
+        $status = $request->get('status');
         $date = date('Y-m-d H:i:s');
         
         $dataNumber = Number::where('MSISDN',$msisdn)->first();
@@ -356,7 +369,10 @@ class AltanController extends Controller
                         "rate_id" => $rate_id,
                         "who_did_id" => $user_id,
                         "amount" => $price,
-                        "date" => $date
+                        "date" => $date,
+                        "comment" => $comment,
+                        "reason" => $reason,
+                        "status" => $status
                     ]);
                 }else{
                     $message = $response['description'];

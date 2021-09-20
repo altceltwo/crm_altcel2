@@ -606,7 +606,7 @@ class ActivationController extends Controller
                               'numbers.MSISDN','numbers.producto AS pack_service', 
                               'devices.description AS device_desc', 'users.name as promotor',
                               'rates.name AS name_rate','clients.address as address',
-                              'clients.cellphone AS client_cellphone','pays.amount AS payment_amount',
+                              'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
                               'pays.status AS payment_status','pays.date_pay AS payment_date')
                               ->get();
 
@@ -623,7 +623,7 @@ class ActivationController extends Controller
                               'numbers.MSISDN','numbers.producto AS pack_service', 
                               'devices.description AS device_desc', 'users.name as promotor',
                               'rates.name AS name_rate','clients.address as address',
-                              'clients.cellphone AS client_cellphone','pays.amount AS payment_amount',
+                              'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
                               'pays.status AS payment_status','pays.date_pay AS payment_date')
                               ->get();
 
@@ -637,7 +637,7 @@ class ActivationController extends Controller
                                    ->whereBetween('ethernetpays.date_pay',[$date_init,$date_final])
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'radiobases.name as radiobase_name','users.name AS client_name',
-                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount AS payment_amount',
+                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
                                    'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
                                    ->get();
 
@@ -652,7 +652,7 @@ class ActivationController extends Controller
                                    ->where('ethernetpays.id',null)
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'radiobases.name as radiobase_name','users.name AS client_name',
-                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount AS payment_amount',
+                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
                                    'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
                                    ->get();
 
@@ -665,7 +665,7 @@ class ActivationController extends Controller
                                    ->whereBetween('ethernetpays.date_pay',[$date_init,$date_final])
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'users.name AS client_name','users.lastname AS client_lastname',
-                                   'clients.cellphone AS client_cellphone','ethernetpays.amount AS payment_amount',
+                                   'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
                                    'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
                                    ->get();
 
@@ -679,7 +679,7 @@ class ActivationController extends Controller
                                    ->where('ethernetpays.id',null)
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'users.name AS client_name','users.lastname AS client_lastname',
-                                   'clients.cellphone AS client_cellphone','ethernetpays.amount AS payment_amount',
+                                   'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
                                    'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
                                    ->get();
         

@@ -281,15 +281,29 @@
                                                 Cambio Externo Gratis
                                             </label>
                                         </div>
+                                        <div class="radio col-md-2">
+                                            <label>
+                                                <input type="radio" name="optionsRadiosC" id="internalExternalRadioCollect" value="internalExternalChangeCollect">
+                                                Cambio Externo Cobro
+                                            </label>
+                                        </div>
                                         @endif
                                         <div class="radio col-md-2">
                                             <label>
                                                 <input type="radio" name="optionsRadiosC" id="internalExternalPaymentRadio" value="internalExternalPaymentChange">
-                                                Cambio Externo Pago
+                                                Cambio Externo Pago Referenciado
                                             </label>
                                         </div>
                                     </div>
                                 </div>
+                                @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                <div class="col-md-12 mt-md">
+                                    <label class="col-md-12 " for="commentChangeProduct">Comentario</label>
+                                    <div class="col-md-6">
+                                        <textarea class="form-control" rows="3" id="commentChangeProduct" placeholder="Si el cambio se hará sin cobro, escriba aquí la razón..."></textarea>
+                                    </div>
+                                </div>
+                                @endif
                                 <hr >
                                 <div class="form-row mt-md d-none" id="formPayment">
                                     <div class="form-group col-md-12">
@@ -417,6 +431,12 @@
                                                 Sin Costo
                                             </label>
                                         </div>
+                                        <div class="radio col-md-2">
+                                            <label>
+                                                <input type="radio" name="purchaseProductRadio" value="purchaseProductCollect">
+                                                Cobro
+                                            </label>
+                                        </div>
                                         @endif
                                         <div class="radio col-md-2">
                                             <label>
@@ -426,6 +446,14 @@
                                         </div>
                                     </div>
                                 </div>
+                                @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                <div class="col-md-12 mt-md">
+                                    <label class="col-md-12 " for="commentPurchase">Comentario</label>
+                                    <div class="col-md-6">
+                                        <textarea class="form-control" rows="3" id="commentPurchase" placeholder="Si el excedente se dará sin cobro, escriba aquí la razón..."></textarea>
+                                    </div>
+                                </div>
+                                @endif
                                 <hr >
                                 <div class="form-row mt-md d-none" id="formPurchaseProductPayment">
                                     <div class="form-group col-md-12">
@@ -659,6 +687,8 @@
 <script>
     $('#latlng').hide();
     $('#coor').hide();
+
+    var stack_bar_bottom = {"dir1": "up", "dir2": "right", "spacing1": 0, "spacing2": 0};
     
 $('input[name="optionsRadios"]').on('click', function() {
     let radioOption = $(this).val();
@@ -887,7 +917,9 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
         let user_id = $('#user_id').val();
         let client_id = $('#client_id').val();
         let referencestype = $('#referencestype_id').val();
-        let pay_id = '';
+        let comment = $('#commentChangeProduct').val();
+        let reason = '', status = '';
+        let pay_id = null;
 
         if(scheduleDateFirst.length == 0 || /^\s+$/.test(scheduleDateFirst)){
             scheduleDate = '';
@@ -907,13 +939,35 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
 		var validated = $('#w5 form').valid();
 		if(validated){
 
-            if((originalOffer == offer_id) && ((type == 'internalExternalChange') || (type == 'internalExternalPaymentChange'))){
+            if((originalOffer == offer_id) && ((type == 'internalExternalChange') || (type == 'internalExternalPaymentChange') || (type == 'internalExternalChangeCollect'))){
                 Swal.fire({
                     icon: 'error',
                     title: 'Oferta duplicada.',
                     text: 'El cambio externo no puede completarse, ya que eligió un plan con la misma oferta ALTAN. Para un cambio externo elija un plan con diferente oferta ALTAN.'
                 })
                 return false;
+            }
+
+            if(type == 'internalExternalChange'){
+
+                if(comment.length == 0 || /^\s+$/.test(comment)){
+                    
+                    new PNotify({
+                        title: 'Ooops!',
+                        text: 'Por favor escriba la razón por la que el cambio será sin cobro.',
+                        addclass: 'stack-bar-bottom',
+                        stack: stack_bar_bottom,
+                        width: "70%"
+                    });
+                    return false;
+                }
+
+                reason = 'bonificacion';
+                status = 'completado';
+
+            }else if(type == 'internalExternalChangeCollect'){
+                reason = 'cobro';
+                status = 'pendiente';
             }
 
             if(type == 'internalExternalPaymentChange'){
@@ -935,7 +989,12 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
                     scheduleDate:scheduleDate, 
                     address:address,
                     user_id: user_id,
-                    amount: amount
+                    amount: amount,
+                    comment:comment,
+                    reason:reason,
+                    status:status,
+                    pay_id:pay_id,
+                    reference_id:null
                 }
                 route = "{{route('changeProduct.post')}}";
             }
@@ -1159,7 +1218,7 @@ $('input[name="optionsRadiosC"]').on('click', function() {
 
 $('input[name="purchaseProductRadio"]').click(function(){
     let radioOption = $(this).val();
-    if(radioOption == 'purchaseProductFree'){
+    if(radioOption == 'purchaseProductFree' || radioOption == 'purchaseProductCollect'){
         $('#formPurchaseProductPayment').addClass('d-none');
     }else if(radioOption == 'purchaseProductPayment'){
         $('#formPurchaseProductPayment').removeClass('d-none');
@@ -1227,7 +1286,10 @@ $('input[name="purchaseProductRadio"]').click(function(){
         let user_id = $('#user_idPurchase').val();
         let client_id = $('#client_idPurchase').val();
         let referencestype = $('#referencestype_idPurchase').val();
+        let comment = $('#commentPurchase').val();
+        let reason = '', status = '';
         let pay_id = '';
+        
         // console.log(msisdn+' - '+offerID);
 
         var validated = $('#w6 form').valid();
@@ -1237,7 +1299,29 @@ $('input[name="purchaseProductRadio"]').click(function(){
                 let radioOption = $('input[name="purchaseProductRadio"]:checked').val();
 
                 if(radioOption == 'purchaseProductFree'){
-                    data = {msisdn:msisdn, offer:offerID, user_id:user_id, rate_id:rate, offer_id:offer_id, price:price};
+
+                    if(comment.length == 0 || /^\s+$/.test(comment)){
+                        
+                        new PNotify({
+                            title: 'Ooops!',
+                            text: 'Por favor escriba la razón por la que el excedente será sin cobro.',
+                            addclass: 'stack-bar-bottom',
+                            stack: stack_bar_bottom,
+                            width: "70%"
+		                });
+                        return false;
+                    }
+
+                    reason = 'bonificacion';
+                    status = 'completado';
+
+                }else if(radioOption == 'purchaseProductCollect'){
+                    reason = 'cobro';
+                    status = 'pendiente';
+                }
+
+                if(radioOption == 'purchaseProductFree' || radioOption == 'purchaseProductCollect'){
+                    data = {msisdn:msisdn, offer:offerID, user_id:user_id, rate_id:rate, offer_id:offer_id, price:price, comment:comment, reason:reason, status:status};
                     route = "{{route('purchase')}}";
                     method = 'GET';
                 }else if(radioOption == 'purchaseProductPayment'){
@@ -1256,26 +1340,36 @@ $('input[name="purchaseProductRadio"]').click(function(){
                     url: route,
                     method: method,
                     data: data,
+                    beforeSend: function(){
+                        Swal.fire({
+                            title: 'Estamos trabajando en tu petición...',
+                            html: 'Espera un poco, un poquito más...',
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
                     success: function(response){
                         console.log(response);
-                        if(radioOption == 'purchaseProductFree'){
+                        if(radioOption == 'purchaseProductFree' || radioOption == 'purchaseProductCollect'){
                             if(response.http_code == 1){
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Hecho',
                                     text: response.message,
                                     showConfirmButton: false,
+                                    timer: 2000
                                 });
                             }else{
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Ooops!',
-                                    text: response.message,
-                                    showConfirmButton: false,
+                                    text: response.message
                                 });
                             }
                             
                         }else{
+                            Swal.close();
                             if(channel == 1){
                             // referenceWhatsapp = response.reference;
                             pdfPaynet(response.reference,cel_destiny_reference,name,lastname);
@@ -1510,7 +1604,7 @@ $('#msisdn_locked').on('input', function () {
 });
 
 $('#consultIMEI').click(function(){
-    let msisdn = $('#msisdn_locke').val();
+    let msisdn_imei = $('#msisdn_locked').val();
     
     Swal.fire({
         title: 'Estamos consultando la información...',
@@ -1520,7 +1614,7 @@ $('#consultIMEI').click(function(){
             $.ajax({
                 url: "{{route('status')}}",
                 method: "GET",
-                data: {msisdn:msisdn},
+                data: {msisdn:msisdn_imei},
                 success: function(response){
                     Swal.close();
                     $('#imei').html('<b>IMEI: '+response.imei+'</b>');
@@ -1550,9 +1644,9 @@ $('#consultIMEI').click(function(){
 $("#locked, #unlocked").click(function(){
     let imei = $('#imeiFromConsult').val();
     let status = $('#statusIMEIValue').val();
-    let msisdn = $('#msisdn_locked').val();
+    let msisdn_imei = $('#msisdn_locked').val();
     let token = $('meta[name="csrf-token"]').attr('content');
-    let data = {_token:token,imei:imei, status:status, msisdn:msisdn};
+    let data = {_token:token,imei:imei, status:status, msisdn:msisdn_imei};
 
     Swal.fire({
         title: 'Estamos trabajando en ello...',

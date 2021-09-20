@@ -190,48 +190,49 @@ class PaymentController extends Controller
     }
 
     public function createPaymentsSwitchCase(Request $request){
-        $type = $request->type;
-        // Obtención de fecha actual
-        $date_now = date("Y-m-d");
-        // Obtención de día actual (según el día de ejecución del WS => 31, 30, 28, 29)
-        $day_now = date('d');
-        // Transformación de la fecha actual a la fecha del último día del mes según el consumo del WS
-        $date_limit = new DateTime($date_now);
-        $date_limit->modify('last day of this month');
-        // Obtención del último día y formato de fecha en curso
-        $day_last = $date_limit->format('d');
-        $date_limit = $date_limit->format('Y-m-d');
-        // Obtención del día de pago, restando 5 días al último día del mes en curso
-        $date_pay = strtotime('-5 days', strtotime($date_limit));
-        $date_pay = date('Y-m-d', $date_pay);
+        
+        // $type = $request->type;
+        // // Obtención de fecha actual
+        // $date_now = date("Y-m-d");
+        // // Obtención de día actual (según el día de ejecución del WS => 31, 30, 28, 29)
+        // $day_now = date('d');
+        // // Transformación de la fecha actual a la fecha del último día del mes según el consumo del WS
+        // $date_limit = new DateTime($date_now);
+        // $date_limit->modify('last day of this month');
+        // // Obtención del último día y formato de fecha en curso
+        // $day_last = $date_limit->format('d');
+        // $date_limit = $date_limit->format('Y-m-d');
+        // // Obtención del día de pago, restando 5 días al último día del mes en curso
+        // $date_pay = strtotime('-5 days', strtotime($date_limit));
+        // $date_pay = date('Y-m-d', $date_pay);
 
-        // 
-        switch ($day_last) {
-            case 31:
-                if($day_now == 26){
-                    $response = PaymentController::createPayments($date_pay,$date_limit,$type);
-                    return $response;
-                }
-                break;
-            case 30:
-                if($day_now == 25){
-                    $response = PaymentController::createPayments($date_pay,$date_limit,$type);
-                    return $response;
-                }
-                break;
-            case 28:
-                if($day_now == 23){
-                    $response = PaymentController::createPayments($date_pay,$date_limit,$type);
-                    return $response;
-                }
-                break;
-            case 29:
-                if($day_now == 24){
-                    $response = PaymentController::createPayments($date_pay,$date_limit,$type);
-                    return $response;
-                }
-                break;
-        }
+        // // 
+        // switch ($day_last) {
+        //     case 31:
+        //         if($day_now == 26){
+        //             $response = PaymentController::createPayments($date_pay,$date_limit,$type);
+        //             return $response;
+        //         }
+        //         break;
+        //     case 30:
+        //         if($day_now == 25){
+        //             $response = PaymentController::createPayments($date_pay,$date_limit,$type);
+        //             return $response;
+        //         }
+        //         break;
+        //     case 28:
+        //         if($day_now == 23){
+        //             $response = PaymentController::createPayments($date_pay,$date_limit,$type);
+        //             return $response;
+        //         }
+        //         break;
+        //     case 29:
+        //         if($day_now == 24){
+        //             $response = PaymentController::createPayments($date_pay,$date_limit,$type);
+        //             return $response;
+        //         }
+        //         break;
+        // }
     }
 
     public function changeProductPayment(){

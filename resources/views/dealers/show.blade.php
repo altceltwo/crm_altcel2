@@ -1,112 +1,96 @@
-@extends('layouts.app')
-@extends('layouts.datatablescss')
+@extends('layouts.octopus')
 @section('content')
-<script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">Datos de <strong>{{$dealer->name}}</strong> <a href="{{ route('dealers.index')}}" class="badge badge-dark">Administración</a></div>
-                <div class="card-body">
-                <form action="{{route('addPackDealer.post')}}" method="POST">
-                    @csrf
-                    <div class="form-row">
-                        <div class="form-group col-md-12">
-                            <h3>Asignación de Paquetes a Vender</h3>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="pack_id">Paquete</label>
-                            <select id="pack_id" name="pack_id" class="form-control form-control-sm">
-                                <option selected value="0" data-price="0">Choose...</option>
-                            @foreach($packs as $pack)
-                                <option value="{{$pack->id}}" data-price="{{$pack->price}}">{{$pack->name}}</option>
-                            @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="comission">Comisión por Renta</label>
-                            <input type="text" class="form-control form-control-sm" id="comission" name="comission" required>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="comission">Ingreso esperado</label>
-                            <input type="text" class="form-control form-control-sm" id="myMoney" name="myMoney" readonly required>
-                        </div>
-                        <input type="hidden" class="form-control form-control-sm" id="dealer_id" name="dealer_id" value="{{$dealer->id}}">
-                        <input type="hidden" class="form-control form-control-sm" id="who_did_id" name="who_did_id" value="{{Auth::user()->id}}">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" id="form-offer">Guardar</button>
-                </form>
+<header class="page-header">
+    <h2>Detalles de Distribuidor</h2>
+    <div class="right-wrapper pull-right">
+        <ol class="breadcrumbs">
+            <li>
+                <a href="{{route('home')}}">
+                    <i class="fa fa-home"></i>
+                </a>
+            </li>
+            <li><span>Dashboard</span></li>
+        </ol>
+        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+    </div>
+</header>
 
-                    <table id="dataT" class="table table-sm table-hover" style="width:100%">
-                        <thead >
-                            <tr>
-                            <th scope="col">Paquete</th>
-                            <th scope="col">Precio</th>
-                            <th scope="col">Comisión</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Opciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @foreach( $myPacks as $myPack )
-                        <tr style="cursor: pointer;">
-                            <td>{{ $myPack->pack_name }}</td>
-                            <td>{{ '$'.number_format($myPack->pack_price,2) }}</td>
-                            <td>{{ '$'.number_format($myPack->pack_comission,2) }}</td>
-                            <td>{{ '$'.number_format($myPack->pack_total,2) }}</td>
-                            <td></td>
-                        </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
-                        
-                </div>
+<div class="row">
+    <section class="panel panel-horizontal">
+        <header class="panel-heading bg-success">
+        <div class="panel-heading-icon">
+                <i class="fa fa-dollar"></i>
+            </div>
+        </header>
+        <div class="panel-body p-lg">
+            <h3 class="text-semibold mt-sm">Saldo Disponible: ${{number_format($dealer->balance,2)}} <i class="{{$icon}}"></i></h3>
+            <!-- <blockquote class="info"> -->
+                <p class="text-semibold">{{$dataDealer->name.' ' .$dataDealer->lastname}}</p>
+                <p class="text-semibold">{{$dataDealer->email}}</p>
+                <!-- <small>A. Einstein, <cite title="Magazine X">Magazine X</cite></small> -->
+            <!-- </blockquote> -->
+        </div>
+    </section>
+</div>
+
+<!-- <section class="panel">
+    <header class="panel-heading">
+        <div class="panel-actions">
+            <a href="#" class="fa fa-caret-down"></a>
+            <a href="#" class="fa fa-times"></a>
+        </div>
+
+        <h2 class="panel-title">Distribuidores Existentes</h2>
+    </header>
+    <div class="panel-body">
+        <table class="table table-bordered table-striped mb-none" id="datatable-default">
+            <thead >
+                <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Email</th>
+                <th scope="col">Saldo</th>
+                <th scope="col">Creado por</th>
+                <th scope="col">Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="modalDealer" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title text-dark" id="myModalTitle">Saldo</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal form-bordered">
+                    <input type="hidden" id="methodUpdate" name="_method" value="PUT">
+                    <input type="hidden" id="tokenUpdate" name="_token" value="{{ csrf_token() }}">
+                
+                    <div class="form-group"  style="padding-right: 1rem; padding-left: 1rem;">
+                        <div class="col-md-6 ">
+                            <label for="price" class="form-label">Disponible</label>
+                            <input type="text" class="form-control form-control-sm mr-2" id="balanceEdit" name="balanceEdit" >
+                        </div>
+                    </div>              
+
+                    <input type="hidden" id="dealer_id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="add_update_balance">Guardar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-</div>
-<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.2.7/js/responsive.bootstrap4.min.js"></script>
+</div> -->
+
 <script>
-    $('#dataT').DataTable({
-        responsive: true,
-        autoWidth: false
-    });
-$('#comission').keyup(function(){
-    let comission = $(this).val();
-    let price = $('#pack_id option:selected').attr('data-price');
-    let myMoney = 0;
-    comission = parseFloat(comission);
-    price = parseFloat(price);
 
-    if(price == 0){
-        $('#myMoney').val(0);
-    }else{
-        myMoney = price - comission;
-        $('#myMoney').val(myMoney);
-    }
-});
-
-$('#pack_id').change(function(){
-    let comission = $('#comission').val();
-    let price = $('#pack_id option:selected').attr('data-price');
-    let myMoney = 0;
-    comission = parseFloat(comission);
-    price = parseFloat(price);
-
-    if(price == 0){
-        $('#myMoney').val(0);
-    }else{
-        if(comission == 0 || comission.length == 0 || /^\s+$/.test(comission)){
-            $('#myMoney').val(0);
-        }else{
-            myMoney = price - comission;
-            $('#myMoney').val(myMoney);
-        }
-    }
-});
 </script>
 @endsection

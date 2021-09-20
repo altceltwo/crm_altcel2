@@ -27,6 +27,7 @@ Route::resource('schedules','ScheduleController')->middleware('auth');
 Route::resource('clients','ClientController')->middleware('auth');
 Route::resource('facturacion', 'InvoiceController')->middleware('auth');
 Route::resource('assignment', 'AssignmentController')->middleware('auth');
+Route::resource('dealer', 'DealerController')->middleware('auth');
 
 //Devices
 Route::resource('devices', 'DeviceController')->middleware('auth');
@@ -93,6 +94,7 @@ Route::get('/consultUF','AltanController@consultUF')->name('consultUF.get');
 Route::post('/predeactivate-reactivate','AltanController@predeactivateReactivate')->name('predeactivate.reactivate');
 Route::get('/get-offers-rates-diff','RateController@getOffersRatesDiff')->name('getOffersRatesDiff.get');
 Route::get('/get-offers-rates-diff-api','RateController@getOffersRatesDiffAPI')->name('getOffersRatesDiffAPI.get');
+Route::get('/get-offers-rates-diff-api-public','RateController@getOffersRatesDiffAPIPublic')->name('getOffersRatesDiffAPIPublic.get');
 Route::get('/get-offers-rates-surplus','RateController@getOffersRatesSurplus')->name('getOffersSurplus.get');
 Route::post('/change-product','AltanController@changeProduct')->name('changeProduct.post');
 Route::get('/purchase','AltanController@productPurchase')->name('purchase');
@@ -103,7 +105,7 @@ Route::get('/status', 'AltanController@statusImei')->name('status');
 // Rates Routes
 Route::post('/get-rates', 'RateController@getRates')->name('get-rates.post');
 Route::post('/get-rates-alta', 'RateController@getRatesAlta')->name('get-rates-alta.post');
-Route::post('/get-rates-alta-api', 'RateController@getRatesAlta');
+Route::post('/get-rates-alta-api', 'RateController@getRatesAltaApi');
 Route::post('/get-politics-rates','RateController@getPoliticsRates')->name('get-politics-rates.post');
 
 // Ethernet Admin
@@ -121,9 +123,6 @@ Route::post('/create-politic','AdminController@insertPoliticRate')->name('politi
 Route::get('/politics/delete/{politic_id}','AdminController@destroy')->name('politic.delete');
 Route::get('/politics/edit/{politic_id}','AdminController@getPolitic')->name('politic.edit');
 Route::put('/politics/update/{politic}','AdminController@updatePolitic')->name('politic.update');
-
-// Dealers Routes
-Route::post('/addPackDealer','DealerController@addPackDealer')->name('addPackDealer.post');
 
 // Pays Routes
 Route::get('/save-manual-pay','WebhookController@saveManualPay')->name('save-manual-pay.get');
