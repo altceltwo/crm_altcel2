@@ -25,6 +25,7 @@
                             <option value="" selected>Seleccione un opción</option>
                             <option value="changes">Cambio de Producto</option>
                             <option value="purchases">Compra de producto</option>
+                            <option value="monthly">Mensualidad</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -71,8 +72,9 @@
             <a href="#" class="fa fa-caret-down"></a>
             <a href="#" class="fa fa-times"></a>
         </div>
+        <input type="hidden" id="userConsigned" value="{{auth()->user()->id}}">
         @foreach($users as $user)
-        <h2 class="panel-title">{{$user->name}}</h2>
+        <h2 class="panel-title">{{$user->name}} {{$user->lastname}}</h2>
         <h4 class="text-dark text-bold">Total: $<span id="total"></span></h4>
         <input type="hidden" id="user" value="{{$user->id}}">
         <input type="hidden" id="totalAll">
@@ -98,7 +100,7 @@
     <script>
         $('#all').hide();
         let id = $('#user').val();
-              
+        
         $('#type').change(function(){let type = $(this).val();})
         $('#status').change(function(){let status2 = $(this).val();})
         $('#bonificacion').change(function(){let bonificacion2 = $(this).val();})
@@ -121,7 +123,7 @@
                 success:function(response){
                     var data = response.consultas;
                     data.forEach(function(element){
-                        contenido+="<tr id='row_"+element.id+"'><td class='mon'>"+'$ '+ parseFloat(element.amount).toFixed(2)+"</td><td>"+element.client+"</td><td>"+element.MSISDN+"</td><td>"+element.name_product+"</td><td><span class='badge label-"+classBadge+"' data-status='"+element.status+"'>"+element.status+"</span></td><td><span class='badge label-success'>"+element.reason+"</span></td><td><button onclick='xF(this.id)' id='btnC_"+element.id+"' class='btn btn-warning cobro' data-amount='"+element.amount+"' data-id ='"+element.id+"'>"+textbtn+"</button></td</tr>"
+                        contenido+="<tr id='row_"+element.id+"'><td class='mon'>"+'$ '+ parseFloat(element.amount).toFixed(2)+"</td><td>"+element.client+" "+element.lastname+"</td><td>"+element.MSISDN+"</td><td>"+element.name_product+"</td><td><span class='badge label-"+classBadge+"' data-status='"+element.status+"'>"+element.status+"</span></td><td><span class='badge label-success'>"+element.reason+"</span></td><td><button onclick='xF(this.id)' id='btnC_"+element.id+"' class='btn btn-warning cobro' data-amount='"+element.amount+"' data-id ='"+element.id+"'>"+textbtn+"</button></td</tr>"
                         total+=element.amount;
                     });
                     $('#cuerpo-table').html(contenido);
@@ -137,11 +139,11 @@
                     }
                 }
             })
-
         });
 
         //todos
         $('#all').click(function(){
+            let id_consigned = $('#userConsigned').val();
             let startPa = $('#start_date').val();
             let endPa = $('#end_date').val();
             let statusPa = $('#status').val();
@@ -151,7 +153,7 @@
             $.ajax({
                 url: "{{route('payAll')}}",
                 method: 'POST',
-                data: {type:typePa, status:statusPa, start:startPa, end:endPa, id:idPa},
+                data: {type:typePa, status:statusPa, start:startPa, end:endPa, id:idPa, id_consigned:id_consigned},
                 success:function(response){
                     if (response == 1) {
                         let tfinal = 0;
@@ -177,6 +179,7 @@
         });
 
         function xF(id){
+            let id_consigned = $('#userConsigned').val();
             let idpay = $('#'+id).attr('data-id');
             let type = $('#type').val()
             let monto = $('#'+id).attr('data-amount');
@@ -185,14 +188,13 @@
             totalAll = parseFloat(totalAll);
             monto = parseFloat(monto);
             let totalF = totalAll - monto;
-            console.log(totalF);
             $('#total').text(totalF.toFixed(2));                   
 
             $('#'+id).closest('tr').remove();;
             $.ajax({
                 url: "{{route('status.update')}}",
                 method: 'POST',
-                data: {idpay:idpay, type:type, status:status},
+                data: {idpay:idpay, type:type, status:status, id_consigned:id_consigned},
                 success:function(response){
                         Swal.fire({ 
                             icon: 'success',
