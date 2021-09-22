@@ -144,6 +144,35 @@ class AdminController extends Controller
         $data['users'] = User::where('id', $id)->get();
         return view('finance.detalles',$data);
     }
+    public function indexConcesiones(){
+        $data['changes'] = DB::table('changes')
+                            ->join('numbers','numbers.id', '=', 'changes.number_id')
+                            ->join('rates','rates.id', '=', 'changes.rate_id')
+                            ->join('activations','activations.numbers_id', '=', 'changes.number_id')
+                            ->join('users', 'users.id', '=', 'changes.who_did_id')
+                            ->where('changes.status', '=', 'pendiente')
+                            ->select('changes.id', 'changes.status','changes.who_did_id', 'changes.reason', 'changes.amount', 'rates.name AS name_product','numbers.MSISDN','users.name AS client','users.lastname AS lastname')
+                            ->get();
+        
+        $data['purchases'] = DB::table('purchases')
+                               ->join('numbers','numbers.id', '=', 'purchases.number_id')
+                               ->join('offers','offers.id', '=', 'purchases.offer_id')
+                               ->join('activations','activations.numbers_id', '=', 'purchases.number_id')
+                               ->join('users', 'users.id', '=', 'purchases.who_did_id')
+                               ->where('purchases.status', '=', 'pendiente')
+                               ->select('purchases.id', 'purchases.status', 'purchases.who_did_id', 'purchases.reason', 'purchases.amount', 'offers.name AS name_product','numbers.MSISDN','users.name AS client', 'users.lastname AS lastname')
+                               ->get();
+
+        $data['pays'] = DB::table('pays')
+                          ->join('activations','activations.id', '=', 'pays.activation_id')
+                          ->join('rates','rates.id', '=', 'activations.rate_id')
+                          ->join('numbers','numbers.id', '=', 'activations.numbers_id')
+                          ->join('users','users.id', '=', 'pays.who_did_id')
+                          ->where('pays.status_consigned', 'pendiente')
+                          ->select('pays.amount','pays.who_did_id', 'pays.status_consigned AS status','users.name AS  client', 'pays.id', 'numbers.MSISDN', 'rates.name AS name_product', 'users.lastname AS lastname')
+                          ->get();
+        return view('finance.index',$data);
+    }
 
     public function consultaCortes(Request $request){
         $id = $request['id'];
@@ -179,7 +208,7 @@ class AdminController extends Controller
                                     ->where('purchases.status', '=', $status)
                                     ->where('purchases.reason', '=', $bonificacion)
                                     ->whereBetween('date', [$dateStart, $dateEnd])
-                                    ->select('purchases.id', 'purchases.status', 'purchases.reason', 'purchases.amount', 'offers.name AS name_product','numbers.MSISDN','users.name AS client')
+                                    ->select('purchases.id', 'purchases.status', 'purchases.reason', 'purchases.amount', 'offers.name AS name_product','numbers.MSISDN','users.name AS client', 'users.lastname AS lastname')
                                     ->get();
         }elseif ($type == 'changes') {
             $resp['consultas'] = DB::table('changes')
@@ -191,33 +220,47 @@ class AdminController extends Controller
                                     ->where('changes.status', '=', $status)
                                     ->where('changes.reason', '=', $bonificacion)
                                     ->whereBetween('date', [$dateStart, $dateEnd])
-                                    ->select('changes.id', 'changes.status', 'changes.reason', 'changes.amount', 'rates.name AS name_product','numbers.MSISDN','users.name AS client')
+                                    ->select('changes.id', 'changes.status', 'changes.reason', 'changes.amount', 'rates.name AS name_product','numbers.MSISDN','users.name AS client', 'users.lastname AS lastname')
                                     ->get();
+        }elseif ($type == 'monthly') {
+            $resp['consultas'] = DB::table('pays')
+                                   ->join('activations','activations.id', '=', 'pays.activation_id')
+                                   ->join('rates','rates.id', '=', 'activations.rate_id')
+                                   ->join('numbers','numbers.id', '=', 'activations.numbers_id')
+                                   ->join('users','users.id', '=', 'activations.client_id')
+                                   ->where('pays.status_consigned', $status)
+                                   ->where('pays.who_did_id', $id)
+                                   ->whereBetween('date_pay', [$dateStart, $dateEnd])
+                                   ->select('pays.amount', 'pays.status_consigned AS status','users.name AS client', 'pays.id', 'numbers.MSISDN', 'rates.name AS name_product', 'users.lastname AS lastname')
+                                   ->get();
         }
         return $resp;
     }
 
     public function statusCortes(Request $request){
         $id = $request['idpay'];
+        $user_consigned = $request['id_consigned'];
         $type = $request['type'];
         $status = $request['status'];
         $x = false;
 
         if ($type == 'purchases') {
             if ($status =='pendiente') {
-                $x = Purchase::where('id', $id)->update(['status'=>'completado']);
-                
+                $x = Purchase::where('id', $id)->update(['status'=>'completado', 'who_consigned'=>$user_consigned]);
             }elseif ($status == 'completado') {
-                $x = Purchase::where('id', $id)->update(['status'=>'pendiente']);
-                
+                $x = Purchase::where('id', $id)->update(['status'=>'pendiente', 'who_consigned'=>$user_consigned]);
             }
         }elseif ($type == 'changes') {
             if ($status =='pendiente') {
-                $x = Change::where('id', $id)->update(['status'=>'completado']);
-                
+                $x = Change::where('id', $id)->update(['status'=>'completado', 'who_consigned'=>$user_consigned]);
             }elseif ($status == 'completado') {
-                $x = Change::where('id', $id)->update(['status'=>'pendiente']);
-                
+                $x = Change::where('id', $id)->update(['status'=>'pendiente', 'who_consigned'=>$user_consigned]);
+            }
+        }elseif ($type == 'monthly') {
+            if ($status =='pendiente') {
+                $x = Pay::where('id', $id)->update(['status_consigned'=>'completado', 'who_consigned'=>$user_consigned]);
+            }elseif ($status == 'completado') {
+                $x = Pay::where('id', $id)->update(['status_consigned'=>'pendiente', 'who_consigned'=>$user_consigned]);
             }
         }
 
@@ -230,6 +273,7 @@ class AdminController extends Controller
 
     public function payAll(Request $request){
         $id = $request['id'];
+        $user_consigned = $request['id_consigned'];
         $status = $request['status'];
         $type = $request['type'];
         $start = $request['start'];
@@ -247,16 +291,22 @@ class AdminController extends Controller
         if ($type == 'changes') {
             if ($status == 'pendiente') {
                 // return $dateStart.' // '.$dateEnd;
-                $x = Change::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart,$dateEnd])->update(['status'=>'completado']);
+                $x = Change::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart,$dateEnd])->update(['status'=>'completado', 'who_consigned'=>$user_consigned]);
             }else if ($status == 'completado') {
                 // return $dateStart.' // '.$dateEnd;
-                $x = Change::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'pendiente']);
+                $x = Change::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'pendiente', 'who_consigned'=>$user_consigned]);
             }
         }else if ($type == 'purchases') {
             if ($status == 'pendiente') {
-                Purchase::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'completado']);
+                $x = Purchase::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'completado', 'who_consigned'=>$user_consigned]);
             }else if ($status == 'completado') {
-                Purchase::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'pendiente']);
+                $x = Purchase::where('who_did_id', $id)->where('status', $status)->whereBetween('date', [$dateStart, $dateEnd])->update(['status'=>'pendiente', 'who_consigned'=>$user_consigned]);
+            }
+        }elseif ($type == 'monthly') {
+            if ($status == 'pendiente') {
+                $x = Pay::where('who_did_id', $id)->where('status_consigned', $status)->whereBetween('date_pay', [$dateStart, $dateEnd])->update(['status_consigned'=>'completado', 'who_consigned'=>$user_consigned]);
+            }elseif ($status == 'completado') {
+                $x = Pay::where('who_did_id', $id)->where('status_consigned', $status)->whereBetween('date_pay', [$dateStart, $dateEnd])->update(['status_consigned'=>'pendiente', 'who_consigned'=>$user_consigned]);
             }
         }
         if ($x) {

@@ -515,7 +515,7 @@
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="{{route('concesiones')}}">Cortes</a>
+                                                <a href="{{route('indexConcesiones')}}">Cortes</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -760,7 +760,7 @@
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                            <a href="{{route('concesiones')}}">Cortes</a>
+                                            <a href="{{route('indexConcesiones')}}">Cortes</a>
                                             </li>
                                         </ul>
                                         <a href="{{route('dealer.index')}}">
