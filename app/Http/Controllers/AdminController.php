@@ -134,6 +134,7 @@ class AdminController extends Controller
                                  ->leftJoin('pays','pays.who_did_id', '=', 'users.id')
                                  ->leftJoin('ethernetpays','ethernetpays.who_did_id', '=', 'users.id')
                                  ->where('purchases.who_did_id', '!=', 'null')
+                                 ->orWhere('changes.who_did_id', '!=', 'null')
                                  ->select('users.name','users.id')
                                  ->distinct()
                                  ->get();
