@@ -40,6 +40,9 @@
                 <th>Recibido Por</th>
                 <th>Fecha Recibido</th>
                 <th>Comentario</th>
+                @if(Auth::user()->role_id == 5)
+                <th>Opciones</th>
+                @endif
                 </tr>
             </thead>
             <tbody>
@@ -48,22 +51,273 @@
                     <td>{{$completado['client']}}</td>
                     <td>{{$completado['product']}}</td>
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
-                    <td>{{$completado['cobroPlan']}}</td>
-                    <td>{{$completado['cobroCpe']}}</td>
+                    <td>${{number_format($completado['cobroPlan'],2)}}</td>
+                    <td>${{number_format($completado['cobroCpe'],2)}}</td>
                     <td>{{$completado['fecha_solicitud']}}</td>
                     <td>{{$completado['activadoPor']}}</td>
                     <td>{{$completado['date_activated']}}</td>
                     <td>{{$completado['recibido']}}</td>
                     <td><span class="badge label-{{$completado['badgeFecha']}}">{{$completado['dateRecibido']}}</span></td>
                     <td>{{$completado['comment']}}</td>
+                    @if(Auth::user()->role_id == 5)
+                    <td>
+                        <button class="btn btn-success btn-sm collect" data-petition-id="{{$completado['id']}}" data-collected-cpe="{{number_format($completado['cobroCpe'],2)}}" data-collected-rate="{{number_format($completado['cobroPlan'],2)}}"><i class="fa fa-usd"></i></button>
+                    </td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
 </section>
+
+<div class="modal fade" id="modalCollect" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalTitle"></h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal form-bordered" >
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="col-md-12">
+                                <h4 class="text-success text-bold">Montos Esperados y a Ingresar</h4>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="alert alert-info fade in nomargin">
+                                    <h4 class="text-semibold">Información Solicitud y Activación</h4>
+                                    <ul>
+                                        <li id="amount_device_info"></li>
+                                        <li id="amount_rate_info"></li>
+                                        <li id="collected_cpe_info"></li>
+                                        <li id="collected_rate_info"></li>
+                                    </ul>
+                                    <p class="text-bold" id="amount_total_tag"></p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="alert alert-warning fade in nomargin">
+                                    <h4 class="text-semibold">Falta por recaudar:</h4>
+                                    <ul>
+                                        <li id="residuary_cpe_info"></li>
+                                        <li id="residuary_rate_info"></li>
+                                        
+                                    </ul>
+                                    <p class="text-bold" id="amount_total_tag"></p>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="petition_id">
+                            <input type="hidden" id="activation_id">
+                            <input type="hidden" id="amount_rate">
+                            <input type="hidden" id="amount_device">
+                            <input type="hidden" id="collected_cpe">
+                            <input type="hidden" id="collected_rate">
+                            <input type="hidden" id="user_id" value="{{Auth::user()->id}}">
+
+                            <div class="form-group col-md-12">
+                                <div class="col-md-6">
+                                    <section class="form-group-vertical">
+                                        <div class="input-group input-group-icon">
+                                            <label for="received_amount_device">Monto CPE:</label>
+                                            <input class="form-control" type="text" id="received_amount_cpe" name="received_amount_cpe" autocomplete="off">
+                                        </div>
+                                    </section>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <section class="form-group-vertical">
+                                        <div class="input-group input-group-icon">
+                                            <label for="received_amount_device">Monto Plan:</label>
+                                            <input class="form-control" type="text" id="received_amount_rate" name="received_amount_rate" autocomplete="off">
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>        
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="save_collect">Guardar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 
+    $('#received_amount_cpe, #received_amount_rate').on('input', function () {
+        this.value = this.value.replace(/[^0-9.-]/g, '');
+    });
+
+    $('.collect').click(function(){
+        let id = $(this).data('petition-id');
+        let collected_rate = $(this).data('collected-rate');
+        let collected_cpe = $(this).data('collected-rate');
+        let token = $('meta[name="csrf-token"]').attr('content');
+        
+         $.ajax({
+             url: "{{route('collectMoney')}}",
+             method: "POST",
+             data: {_token: token, collectedCPE: collected_cpe, collectedRate: collected_rate, petition_id: id},
+             beforeSend: function(){
+                Swal.fire({
+                    title: 'Estamos extrayendo la información que solicitas...',
+                    html: 'Espera un poco, un poquito más...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+             },
+             success: function(response){
+                 $('#amount_device_info').html('Monto esperado en CPE: $'+parseFloat(response.amount_device).toFixed(2));
+                 $('#amount_rate_info').html('Monto esperado en Plan Activación: $'+parseFloat(response.amount_rate).toFixed(2));
+                 $('#collected_cpe_info').html('Monto recaudado en CPE: $'+parseFloat(collected_cpe).toFixed(2));
+                 $('#collected_rate_info').html('Monto recaudado en Plan Activación: $'+parseFloat(collected_rate).toFixed(2));
+
+                 $('#residuary_cpe_info').html('CPE: $'+parseFloat(response.residuaryDevice).toFixed(2));
+                 $('#residuary_rate_info').html('Plan: $'+parseFloat(response.residuaryRate).toFixed(2));
+
+                 $('#petition_id').val(response.petition_id);
+                 $('#activation_id').val(response.activation_id);
+                 $('#amount_rate').val(response.amount_rate);
+                 $('#amount_device').val(response.amount_device);
+                 $('#collected_cpe').val(collected_cpe);
+                 $('#collected_rate').val(collected_rate);
+
+                Swal.close();
+                $('#modalCollect').modal('show');
+             }
+         });
+    });
+
+    $('#received_amount_cpe').keyup(function(){
+        let received_amount = $(this).val();
+        let collected_amount = $('#collected_cpe').val();
+        let amount = $('#amount_device').val();
+
+        if(received_amount.length == 0 || /^\s+$/.test(received_amount)){
+            received_amount = 0;
+        }
+
+        let new_collected_amount = parseFloat(received_amount)+parseFloat(collected_amount);
+        let residuary_temp = parseFloat(amount)-parseFloat(new_collected_amount);
+
+        $('#residuary_cpe_info').html('CPE: $'+parseFloat(residuary_temp).toFixed(2));
+        console.log(residuary_temp);
+
+    });
+
+    $('#received_amount_rate').keyup(function(){
+        let received_amount = $(this).val();
+        let collected_amount = $('#collected_rate').val();
+        let amount = $('#amount_rate').val();
+
+        if(received_amount.length == 0 || /^\s+$/.test(received_amount)){
+            received_amount = 0;
+        }
+
+        let new_collected_amount = parseFloat(received_amount)+parseFloat(collected_amount);
+        let residuary_temp = parseFloat(amount)-parseFloat(new_collected_amount);
+
+        $('#residuary_rate_info').html('CPE: $'+parseFloat(residuary_temp).toFixed(2));
+        console.log(residuary_temp);
+
+    });
+
+    $('#save_collect').click(function(){
+        let received_amount_cpe = $('#received_amount_cpe').val();
+        let received_amount_rate = $('#received_amount_rate').val();
+        let who_received = $('#user_id').val();
+        let activation_id = $('#activation_id').val();
+        let petition_id = $('#petition_id').val();
+        let token = $('meta[name="csrf-token"]').attr('content');
+
+        if(received_amount_cpe.length == 0 || /^\s+$/.test(received_amount_cpe)){
+            received_amount_cpe = 0;
+        }
+
+        if(received_amount_rate.length == 0 || /^\s+$/.test(received_amount_rate)){
+            received_amount_rate = 0;
+        }
+
+        Swal.fire({
+            title: 'Verifique los datos siguientes:',
+            html: "<li class='list-alert'><b>Recibido por CPE: </b>$"+parseFloat(received_amount_cpe).toFixed(2)+"</li><br>"+
+            "<li class='list-alert'><b>Recibido por Plan: </b>$"+parseFloat(received_amount_rate).toFixed(2)+"</li><br>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-success mr-md',
+                cancelButton: 'btn btn-danger '
+            },
+            buttonsStyling: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: "{{route('saveCollected')}}",
+                    method: "POST",
+                    data: {
+                        _token:token,
+                        received_amount_cpe: received_amount_cpe,
+                        received_amount_rate: received_amount_rate,
+                        who_received: who_received,
+                        activation_id: activation_id,
+                        petition_id: petition_id,
+                        },
+                    beforeSend: function(){
+                        Swal.fire({
+                            title: 'Guardando registros...',
+                            html: 'Espera un poco, un poquito más...',
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success: function(response){
+                        Swal.close();
+                        
+                        if(response == 1){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Operación realizada con éxito.',
+                                showConfirmButton: false,
+                                timer: 1000
+                            })
+                        }else if(response == 0){
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Ocurrió un error durante la operación.',
+                                text: 'Consulte a Desarrollo.'
+                            })
+                        }
+                    }
+                });
+
+            } else if (
+                /* Read more about handling dismissals below */
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Operación cancelada',
+                    text: 'No se registro ningún pago.',
+                    showConfirmButton: false,
+                    timer: 1000
+                })
+            }
+        })
+
+    });
 </script>
 
 @endsection

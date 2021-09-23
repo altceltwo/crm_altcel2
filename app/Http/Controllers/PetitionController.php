@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
 use App\User;
+use App\Activation;
 
 class PetitionController extends Controller
 {
@@ -107,8 +108,8 @@ class PetitionController extends Controller
             $comment = $y->comment;
             $product = $y->product;
             $client_id = $y->client_id;
-            $cobroCpe = $y->collected_rate;
-            $cobroPlan = $y->collected_device;
+            $cobroCpe = $y->collected_device;
+            $cobroPlan = $y->collected_rate;
             $date_sent = $y->date_sent;
             $who_attended = $y->who_attended;
             $date_activated = $y->date_activated;
@@ -118,13 +119,18 @@ class PetitionController extends Controller
             $client = User::where('id', $client_id)->select('name', 'lastname')->get();
             $attended = User::where('id', $who_attended)->select('name', 'lastname')->get();
 
-            if ($status == 'recibido') {
+            if($y->who_received != null){
                 $recibido1 = User::where('id', $recibido)->select('name', 'lastname')->get();
                 $recibido = $recibido1[0]->name.' '.$recibido1[0]->lastname;
+            }else{
+                $recibido = 'Por recibir';
+            }
+
+            if ($status == 'recibido') {
+                
                 $badgeStatus = 'success';
                 
             }else {
-                $recibido = 'Por Recibir';
                 $badgeStatus = 'warning';
             }
 
@@ -155,7 +161,7 @@ class PetitionController extends Controller
                 'badgeStatus'=>$badgeStatus
             ));
         }
-        // return $data;
+        // return $data['completadas'];
         
         return view('petitions/completadosOperaciones', $data);
     }
@@ -173,6 +179,83 @@ class PetitionController extends Controller
                   ->select('users.name','users.lastname','users.email','clients.address','clients.rfc','clients.ine_code', 'clients.date_born','clients.cellphone')
                   ->get();
         return $data;
+    }
+
+    public function collectMoney(Request $request){
+        $collectedCPE = $request->post('collectedCPE');
+        $collectedRate = $request->post('collectedRate');
+        $petition_id = $request->post('petition_id');
+
+        $data = DB::table('petitions')
+                   ->join('activations','activations.petition_id','=','petitions.id')
+                   ->where('petitions.id',$petition_id)
+                   ->select('activations.amount_rate AS amount_rate','activations.amount_device AS amount_device', 'activations.id AS activation_id')
+                   ->get();
+
+        $amount_rate = $data[0]->amount_rate;
+        $amount_device = $data[0]->amount_device;
+        $activation_id = $data[0]->activation_id;
+
+        $residuaryRate = $amount_rate-$collectedRate;
+        $residuaryDevice = $amount_device-$collectedCPE;
+
+        return response()->json([
+            'residuaryRate' => $residuaryRate,
+            'residuaryDevice' => $residuaryDevice,
+            'petition_id' => $petition_id,
+            'activation_id' => $activation_id,
+            'amount_rate' => $amount_rate,
+            'amount_device' => $amount_device,
+        ]);
+    }
+
+    public function saveCollected(Request $request){
+        $collected_amount_cpe = $request->post('received_amount_cpe');
+        $collected_amount_rate = $request->post('received_amount_rate');
+        $who_received = $request->post('who_received');
+        $activation_id = $request->post('activation_id');
+        $petition_id = $request->post('petition_id');
+        
+
+        $dataActivation = Activation::where('id',$activation_id)->first();
+        $dataPetition = Petition::where('id',$petition_id)->first();
+
+        $amount_rate = $dataActivation->amount_rate;
+        $amount_device = $dataActivation->amount_device;
+        $received_amount_rate = $dataActivation->received_amount_rate;
+        $received_amount_device = $dataActivation->received_amount_device;
+
+        $received_amount_rate = $received_amount_rate+$collected_amount_rate;
+        $received_amount_device = $received_amount_device+$collected_amount_cpe;
+
+        $statusPaymentActivation = 'pendiente';
+        $statusPetition = 'activado';
+        $date_received = date('Y-m-d H:i:s');
+
+        if(($received_amount_rate >= $amount_rate) && ($received_amount_device >= $amount_device)){
+            $statusPaymentActivation = 'completado';
+            $statusPetition = 'recibido';
+        }
+
+        $x = Activation::where('id',$activation_id)->update([
+                'received_amount_rate' => $received_amount_rate,
+                'received_amount_device' => $received_amount_device,
+                'payment_status' => $statusPaymentActivation
+            ]);
+
+        $y = Petition::where('id',$petition_id)->update([
+                'collected_rate' => $received_amount_rate,
+                'collected_device' => $received_amount_device,
+                'who_received' => $who_received,
+                'status' => $statusPetition,
+                'date_received' => $date_received
+            ]);
+
+        if($x && $y){
+            return 1;
+        }else{
+            return 0;
+        }
     }
 
     /**

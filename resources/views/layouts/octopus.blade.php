@@ -51,7 +51,7 @@
     <!-- Theme Custom CSS -->
     <link rel="stylesheet" href="{{asset('octopus/assets/stylesheets/theme-custom.c')}}ss">
         
-        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Head Libs -->
     <script src="{{asset('octopus/assets/vendor/modernizr/modernizr.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script>
@@ -767,10 +767,7 @@
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="{{route('solicitudes')}}">Nuevas</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('completadas')}}">Completadas</a>
+                                                <a href="{{route('completadas')}}">Nuevas</a>
                                             </li>
                                         </ul>
                                     </li>
