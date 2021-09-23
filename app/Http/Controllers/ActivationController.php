@@ -64,7 +64,28 @@ class ActivationController extends Controller
         return view('activations.index',$data);
     }
 
-    public function create(){
+    public function create(Request $request){
+        if(isset($request['from'])){
+            $data['name'] = $request->get('name');
+            $data['lastname'] = $request->get('lastname');
+            $data['rfc'] = $request->get('rfc');
+            $data['date_born'] = $request->get('date_born');
+            $data['address'] = $request->get('address');
+            $data['email'] = $request->get('email');
+            $data['ine_code'] = $request->get('ine_code');
+            $data['cellphone'] = $request->get('cellphone');
+            $data['petition'] = $request->get('petition');
+        }else{
+            $data['name'] = '';
+            $data['lastname'] = '';
+            $data['rfc'] = '';
+            $data['date_born'] = '';
+            $data['address'] = '';
+            $data['email'] = '';
+            $data['ine_code'] = '';
+            $data['cellphone'] = '';
+            $data['petition'] = 0;
+        }
         $data['packs'] = Pack::all()->where('status','activo');
         $data['radiobases'] = Radiobase::all();
         // $current_role = auth()->user()->role_id;
@@ -112,8 +133,9 @@ class ActivationController extends Controller
         $email_not = $request->get('email_not');
         $activate_bool = $request->get('activate_bool');
         $status = $request->get('statusActivation');
+        $petition = $request->get('petition');
         
-        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate');
+        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate','petition');
         
         $number = Number::where('icc_id',$icc_id)->where('MSISDN',$msisdn)->first();
         $number_id = $number->id;
@@ -270,8 +292,18 @@ class ActivationController extends Controller
                 'lat_hbb' => $lat_hbb,
                 'lng_hbb' => $lng_hbb,
                 'payment_status' => 'pendiente',
-                'status' => $status
+                'status' => $status,
+                'petition_id' => $petition
             ];
+
+            if($petition == 1){
+                $date = date('Y-m-d H:i:s');
+                DB::table('petitions')->where('id',$petition)->update([
+                    'status' => 'activado',
+                    'who_attended' => $user_id,
+                    'date_activated' => $date
+                ]);
+            }
 
             Activation::insert($dataActivation);
             $activationID = Activation::latest('id')->first();
