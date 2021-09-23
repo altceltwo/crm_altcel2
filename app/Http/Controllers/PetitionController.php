@@ -90,7 +90,7 @@ class PetitionController extends Controller
                                   ->orwhere('petitions.status', '=', 'activado')
                                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
                                   ->get();
-        }elseif ($currentRol == 4) {
+        }elseif ($currentRol == 5) {
             $x = DB::table('petitions')
             ->join('users', 'users.id', '=', 'petitions.sender')
             ->where('petitions.status', '=', 'activado')
@@ -161,7 +161,7 @@ class PetitionController extends Controller
     }
 
     public function activationsFinance(){
-        
+
     }
 
     public function activationOperaciones(Request $request){
