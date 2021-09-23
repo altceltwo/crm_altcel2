@@ -66,6 +66,7 @@ return array(
     'App\\Packsdealer' => $baseDir . '/app/Packsdealer.php',
     'App\\Packspolitic' => $baseDir . '/app/Packspolitic.php',
     'App\\Pay' => $baseDir . '/app/Pay.php',
+    'App\\Petition' => $baseDir . '/app/Petition.php',
     'App\\Politic' => $baseDir . '/app/Politic.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\Providers\\AuthServiceProvider' => $baseDir . '/app/Providers/AuthServiceProvider.php',

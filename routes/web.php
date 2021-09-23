@@ -180,3 +180,8 @@ Route::get('/cortes/{id}', 'AdminController@consulta')->name('cortes.get');
 Route::post('consultaCortes', 'AdminController@consultaCortes')->name('consulta.post');
 Route::post('updateStatusCortes', 'AdminController@statusCortes')->name('status.update');
 Route::post('payAll','AdminController@payAll')->name('payAll');
+
+//petitions
+Route::get('solicitudes', 'PetitionController@index')->name('solicitudes');
+Route::get('completadas','PetitionController@show')->name('completadas');
+Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');

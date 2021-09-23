@@ -519,6 +519,20 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Solicitudes</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('solicitudes')}}">Nuevas</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('completadas')}}">Completadas</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 @elseif(Auth::user()->role_id == 2)
                                     <li class="nav-parent">
                                         <a>
