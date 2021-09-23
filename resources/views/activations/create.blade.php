@@ -91,6 +91,7 @@
                                         <select multiple class="form-control" id="clients_options_altan">
                                         </select>
                                     </div>
+                                    <input type="hidden" name="petition_id" id="petition_id" value="{{$petition}}">
                                     <div class="col-md-12">
                                         <h3>Contacto</h3>
                                         <div class="checkbox">
@@ -108,28 +109,28 @@
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-user"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="Nombre" id="name" name="name">
+                                                    <input class="form-control" type="text" placeholder="Nombre" id="name" name="name" value="{{$name}}">
                                                 </div>
 
                                                 <div class="input-group input-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-user"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="Apellido" id="lastname" name="lastname">
+                                                    <input class="form-control" type="text" placeholder="Apellido" id="lastname" name="lastname" value="{{$lastname}}">
                                                 </div>
 
                                                 <div class="input-group finput-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-user"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="RFC" id="rfc" name="rfc">
+                                                    <input class="form-control" type="text" placeholder="RFC" id="rfc" name="rfc" value="{{$rfc}}">
                                                 </div>
 
                                                 <div class="input-group input-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-calendar"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="date" id="date_born" name="date_born">
+                                                    <input class="form-control" type="date" id="date_born" name="date_born" value="{{$date_born}}">
                                                 </div>
                                             </section>
                                         </div>
@@ -142,28 +143,28 @@
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-home"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="Dirección" id="address" name="address">
+                                                    <input class="form-control" type="text" placeholder="Dirección" id="address" name="address" value="{{$address}}">
                                                 </div>
 
                                                 <div class="input-group input-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-envelope"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="email" placeholder="Email" id="email" name="email">
+                                                    <input class="form-control" type="email" placeholder="Email" id="email" name="email" value="{{$email}}">
                                                 </div>
 
                                                 <div class="input-group input-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-user"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="Código INE" id="ine_code" name="ine_code">
+                                                    <input class="form-control" type="text" placeholder="Código INE" id="ine_code" name="ine_code" value="{{$ine_code}}">
                                                 </div>
 
                                                 <div class="input-group input-group-icon">
                                                     <span class="input-group-addon">
                                                         <span class="icon"><i class="fa fa-phone"></i></span>
                                                     </span>
-                                                    <input class="form-control" type="text" placeholder="Teléfono Contacto" id="cellphone" name="celphone" maxlength="10">
+                                                    <input class="form-control" type="text" placeholder="Teléfono Contacto" id="cellphone" name="celphone" maxlength="10" value="{{$cellphone}}">
                                                 </div>
                                             </section>
                                         </div>
@@ -1032,7 +1033,12 @@
         let email_not = 0;
         let activate = 0;
         let statusActivation = 'activated';
+        let petition = $('#petition_id').val();
         // console.log(name+' - '+lastname+' - '+address+' - '+email+' - '+ine_code+' - '+imei+' - '+offer+' - '+rate);
+
+        if(petition == 0){
+            petition = '';
+        }
 
         if(scheduleDateFirst.length == 0 || /^\s+$/.test(scheduleDateFirst)){
             scheduleDate = '';
@@ -1215,7 +1221,8 @@
                         email_not: email_not,
                         activate_bool: activate_bool,
                         scheduleDate:scheduleDate,
-                        statusActivation:statusActivation
+                        statusActivation:statusActivation,
+                        petition:petition
                         },
                     success: function(data){
                         if(data == 1){
@@ -1227,6 +1234,7 @@
                                 timer: 1500
                             });
                             $('#send').attr('disabled',false);
+                            setTimeout(function(){ location.href = "{{route('activations.create')}}"; }, 1500);
                         }else if(data == 0){
                             Swal.fire({
                                 icon: 'error',

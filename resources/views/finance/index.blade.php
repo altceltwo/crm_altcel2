@@ -15,6 +15,73 @@
     </div>
 </header>
 <input type="hidden" id="userConsigned" value="{{auth()->user()->id}}">
+<div class="panel-body mb-lg pr-xl pl-xl">
+    <div class="row">
+        <section class="panel panel-featured-left panel-featured-info col-md-4">
+            <div class="panel-body">
+                <div class="widget-summary widget-summary">
+                    <div class="widget-summary-col widget-summary-col-icon">
+                        <div class="summary-icon bg-info">
+                            <i class="fa fa-usd"></i>
+                        </div>
+                    </div>
+                    <div class="widget-summary-col">
+                        <div class="summary">
+                            <h4 class="title">Recargas</h4>
+                            <div class="info">
+                                <strong class="amount">${{number_format($purchasesTotal,2)}}</strong>
+                                <span class="text-primary">( {{$purchasesCount}} recargas )</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="panel panel-featured-left panel-featured-warning col-md-4">
+            <div class="panel-body">
+                <div class="widget-summary widget-summary">
+                    <div class="widget-summary-col widget-summary-col-icon">
+                        <div class="summary-icon bg-warning">
+                            <i class="fa fa-usd"></i>
+                        </div>
+                    </div>
+                    <div class="widget-summary-col">
+                        <div class="summary">
+                            <h4 class="title">Cambios de Plan</h4>
+                            <div class="info">
+                                <strong class="amount">${{number_format($changesTotal,2)}}</strong>
+                                <span class="text-primary">( {{$changesCount}} cambios )</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="panel panel-featured-left panel-featured-success col-md-4">
+            <div class="panel-body">
+                <div class="widget-summary widget-summary">
+                    <div class="widget-summary-col widget-summary-col-icon">
+                        <div class="summary-icon bg-success">
+                            <i class="fa fa-usd"></i>
+                        </div>
+                    </div>
+                    <div class="widget-summary-col">
+                        <div class="summary">
+                            <h4 class="title">Mensualidades</h4>
+                            <div class="info">
+                                <strong class="amount">${{number_format($paysTotal,2)}}</strong>
+                                <span class="text-primary">( {{$paysCount}} mensualidades )</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 <section class="panel">
     <header class="panel-heading">
         <div class="panel-actions">
@@ -28,11 +95,13 @@
             <thead>
                 <tr>
                     <th>Monto</th>
-                    <th>Promotor</th>
+                    <th>Cobrador</th>
+                    <th>Cliente</th>
                     <th>MSISDN</th>
                     <th>Plan</th>
                     <th>Status</th>
                     <th>Razón</th>
+                    <th>Fecha</th>
                     <th>Tipo</th>
                     <th>Cobrar</th>
                     <th>Ver</th>
@@ -41,42 +110,48 @@
                 <tbody>
                     @foreach($changes as $change)
                         <tr>
-                            <td>${{number_format($change->amount,2)}}</td>
-                            <td>{{$change->client}} {{$change->lastname}}</td>
-                            <td>{{$change->MSISDN}}</td>
-                            <td>{{$change->name_product}}</td>
-                            <td>{{$change->status}}</td>
-                            <td>{{$change->reason}}</td>
+                            <td>${{number_format($change['amount'],2)}}</td>
+                            <td>{{$change['user']}}</td>
+                            <td>{{$change['client']}}</td>
+                            <td>{{$change['MSISDN']}}</td>
+                            <td>{{$change['name_rate']}}</td>
+                            <td>{{$change['status']}}</td>
+                            <td>{{$change['reason']}}</td>
+                            <td>{{$change['date']}}</td>
                             <td><span class="badge label-warning">Cambio de Plan</span></td>
-                            <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="changes" data-id="{{$change->id}}">Cobrar</button></td>
-                            <td><a href="{{url('/cortes/'.$change->who_did_id)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
+                            <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="changes" data-id="{{$change['id']}}">Cobrar</button></td>
+                            <td><a href="{{url('/cortes/'.$change['who_did_id'])}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
                         </tr>
                 @endforeach     
                 @foreach($purchases as $purchase)
                     <tr>
-                        <td>${{number_format($purchase->amount,2)}}</td>
-                        <td>{{$purchase->client}} {{$purchase->lastname}}</td>
-                        <td>{{$purchase->MSISDN}}</td>
-                        <td>{{$purchase->name_product}}</td>
-                        <td>{{$purchase->status}}</td>
-                        <td>{{$purchase->reason}}</td>
+                        <td>${{number_format($purchase['amount'],2)}}</td>
+                        <td>{{$purchase['user']}}</td>
+                        <td>{{$purchase['client']}}</td>
+                        <td>{{$purchase['MSISDN']}}</td>
+                        <td>{{$purchase['name_rate']}}</td>
+                        <td>{{$purchase['status']}}</td>
+                        <td>{{$purchase['reason']}}</td>
+                        <td>{{$purchase['date']}}</td>
                         <td><span class="badge label-info">Recarga</span></td>
-                        <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="purchases" data-id="{{$purchase->id}}">Cobrar</button></td>
-                        <td><a href="{{url('/cortes/'.$purchase->who_did_id)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
+                        <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="purchases" data-id="{{$purchase['id']}}">Cobrar</button></td>
+                        <td><a href="{{url('/cortes/'.$purchase['who_did_id'])}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
                     </tr>
                 @endforeach    
             
                 @foreach($pays as $pay)
                     <tr>
-                        <td>${{number_format($pay->amount,2)}}</td>
-                        <td>{{$pay->client}} {{$pay->lastname}}</td>
-                        <td>{{$pay->MSISDN}}</td>
-                        <td>{{$pay->name_product}}</td>
-                        <td>{{$pay->status}}</td>
+                        <td>${{number_format($pay['amount'],2)}}</td>
+                        <td>{{$pay['user']}}</td>
+                        <td>{{$pay['client']}}</td>
+                        <td>{{$pay['MSISDN']}}</td>
+                        <td>{{$pay['name_rate']}}</td>
+                        <td>{{$pay['status']}}</td>
                         <td>Cobro</td>
+                        <td>{{$pay['date']}}</td>
                         <td><span class="badge label-success">Mensualidad</span></td>
-                        <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="monthly" data-id="{{$pay->id}}">Cobrar</button></td>
-                        <td><a href="{{url('/cortes/'.$pay->who_did_id)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
+                        <td><button class="btn btn-warning cobrar" data-status="pendiente" data-type="monthly" data-id="{{$pay['id']}}">Cobrar</button></td>
+                        <td><a href="{{url('/cortes/'.$pay['who_did_id'])}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-eye"></i></a></td>
                     </tr>
                 @endforeach    
             </tbody>

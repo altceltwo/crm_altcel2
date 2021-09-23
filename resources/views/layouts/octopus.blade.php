@@ -488,9 +488,9 @@
                                                 </ul>
                                             </li>
 
-                                            <li >
+                                            <!-- <li >
                                                 <a href="{{route('dealer.index')}}">Distribuidores</a>
-                                            </li>
+                                            </li> -->
                                         </ul>
                                     </li>
 
@@ -505,17 +505,6 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('schedules.index')}}">Administración</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-dollar" aria-hidden="true"></i>
-                                            <span>Finanzas</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('indexConcesiones')}}">Cortes</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -751,23 +740,12 @@
                                             <li>
                                                 <a href="{{route('webhook-payments-pending.get')}}">Vencidos</a>
                                             </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-dollar" aria-hidden="true"></i>
-                                            <span>Finanzas</span>
-                                        </a>
-                                        <ul class="nav nav-children">
                                             <li>
-                                            <a href="{{route('indexConcesiones')}}">Cortes</a>
+                                                <a href="{{route('indexConcesiones')}}">Por Concesionar</a>
                                             </li>
                                         </ul>
-                                        <a href="{{route('dealer.index')}}">
-                                            <i class="fa fa-money" aria-hidden="true"></i>
-                                            <span>Distribuidores</span>
-                                        </a>
                                     </li>
+                                    
                                 @elseif(Auth::user()->role_id == 6)
                                     <li class="nav-parent">
                                         <a>
