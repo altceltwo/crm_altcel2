@@ -296,7 +296,7 @@ class ActivationController extends Controller
                 'petition_id' => $petition
             ];
 
-            if($petition == 1){
+            if($petition != 0){
                 $date = date('Y-m-d H:i:s');
                 DB::table('petitions')->where('id',$petition)->update([
                     'status' => 'activado',
