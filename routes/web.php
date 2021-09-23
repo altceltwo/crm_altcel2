@@ -29,6 +29,9 @@ Route::resource('facturacion', 'InvoiceController')->middleware('auth');
 Route::resource('assignment', 'AssignmentController')->middleware('auth');
 Route::resource('dealer', 'DealerController')->middleware('auth');
 
+// Petitions
+// Route::post('/petition');
+
 //Devices
 Route::resource('devices', 'DeviceController')->middleware('auth');
 
@@ -118,7 +121,7 @@ Route::get('/get-pack-ethernet','AdminController@getPackEthernet')->name('get-pa
 Route::post('/update-pack-ethernet/{pack_id}','AdminController@updatePackEthernet')->name('update-pack-ethernet.get');
 
 // Politics Routes
-Route::get('/create-politic','AdminController@createPoliticRate')->name('politicRate.create')->middleware('auth');;
+Route::get('/create-politic','AdminController@createPoliticRate')->name('politicRate.create')->middleware('auth');
 Route::post('/create-politic','AdminController@insertPoliticRate')->name('politicRate.create');
 Route::get('/politics/delete/{politic_id}','AdminController@destroy')->name('politic.delete');
 Route::get('/politics/edit/{politic_id}','AdminController@getPolitic')->name('politic.edit');
@@ -181,8 +184,12 @@ Route::post('consultaCortes', 'AdminController@consultaCortes')->name('consulta.
 Route::post('updateStatusCortes', 'AdminController@statusCortes')->name('status.update');
 Route::post('payAll','AdminController@payAll')->name('payAll');
 
-//petitions
+// Petitions
 Route::get('solicitudes', 'PetitionController@index')->name('solicitudes');
 Route::get('completadas','PetitionController@show')->name('completadas');
 Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
 Route::get('completadasFinanzas','PetitionController@recibidosFinance')->name('recibidos');
+Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth');
+Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
+Route::post('collect-money', 'PetitionController@collectMoney')->name('collectMoney');
+Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCollected');
