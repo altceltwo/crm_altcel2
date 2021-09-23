@@ -51,8 +51,8 @@
                     <td>{{$completado['client']}}</td>
                     <td>{{$completado['product']}}</td>
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
-                    <td>${{number_format($completado['cobroPlan'],2)}}</td>
                     <td>${{number_format($completado['cobroCpe'],2)}}</td>
+                    <td>${{number_format($completado['cobroPlan'],2)}}</td>
                     <td>{{$completado['fecha_solicitud']}}</td>
                     <td>{{$completado['activadoPor']}}</td>
                     <td>{{$completado['date_activated']}}</td>
