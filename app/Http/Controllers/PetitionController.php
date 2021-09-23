@@ -160,7 +160,9 @@ class PetitionController extends Controller
         return view('petitions/completadosOperaciones', $data);
     }
 
-    public function activationsFinance(){}
+    public function activationsFinance(){
+        
+    }
 
     public function activationOperaciones(Request $request){
         $id_client = $request['idClient'];
