@@ -510,17 +510,6 @@
                                     </li>
                                     <li class="nav-parent">
                                         <a>
-                                            <i class="fa fa-dollar" aria-hidden="true"></i>
-                                            <span>Finanzas</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('indexConcesiones')}}">Cortes</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
                                             <i class="fa fa-paper-plane" aria-hidden="true"></i>
                                             <span>Solicitudes</span>
                                         </a>
