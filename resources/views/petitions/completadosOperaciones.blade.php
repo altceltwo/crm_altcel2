@@ -1,7 +1,7 @@
 @extends('layouts.octopus')
 @section('content')
 <header class="page-header">
-    <h2>Administración de Pagos</h2>
+    <h2>Administración de Solicitudes</h2>
     <div class="right-wrapper pull-right">
         <ol class="breadcrumbs">
             <li>
@@ -48,8 +48,8 @@
                     <td>{{$completado['client']}}</td>
                     <td>{{$completado['product']}}</td>
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
-                    <td>{{$completado['cobroPlan']}}</td>
                     <td>{{$completado['cobroCpe']}}</td>
+                    <td>{{$completado['cobroPlan']}}</td>
                     <td>{{$completado['fecha_solicitud']}}</td>
                     <td>{{$completado['activadoPor']}}</td>
                     <td>{{$completado['date_activated']}}</td>
@@ -62,8 +62,4 @@
         </table>
     </div>
 </section>
-<script>
-
-</script>
-
 @endsection

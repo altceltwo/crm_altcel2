@@ -766,11 +766,11 @@
                                             <span>Solicitudes</span>
                                         </a>
                                         <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('solicitudes')}}">Nuevas</a>
-                                            </li>
-                                            <li>
+                                            <!-- <li>
                                                 <a href="{{route('completadas')}}">Completadas</a>
+                                            </li> -->
+                                            <li>
+                                                <a href="{{route('recibidos')}}">Completadas</a>
                                             </li>
                                         </ul>
                                     </li>

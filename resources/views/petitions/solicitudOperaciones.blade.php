@@ -1,7 +1,7 @@
 @extends('layouts.octopus')
 @section('content')
 <header class="page-header">
-    <h2>Administración de Pagos</h2>
+    <h2>Administración de Solicitudes</h2>
     <div class="right-wrapper pull-right">
         <ol class="breadcrumbs">
             <li>
@@ -59,7 +59,6 @@
         let idClient = $(this).attr('data-client');
         let id_petition = $(this).attr('data-id');
         let route = "{{route('activations.create')}}"
-        // console.log(idClient);
         $.ajax({
             url:"{{route('activation.get')}}",
             method:'GET',
@@ -82,5 +81,4 @@
         })
     })
 </script>
-
 @endsection

@@ -10,18 +10,13 @@ use App\User;
 
 class PetitionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $x = DB::table('petitions')
-                              ->join('users', 'users.id', '=', 'petitions.sender')
-                              ->where('petitions.status', '=', 'solicitud')
-                              ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
-                              ->get();
+               ->join('users', 'users.id', '=', 'petitions.sender')
+               ->where('petitions.status', '=', 'solicitud')
+               ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+               ->get();
         // return $x;
         $data['solicitudes'] = [];
         foreach($x as $x){
@@ -85,17 +80,17 @@ class PetitionController extends Controller
         $currentRol = auth()->user()->role_id;
         if ($currentRol == 1) {
             $x = DB::table('petitions')
-                                  ->join('users', 'users.id', '=', 'petitions.sender')
-                                  ->where('petitions.status', '=', 'recibido')
-                                  ->orwhere('petitions.status', '=', 'activado')
-                                  ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
-                                  ->get();
+                   ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->where('petitions.status', '=', 'recibido')
+                   ->orwhere('petitions.status', '=', 'activado')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->get();
         }elseif ($currentRol == 5) {
             $x = DB::table('petitions')
-            ->join('users', 'users.id', '=', 'petitions.sender')
-            ->where('petitions.status', '=', 'activado')
-            ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
-            ->get();
+                   ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->where('petitions.status', '=', 'activado')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->get();
         }
         // return $x;
         $data['completadas'] = [];
@@ -107,8 +102,8 @@ class PetitionController extends Controller
             $comment = $y->comment;
             $product = $y->product;
             $client_id = $y->client_id;
-            $cobroCpe = $y->collected_rate;
-            $cobroPlan = $y->collected_device;
+            $cobroCpe = $y->collected_device;
+            $cobroPlan = $y->collected_rate;
             $date_sent = $y->date_sent;
             $who_attended = $y->who_attended;
             $date_activated = $y->date_activated;
@@ -160,8 +155,95 @@ class PetitionController extends Controller
         return view('petitions/completadosOperaciones', $data);
     }
 
-    public function activationsFinance(){
+    public function recibidosFinance(Request $request){
+        
+        if(isset($request['start']) && isset($request['end'])){
+            if($request['start'] != null && $request['end'] != null){
+                $year =  substr($request['start'],6,4);
+                $month = substr($request['start'],0,2);
+                $day = substr($request['start'],3,2);
+                $date_init = $year.'-'.$month.'-'.$day.' 00:00:00';
 
+                $year =  substr($request['end'],6,4);
+                $month = substr($request['end'],0,2);
+                $day = substr($request['end'],3,2);
+                $date_final = $year.'-'.$month.'-'.$day.' 23:59:59';
+
+                // return $date_init.' y '.$date_final;
+                $x = DB::table('petitions')
+                        ->join('users', 'users.id', '=', 'petitions.sender')
+                        ->where('petitions.status', '=', 'recibido')
+                        ->whereBetween('petitions.date_received', [$date_init, $date_final])
+                        ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                        ->get();
+
+                $data['fecha'] = 'Mostrando registros en el rango de '.substr($date_init,0,-8).' a '.substr($date_final,0,-8);
+                // $data['fechaFinal'] = $;
+            }
+        }else{
+            $x = DB::table('petitions')
+                   ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->where('petitions.status', '=', 'recibido')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->get();
+
+            $data['fecha'] = 'Mostrando todos los registros';
+        }
+        $data['totalcpe'] = 0;
+        $data['totalplan'] = 0;
+        $data['completadas'] = [];
+        foreach($x as $y){
+            $id = $y->id;
+            $id_sender = $y->sender;
+            $name_sender = $y->name_sender.' '.$y->lastname_sender;
+            $status = $y->status;
+            $comment = $y->comment;
+            $product = $y->product;
+            $client_id = $y->client_id;
+            $cobroCpe = $y->collected_device;
+            $cobroPlan = $y->collected_rate;
+            $date_sent = $y->date_sent;
+            $who_attended = $y->who_attended;
+            $date_activated = $y->date_activated;
+            $recibido = $y->who_received;
+            $fechaRecibido = $y->date_received;
+
+            $client = User::where('id', $client_id)->select('name', 'lastname')->get();
+            $attended = User::where('id', $who_attended)->select('name', 'lastname')->get();
+
+            if ($status == 'recibido') {
+                $recibido1 = User::where('id', $recibido)->select('name', 'lastname')->get();
+                $recibido = $recibido1[0]->name.' '.$recibido1[0]->lastname;
+                $badgeStatus = 'success';
+            }
+
+            if ($fechaRecibido != null) {
+                $badgeFecha = 'success';
+            }
+
+            array_push($data['completadas'], array(
+                'id'=>$id,
+                'id_sendt'=>$id_sender,
+                'id_client'=>$client_id,
+                'client'=>$client[0]->name.' '.$client[0]->lastname,
+                'product'=>$product,
+                'status'=>$status,
+                'cobroCpe'=> $cobroCpe,
+                'cobroPlan'=>$cobroPlan,
+                'fecha_solicitud'=>$date_sent,
+                'activadoPor'=>$attended[0]->name.' '.$attended[0]->lastname,
+                'date_activated'=>$date_activated,
+                'recibido'=>$recibido,
+                'dateRecibido'=>$fechaRecibido,
+                'comment'=>$comment,
+                'badgeFecha'=>$badgeFecha,
+                'badgeStatus'=>$badgeStatus
+            ));
+            $data['totalcpe']+= $y->collected_device;
+            $data['totalplan'] = $y->collected_rate;
+        }
+        // return $data;
+        return view('petitions/completadosFinanzas', $data);
     }
 
     public function activationOperaciones(Request $request){
@@ -175,16 +257,6 @@ class PetitionController extends Controller
         return $data;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Petition  $petition
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Petition $petition)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.

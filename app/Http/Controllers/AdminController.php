@@ -259,14 +259,6 @@ class AdminController extends Controller
         $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
         $dateEnd = $dateEnd.' 23:59:59';
 
-        // //cambio
-
-        // if ($type == 'changes') {
-        //     $resp['consultas'] = Change::where('who_did_id', $id)->where('status', $status)->where('reason', $bonificacion)->whereBetween('date',[$dateStart,$dateEnd])->get();
-        // }//compra
-        // else if ($type == 'purchases') {
-        //     $resp['consultas'] = Purchase::where('who_did_id', $id)->where('status', $status)->where('reason', $bonificacion)->whereBetween('date',[$dateStart,$dateEnd])->get();
-        // }
         if ($type == 'purchases') {
             $resp['consultas'] = DB::table('purchases')
                                     ->join('numbers','numbers.id', '=', 'purchases.number_id')

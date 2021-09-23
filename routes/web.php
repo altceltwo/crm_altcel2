@@ -185,3 +185,4 @@ Route::post('payAll','AdminController@payAll')->name('payAll');
 Route::get('solicitudes', 'PetitionController@index')->name('solicitudes');
 Route::get('completadas','PetitionController@show')->name('completadas');
 Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
+Route::get('completadasFinanzas','PetitionController@recibidosFinance')->name('recibidos');
