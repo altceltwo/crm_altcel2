@@ -82,12 +82,21 @@ class PetitionController extends Controller
      */
     public function show(Petition $petition)
     {
-        $x = DB::table('petitions')
-                              ->join('users', 'users.id', '=', 'petitions.sender')
-                              ->where('petitions.status', '=', 'recibido')
-                              ->orwhere('petitions.status', '=', 'activado')
-                              ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
-                              ->get();
+        $currentRol = auth()->user()->role_id;
+        if ($currentRol == 1) {
+            $x = DB::table('petitions')
+                                  ->join('users', 'users.id', '=', 'petitions.sender')
+                                  ->where('petitions.status', '=', 'recibido')
+                                  ->orwhere('petitions.status', '=', 'activado')
+                                  ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                                  ->get();
+        }elseif ($currentRol == 4) {
+            $x = DB::table('petitions')
+            ->join('users', 'users.id', '=', 'petitions.sender')
+            ->where('petitions.status', '=', 'activado')
+            ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+            ->get();
+        }
         // return $x;
         $data['completadas'] = [];
         foreach($x as $y){
@@ -127,7 +136,6 @@ class PetitionController extends Controller
                 $badgeFecha = 'warning';
             }
 
-
             array_push($data['completadas'], array(
                 'id'=>$id,
                 'id_sendt'=>$id_sender,
@@ -151,6 +159,8 @@ class PetitionController extends Controller
         
         return view('petitions/completadosOperaciones', $data);
     }
+
+    public function activationsFinance(){}
 
     public function activationOperaciones(Request $request){
         $id_client = $request['idClient'];

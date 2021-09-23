@@ -40,7 +40,6 @@
                 <th>Recibido Por</th>
                 <th>Fecha Recibido</th>
                 <th>Comentario</th>
-                <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
