@@ -245,10 +245,10 @@ class PetitionController extends Controller
                 'badgeFecha'=>$badgeFecha,
                 'badgeStatus'=>$badgeStatus
             ));
-            $data['totalcpe']+= $y->collected_device;
-            $data['totalplan'] = $y->collected_rate;
+            $data['totalcpe'] += $y->collected_device;
+            $data['totalplan'] += $y->collected_rate;
         }
-        // return $data;
+
         return view('petitions/completadosFinanzas', $data);
     }
 
@@ -267,6 +267,7 @@ class PetitionController extends Controller
         $collectedCPE = $request->post('collectedCPE');
         $collectedRate = $request->post('collectedRate');
         $petition_id = $request->post('petition_id');
+        // return $request;
 
         $data = DB::table('petitions')
                    ->join('activations','activations.petition_id','=','petitions.id')

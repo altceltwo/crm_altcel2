@@ -159,7 +159,7 @@
     $('.collect').click(function(){
         let id = $(this).data('petition-id');
         let collected_rate = $(this).data('collected-rate');
-        let collected_cpe = $(this).data('collected-rate');
+        let collected_cpe = $(this).data('collected-cpe');
         let token = $('meta[name="csrf-token"]').attr('content');
         
          $.ajax({
@@ -176,6 +176,7 @@
                 });
              },
              success: function(response){
+                 
                  $('#amount_device_info').html('Monto esperado en CPE: $'+parseFloat(response.amount_device).toFixed(2));
                  $('#amount_rate_info').html('Monto esperado en Plan Activación: $'+parseFloat(response.amount_rate).toFixed(2));
                  $('#collected_cpe_info').html('Monto recaudado en CPE: $'+parseFloat(collected_cpe).toFixed(2));
