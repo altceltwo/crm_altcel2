@@ -1,31 +1,33 @@
 <?php
 
 namespace App\Http\Controllers;
-use Http;
+
 use DB;
+use App\Pay;
+use App\Pack;
+use App\Rate;
+use App\User;
 use DateTime;
+use App\Offer;
+use App\Client;
+use App\Device;
+use App\Number;
+use App\Petition;
+use App\Schedule;
+use App\Radiobase;
 use App\Activation;
 use App\Assignment;
-use App\Client;
 use App\Clientsson;
-use App\Number;
-use App\Device;
-use App\Offer;
-use App\User;
-use App\Simexternal;
-use App\Instalation;
-use App\Pack;
-use App\Pay;
+use App\GuzzleHttp;
 use App\Ethernetpay;
-use App\Radiobase;
-use App\Rate;
-use App\Schedule;
+use App\Instalation;
+use App\Simexternal;
+use App\Mail\SendAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\SendAccess;
-use App\GuzzleHttp;
 
 class ActivationController extends Controller
 {
@@ -50,9 +52,8 @@ class ActivationController extends Controller
                 $date_init = date('Y-m-d', $date_init);
             }
         }else{
-            $date_final = date('Y-m-d');
-            $date_init = strtotime('-30 days', strtotime($date_final));
-            $date_init = date('Y-m-d', $date_init);
+            $date_final = 'none';
+            $date_init = 'none';
         }
 
         $data = ActivationController::indexFilter($date_init,$date_final);
@@ -134,8 +135,9 @@ class ActivationController extends Controller
         $activate_bool = $request->get('activate_bool');
         $status = $request->get('statusActivation');
         $petition = $request->get('petition');
+        $promo_boolean = $request->get('promo_boolean');
         
-        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate','petition');
+        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate','petition','promo_boolean');
         
         $number = Number::where('icc_id',$icc_id)->where('MSISDN',$msisdn)->first();
         $number_id = $number->id;
@@ -308,6 +310,14 @@ class ActivationController extends Controller
             Activation::insert($dataActivation);
             $activationID = Activation::latest('id')->first();
             $activationID = $activationID->id;
+
+            if($promo_boolean == 1){
+                $dataRate = Rate::where('id',$rate_id)->first();
+                $promo_quantity = $dataRate->promo_quantity;
+                $promo_quantity = $promo_quantity-1;
+
+                Rate::where('id',$rate_id)->update(['promo_quantity'=>$promo_quantity]);
+            }
 
             if($sim_altcel != 'nothing'){
                 Simexternal::insert([
@@ -626,7 +636,93 @@ class ActivationController extends Controller
     }
 
     public function indexFilter($date_init,$date_final){
-        $data['clients'] = DB::table('activations')
+        if($date_init == 'none'){
+
+            $data['clients'] = DB::table('activations')
+                              ->join('users','users.id','=','activations.client_id')
+                              ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
+                              ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
+                              ->leftJoin('pays','pays.activation_id','=','activations.id')
+                              ->join('rates', 'rates.id', '=', 'activations.rate_id')
+                              ->join('clients','activations.client_id','=','user_id')
+                              ->select('activations.*', 'users.name','users.lastname',
+                              'numbers.MSISDN','numbers.producto AS pack_service', 
+                              'devices.description AS device_desc', 'users.name as promotor',
+                              'rates.name AS name_rate','clients.address as address',
+                              'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
+                              'pays.status AS payment_status','pays.date_pay AS payment_date')
+                              ->get();
+
+            $data['clients2'] = DB::table('activations')
+                                ->join('users','users.id','=','activations.client_id')
+                                ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
+                                ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
+                                ->leftJoin('pays','pays.activation_id','=','activations.id')
+                                ->join('rates', 'rates.id', '=', 'activations.rate_id')
+                                ->join('clients','activations.client_id','=','user_id')
+                                ->where('pays.id',null)
+                                ->select('activations.*', 'users.name','users.lastname',
+                                'numbers.MSISDN','numbers.producto AS pack_service', 
+                                'devices.description AS device_desc', 'users.name as promotor',
+                                'rates.name AS name_rate','clients.address as address',
+                                'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
+                                'pays.status AS payment_status','pays.date_pay AS payment_date')
+                                ->get();
+
+            $data['instalations'] = DB::table('instalations')
+                                   ->join('packs','packs.id','=','instalations.pack_id')
+                                   ->join('radiobases','radiobases.id','=','instalations.radiobase_id')
+                                   ->join('users','users.id','=','instalations.client_id')
+                                   ->join('clients','clients.user_id','=','users.id')
+                                   ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
+                                   ->where('service_name','Conecta')
+                                   ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
+                                   'radiobases.name as radiobase_name','users.name AS client_name',
+                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
+                                   'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
+                                   ->get();
+
+            $data['instalations2'] = DB::table('instalations')
+                                   ->join('packs','packs.id','=','instalations.pack_id')
+                                   ->join('radiobases','radiobases.id','=','instalations.radiobase_id')
+                                   ->join('users','users.id','=','instalations.client_id')
+                                   ->join('clients','clients.user_id','=','users.id')
+                                   ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
+                                   ->where('service_name','Conecta')
+                                   ->where('ethernetpays.id',null)
+                                   ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
+                                   'radiobases.name as radiobase_name','users.name AS client_name',
+                                   'users.lastname AS client_lastname','clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
+                                   'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
+                                   ->get();
+
+            $data['TELMEXinstalations'] = DB::table('instalations')
+                                   ->join('packs','packs.id','=','instalations.pack_id')
+                                   ->join('users','users.id','=','instalations.client_id')
+                                   ->join('clients','clients.user_id','=','users.id')
+                                   ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
+                                   ->where('service_name','Telmex')
+                                   ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
+                                   'users.name AS client_name','users.lastname AS client_lastname',
+                                   'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
+                                   'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
+                                   ->get();
+
+            $data['TELMEXinstalations2'] = DB::table('instalations')
+                                   ->join('packs','packs.id','=','instalations.pack_id')
+                                   ->join('users','users.id','=','instalations.client_id')
+                                   ->join('clients','clients.user_id','=','users.id')
+                                   ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
+                                   ->where('service_name','Telmex')
+                                   ->where('ethernetpays.id',null)
+                                   ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
+                                   'users.name AS client_name','users.lastname AS client_lastname',
+                                   'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
+                                   'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
+                                   ->get();
+
+        }else{
+            $data['clients'] = DB::table('activations')
                               ->join('users','users.id','=','activations.client_id')
                               ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
                               ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
@@ -642,22 +738,22 @@ class ActivationController extends Controller
                               'pays.status AS payment_status','pays.date_pay AS payment_date')
                               ->get();
 
-        $data['clients2'] = DB::table('activations')
-                              ->join('users','users.id','=','activations.client_id')
-                              ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
-                              ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
-                              ->leftJoin('pays','pays.activation_id','=','activations.id')
-                              ->join('rates', 'rates.id', '=', 'activations.rate_id')
-                              ->join('clients','activations.client_id','=','user_id')
-                              ->whereBetween('activations.date_activation',[$date_init,$date_final])
-                              ->where('pays.id',null)
-                              ->select('activations.*', 'users.name','users.lastname',
-                              'numbers.MSISDN','numbers.producto AS pack_service', 
-                              'devices.description AS device_desc', 'users.name as promotor',
-                              'rates.name AS name_rate','clients.address as address',
-                              'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
-                              'pays.status AS payment_status','pays.date_pay AS payment_date')
-                              ->get();
+            $data['clients2'] = DB::table('activations')
+                                ->join('users','users.id','=','activations.client_id')
+                                ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
+                                ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
+                                ->leftJoin('pays','pays.activation_id','=','activations.id')
+                                ->join('rates', 'rates.id', '=', 'activations.rate_id')
+                                ->join('clients','activations.client_id','=','user_id')
+                                ->whereBetween('activations.date_activation',[$date_init,$date_final])
+                                ->where('pays.id',null)
+                                ->select('activations.*', 'users.name','users.lastname',
+                                'numbers.MSISDN','numbers.producto AS pack_service', 
+                                'devices.description AS device_desc', 'users.name as promotor',
+                                'rates.name AS name_rate','clients.address as address',
+                                'clients.cellphone AS client_cellphone','pays.amount_received AS payment_amount',
+                                'pays.status AS payment_status','pays.date_pay AS payment_date')
+                                ->get();
 
             $data['instalations'] = DB::table('instalations')
                                    ->join('packs','packs.id','=','instalations.pack_id')
@@ -714,6 +810,8 @@ class ActivationController extends Controller
                                    'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
                                    'ethernetpays.status AS payment_status','ethernetpays.date_pay AS payment_date')
                                    ->get();
+        }
+        
         
         return $data;
     }
@@ -880,7 +978,9 @@ class ActivationController extends Controller
                            ->join('users','users.id','=','instalations.client_id')
                            ->join('packs','packs.id','=','instalations.pack_id')
                            ->where('instalations.id',$id)
-                           ->select('instalations.amount AS amount_pack','instalations.amount_install AS amount_install','users.name AS name','users.lastname AS lastname','packs.name AS pack_name','packs.service_name AS service',)
+                           ->select('instalations.amount AS amount_pack','instalations.amount_install AS amount_install',
+                           'users.name AS name','users.lastname AS lastname','packs.name AS pack_name','packs.service_name AS service',
+                           'instalations.received_amount AS received_amount','instalations.received_amount_install AS received_amount_install')
                            ->get();
             // $response = Instalation::where('id',$id)->first();
         }
@@ -888,17 +988,62 @@ class ActivationController extends Controller
     }
 
     public function setPaymentStatus(Request $request){
+        // return $request;
         $id = $request->get('id');
         $type = $request->get('type');
-        $request = $request->except('id','type');
-        $request['payment_status'] = 'completado';
+
+        $waited_amount_rate = $request->get('waited_amount_rate');
+        $waited_amount_device = $request->get('waited_amount_device');
+
+        $received_amount_rate = $request->get('received_amount_rate');
+        $received_amount_device = $request->get('received_amount_device');
+
+        $collected_amount_rate = $request->get('collected_amount_rate');
+        $collected_amount_device = $request->get('collected_amount_device');
+
+        $collected_amount_rate = $received_amount_rate+$collected_amount_rate;
+        $collected_amount_device = $received_amount_device+$collected_amount_device;
+
+        $statusPayment = 'pendiente';
+        $statusPetition = 'activado';
+
+        if(($collected_amount_rate >= $waited_amount_rate) && ($collected_amount_device >= $waited_amount_device)){
+            $statusPayment = 'completado';
+            $statusPetition = 'recibido';
+        }
+
+        // return response()->json(['new_amount_rate'=>$collected_amount_rate,'new_amount_device'=>$collected_amount_device]);
 
         if($type == 'activation'){
             // return $request;
-            $x = Activation::where('id',$id)->update($request);
+            $x = Activation::where('id',$id)->update([
+                'received_amount_rate' => $collected_amount_rate,
+                'received_amount_device' => $collected_amount_device,
+                'payment_status' => $statusPayment
+            ]);
+
+            $dataActivation = Activation::where('id',$id)->first();
+            $petition_id = $dataActivation->petition_id;
+
+            if($petition_id != null){
+                $current_id = auth()->user()->id;
+                $date_received = date('Y-m-d H:i:s');
+                Petition::where('id',$petition_id)->update([
+                    'collected_rate' => $collected_amount_rate,
+                    'collected_device' => $collected_amount_device,
+                    'status' => $statusPetition,
+                    'who_received' => $current_id,
+                    'date_received' => $date_received
+                ]);
+            }
+
         }else if($type == 'instalation'){
             // return $request;
-            $x = Instalation::where('id',$id)->update($request);
+            $x = Instalation::where('id',$id)->update([
+                'received_amount' => $collected_amount_rate,
+                'received_amount_install' => $collected_amount_device,
+                'payment_status' => $statusPayment
+            ]);
         }
         
         if($x){
@@ -906,5 +1051,186 @@ class ActivationController extends Controller
         }else{
             return 0;
         }
+    }
+
+    public function getDataMonthly(Request $request){
+        // FALTA EXTRAER EL PAGO
+        // QUEDA PENDIENTE CORROBORAR DE QUE MANERA SE VALIDA SI HABRÁ PAGO DE MENSUALIDAD O NO
+        
+        $act_inst_id = $request->get('id');
+        $type = $request->get('type');
+
+        if($type == 'activation'){
+            $dataMSISDN = DB::table('numbers')
+                         ->join('activations','activations.numbers_id','=','numbers.id')
+                         ->join('users','users.id','=','activations.client_id')
+                         ->join('clients','clients.user_id','=','users.id')
+                         ->where('activations.id',$act_inst_id)
+                         ->select('numbers.id AS number_id','activations.expire_date AS expire_date','activations.id AS activation_id',
+                         'users.name AS name_user','users.lastname AS lastname_user','users.email AS email_user','clients.cellphone AS cellphone_user',
+                         'activations.id AS activation_id')
+                         ->get();
+
+            $expire_date = $dataMSISDN[0]->expire_date;
+            $activation_id = $dataMSISDN[0]->activation_id;
+
+            $date_limit = strtotime('-1 days', strtotime($expire_date));
+            $date_limit = date('Y-m-d', $date_limit);
+
+            $date_beforeFiveDays = strtotime('-5 days', strtotime($date_limit));
+            $date_beforeFiveDays = date('Y-m-d', $date_beforeFiveDays);
+
+            $now = date('Y-m-d');
+            // return $now. ' . '.$date_beforeFiveDays;
+            $now = new DateTime($now);
+            $date_beforeFiveDays = new DateTime($date_beforeFiveDays);
+
+            $timeDiff = $now->diff($date_beforeFiveDays);
+            $paymentData = array();
+
+            
+
+            if($now >= $date_beforeFiveDays){
+                $payment = DB::table('pays')
+                              ->join('activations','activations.id','=','pays.activation_id')
+                              ->join('rates','rates.id','=','activations.rate_id')
+                              ->join('numbers','numbers.id','=','activations.numbers_id')
+                              ->where('pays.activation_id',$activation_id)
+                              ->where('pays.status','pendiente')
+                              ->select('pays.*','rates.name AS rate_name','numbers.MSISDN AS sim')
+                              ->orderBy('pays.date_pay','desc')
+                              ->limit(1)
+                              ->get();
+                if(sizeof($payment) == 0){
+                    $paymentData = array(
+                        'http_monthly_code' => 0
+                    );
+                }else{
+                    $paymentData = array(
+                        'payment_id' => $payment[0]->id,
+                        'amount' => $payment[0]->amount,
+                        'date_pay' => $payment[0]->date_pay,
+                        'date_pay_limit' => $payment[0]->date_pay_limit,
+                        'status' => $payment[0]->status,
+                        'rate_name' => $payment[0]->rate_name,
+                        'sim' => $payment[0]->sim,
+                        'http_monthly_code' => 1
+                    );
+                }
+                
+                return $paymentData;
+            }else{
+                $payment = DB::table('pays')
+                              ->join('activations','activations.id','=','pays.activation_id')
+                              ->join('rates','rates.id','=','activations.rate_id')
+                              ->join('numbers','numbers.id','=','activations.numbers_id')
+                              ->where('pays.activation_id',$activation_id)
+                              ->where('pays.status','pendiente')
+                              ->select('pays.*','rates.name AS rate_name','numbers.MSISDN AS sim')
+                              ->orderBy('pays.date_pay','desc')
+                              ->limit(1)
+                              ->get();
+                if(sizeof($payment) == 0){
+                    $paymentData = array(
+                        'http_monthly_code' => 0
+                    );
+                }else{
+                    $paymentData = array(
+                        'payment_id' => $payment[0]->id,
+                        'amount' => $payment[0]->amount,
+                        'date_pay' => $payment[0]->date_pay,
+                        'date_pay_limit' => $payment[0]->date_pay_limit,
+                        'status' => $payment[0]->status,
+                        'rate_name' => $payment[0]->rate_name,
+                        'sim' => $payment[0]->sim,
+                        'http_monthly_code' => 1
+                    );
+                }
+                
+                return $paymentData;
+            }
+        }else if($type == 'instalation'){
+            $payment = DB::table('ethernetpays')
+                              ->join('instalations','instalations.id','=','ethernetpays.instalation_id')
+                              ->join('packs','packs.id','=','instalations.pack_id')
+                              ->where('ethernetpays.instalation_id',$act_inst_id)
+                              ->where('ethernetpays.status','pendiente')
+                              ->select('ethernetpays.*','packs.name AS rate_name','instalations.number AS sim')
+                              ->orderBy('ethernetpays.date_pay','desc')
+                              ->limit(1)
+                              ->get();
+            
+            $paymentData = array();
+            if(sizeof($payment) == 0){
+                $paymentData = array(
+                'http_monthly_code' => 0
+            );
+            }else{
+                $paymentData = array(
+                    'payment_id' => $payment[0]->id,
+                    'amount' => $payment[0]->amount,
+                    'date_pay' => $payment[0]->date_pay,
+                    'date_pay_limit' => $payment[0]->date_pay_limit,
+                    'status' => $payment[0]->status,
+                    'rate_name' => $payment[0]->rate_name,
+                    'sim' => $payment[0]->sim,
+                    'http_monthly_code' => 1
+                );
+            }
+
+            return $paymentData;
+        }
+    }
+
+    public function setDataMonthly(Request $request){
+        $payment_id = $request->get('payment_id');
+        $amount = $request->get('amount');
+        $type = $request->get('type');
+        $msisdn = $request->get('msisdn');
+        $current_id = auth()->user()->id;
+
+        if($type == 'activation'){
+            $x = Pay::where('id',$payment_id)->update([
+                'amount_received' => $amount,
+                'status' => 'completado',
+                'status_consigned' => 'completado',
+                'who_did_id' => $current_id,
+                'who_consigned' => $current_id
+            ]);
+
+            if($x){
+                $consultUF = app('App\Http\Controllers\AltanController')->consultUF($msisdn);
+                $responseSubscriber = $consultUF['responseSubscriber'];
+                $statusDN = $responseSubscriber['status'];
+
+                if($statusDN ['subStatus'] == 'Suspend (B2W)' ){
+                    
+                    $responseUnbarring = Http::withHeaders([
+                        'Content-type' => 'application/json'
+                    ])->get('http://127.0.0.1/crm_altcel2/public/activate-deactivate/DN-finance',[
+                        'msisdn' => $msisdn,
+                        'type' => 'out_in',
+                        'status' => 'inactivo'
+                    ]);
+
+                    return response()->json(['bool'=>$responseUnbarring['bool'],'message'=>$responseUnbarring['message']]);
+                }
+
+                return response()->json(['bool'=>1,'message'=>'La mensualidad se ha guardado con éxito.']);
+            }else{
+                return 0;
+            }
+        }else if($type == 'instalation'){
+            $x = Ethernetpay::where('id',$payment_id)->update([
+                'amount_received' => $amount,
+                'status' => 'completado',
+                'status_consigned' => 'completado',
+                'who_did_id' => $current_id,
+                'who_consigned' => $current_id
+            ]);
+            return response()->json(['bool'=>1,'message'=>'La mensualidad se ha guardado con éxito.']);
+        }
+
+        return $request;
     }
 }

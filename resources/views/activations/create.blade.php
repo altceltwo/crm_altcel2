@@ -797,6 +797,8 @@
 <script src="{{asset('octopus/assets/vendor/pnotify/pnotify.custom.js')}}"></script>
 <script>
     var altcel;
+    var promo_boolean_global = 0;
+    var device_price_global = 0;
     $('#date-pay').click(function(){
         let x = $('#input').val();
         let token = $('meta[name="csrf-token"]').attr('content');
@@ -826,8 +828,17 @@
                     total = parseFloat(price_device)+parseFloat(price_rate);
                 
                     $('#monto').val(total);
-                    $('#price_device').val(data.price);
-                    $('#label-device').html('Dispositivo: $'+data.price.toFixed(2));
+                    if(promo_boolean_global == 1){
+                        console.log('Promo activa');
+                        $('#price_device').val(device_price_global);
+                        $('#label-device').html('Dispositivo: $'+parseFloat(device_price_global).toFixed(2));
+                    }else{
+                        console.log('Promo inactiva');
+                        $('#price_device').val(data.price);
+                        $('#label-device').html('Dispositivo: $'+data.price.toFixed(2));
+                    }
+                    
+                    
                     $('#label-total').html('Total a Cobrar: $'+total.toFixed(2));
                 }
             });
@@ -910,6 +921,7 @@
     function getRates(product) {
         let token = $('meta[name="csrf-token"]').attr('content');
         let options = '<option value="0">Choose...</option>';
+        let count = 0;
         $.ajax({
                 url: "{{ route('get-rates-alta.post')}}",
                 method: 'POST',
@@ -919,9 +931,14 @@
                     },
                 success: function(data){
                     data.forEach(function(element){
-                        console.log(element);
-                        options+="<option value='"+element.offerID+"' data-rate-id='"+element.id+"' data-plan-price='"+element.price+"' data-plan-name='"+element.name+"' data-plan-recurrency='"+element.recurrency+"' data-product='"+element.offer_product+"'>"+element.name+"</option>"
+                        
+                        if((element.promo_bool == 1 && element.promo_quantity > 0) || (element.promo_bool == 0)){
+                            options+="<option value='"+element.offerID+"' data-rate-id='"+element.id+"' data-plan-price='"+element.price+"' data-plan-name='"+element.name+"' data-plan-recurrency='"+element.recurrency+"' data-product='"+element.offer_product+"' data-promo-bool='"+element.promo_bool+"' data-device-price='"+element.device_price+"'>"+element.name+"</option>"
+                            console.log(element);
+                            count+=1;
+                        }
                     });
+                    console.log(count);
                     $('#offers').html(options);
                 }
             });
@@ -933,8 +950,17 @@
         let rate_name =  $('#offers option:selected').attr('data-plan-name');
         let rate_price =  $('#offers option:selected').attr('data-plan-price');
         let product = $('#offers option:selected').attr('data-product');
+        let promo_bool = $('#offers option:selected').attr('data-promo-bool');
+        let device_price = $('#offers option:selected').attr('data-device-price');
         let token = $('meta[name="csrf-token"]').attr('content');
         let options = '<option value="0">Choose...</option>';
+
+        console.log('Boolean promo: '+promo_bool);
+        console.log('Device price: '+device_price);
+
+        promo_boolean_global = promo_bool;
+        device_price_global = device_price;
+    
         rate_price = parseFloat(rate_price);
         console.log(product);
 
@@ -979,15 +1005,70 @@
     $('#politics').change(function(){
         let monto = $(this).val();
         let price_device = $('#price_device').val();
+        let imei = $('#imei').val();
         let total = 0;
-        total = parseFloat(total);
-        monto = parseFloat(monto);
-        price_device = parseFloat(price_device);
-        total = monto+price_device;
-        $('#monto').val(total);
-        $('#price_rate').val(monto);
-        $('#label-rate').html('Tarifa: $'+monto.toFixed(2));
-        $('#label-total').html('Total a Cobrar: $'+total.toFixed(2));
+
+        if(imei.length == 0 || /^\s+$/.test(imei)){
+            price_device = 0;
+        }else{
+            if(imei.length >= 15){
+                $.ajax({
+                    url: "{{route('getImei.get')}}",
+                    data: {imei:imei},
+                    success: function(data){
+                        // price_device = data.price;
+                        
+                        if(promo_boolean_global == 1){
+                            price_device = device_price_global;
+                            $('#price_device').val(device_price_global);
+                            $('#label-device').html('Dispositivo: $'+parseFloat(device_price_global).toFixed(2));
+                            console.log('Promo activa: $'+price_device);
+                        }else{
+                            // console.log('Promo inactiva');
+                            price_device = data.price;
+                            $('#price_device').val(data.price);
+                            $('#label-device').html('Dispositivo: $'+parseFloat(price_device).toFixed(2));
+                            console.log('Promo inactiva: $'+price_device);
+                        }
+
+                        total = parseFloat(total);
+                        monto = parseFloat(monto);
+
+                        console.log('Total: '+total);
+                        console.log('Monto: '+monto);
+
+                        price_device = parseFloat(price_device);
+                        console.log('Device price: '+price_device);
+
+                        total = monto+price_device;
+                        console.log('Total + Device: '+total);
+                        $('#monto').val(total);
+                        $('#price_rate').val(monto);
+                        $('#label-rate').html('Tarifa: $'+monto.toFixed(2));
+                        $('#label-total').html('Total a Cobrar: $'+total.toFixed(2));
+
+                    }
+                });
+            }else{
+                price_device = 0;
+
+                total = parseFloat(total);
+                monto = parseFloat(monto);
+
+                console.log('Total: '+total);
+                console.log('Monto: '+monto);
+
+                price_device = parseFloat(price_device);
+                console.log('Device price: '+price_device);
+
+                total = monto+price_device;
+                console.log('Total + Device: '+total);
+                $('#monto').val(total);
+                $('#price_rate').val(monto);
+                $('#label-rate').html('Tarifa: $'+monto.toFixed(2));
+                $('#label-total').html('Total a Cobrar: $'+total.toFixed(2));
+            }
+        }
     });
 
     $('#send').click(function(){
@@ -1222,7 +1303,8 @@
                         activate_bool: activate_bool,
                         scheduleDate:scheduleDate,
                         statusActivation:statusActivation,
-                        petition:petition
+                        petition:petition,
+                        promo_boolean:promo_boolean_global
                         },
                     success: function(data){
                         if(data == 1){

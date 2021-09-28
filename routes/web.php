@@ -92,6 +92,7 @@ Route::get('/getAllOffersByType','OfferController@getAllOfferByType')->name('get
 // Rates Numbers(DN's)
 Route::post('/getDn', 'NumberController@getNumber')->name('search-dn.post');
 Route::post('/activate-deactivate/DN', 'AltanController@activateDeactivateDN')->name('activate-deactivate.post');
+Route::get('/activate-deactivate/DN-finance', 'AltanController@activateDeactivateDN');
 Route::post('/activate-deactivate/DN-api', 'AltanController@activateDeactivateDN');
 Route::get('/consultUF','AltanController@consultUF')->name('consultUF.get');
 Route::post('/predeactivate-reactivate','AltanController@predeactivateReactivate')->name('predeactivate.reactivate');
@@ -104,6 +105,7 @@ Route::get('/purchase','AltanController@productPurchase')->name('purchase');
 Route::post('/purchase-api','AltanController@productPurchase')->name('purchase-api');
 Route::post('/locked', 'AltanController@locked')->name('locked');
 Route::get('/status', 'AltanController@statusImei')->name('status');
+Route::get('/consultUFSpecial/{msisdn}','ClientController@getInfoUF')->name('consultUFSpecial.get')->middleware('auth');
 
 // Rates Routes
 Route::post('/get-rates', 'RateController@getRates')->name('get-rates.post');
@@ -129,6 +131,9 @@ Route::put('/politics/update/{politic}','AdminController@updatePolitic')->name('
 
 // Pays Routes
 Route::get('/save-manual-pay','WebhookController@saveManualPay')->name('save-manual-pay.get');
+Route::get('/get-data-payment','ActivationController@getDataPayment')->name('getDataPayment.get');
+Route::get('/get-data-monthly','ActivationController@getDataMonthly')->name('getDataMonthly.get');
+Route::get('/set-data-monthly','ActivationController@setDataMonthly')->name('setDataMonthly.get');
 
 Route::post('/notifications-webhook', 'WebhookController@notificationWHk');
 Route::post('/conekta-webhook', 'WebhookController@notificationWHkConekta');
@@ -138,7 +143,6 @@ Route::get('/update-my-profile','UserController@updateMyProfile')->name('update-
 Route::get('/change-status-packsNrates','AdminController@changeStatusPacksRates')->name('change-status.rates-packs');
 Route::post('/overdue-payments','AdminController@checkOverduePayments');
 Route::get('/set-payment-status','ActivationController@setPaymentStatus')->name('setPaymentStatus.get');
-Route::get('/get-data-payment','ActivationController@getDataPayment')->name('getDataPayment.get');
 Route::get('/update-price-device', 'DeviceController@updatePriceDevice')->name('updatePriceDevice.get');
 
 // Card Payments

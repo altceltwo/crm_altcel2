@@ -93,6 +93,13 @@
                                         Bloqueo/Desbloqueo IMEI
                                     </label>
                                 </div>
+
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios6" value="consultUF">
+                                        Consulta de UF
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -520,7 +527,7 @@
         </div>
         <!-- Serviciabilidad -->
         <div class="col-md-12 d-none" id="serviciabilidadForm">
-            <section class="panel form-wizard" id="w6">
+            <section class="panel form-wizard" >
                 <header class="panel-heading">
                     <div class="panel-actions">
                         <a href="#" class="fa fa-caret-down"></a>
@@ -555,7 +562,7 @@
 
         <!-- Bloqueo y desbloqueo de imei -->
         <div class="col-md-12 d-none" id="lockedIMEIForm">
-            <section class="panel form-wizard" id="w6">
+            <section class="panel form-wizard" >
                 <header class="panel-heading">
                     <div class="panel-actions">
                         <a href="#" class="fa fa-caret-down"></a>
@@ -602,6 +609,45 @@
             </section>
         </div>
         <!-- end Bloqueo y desbloqueo de imei -->
+
+        <!-- Consulta de USUARIO FINAL -->
+        <div class="col-md-12 d-none" id="formConsultUF">
+            <section class="panel form-wizard" >
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+    
+                    <h2 class="panel-title">Consulta de Usuario Final (MSISDN)</h2>
+                </header>
+                <div class="panel-body">
+                    
+                    <form class="form-horizontal" novalidate="novalidate">
+                        <div class="tab-content">
+                            <div class="col-md-12" style="padding-left: 0px !important; padding-right: 0px !important;">
+                                <div class="col-md-4" style="padding-left: 0px !important; padding-right: 0px !important;">
+                                    <label for="msisdn_locked">MSISDN</label>
+                                    <div class="input-group mb-md col-md-12">
+                                        <input type="text" class="form-control" id="msisdn_consultUF" maxlength="10">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-success" type="button" id="consultUFSpecial"><li class="fa fa-arrow-circle-right"></li></button>
+                                        </span>
+                                    </div>
+                                </div>
+                               
+                                <div class="col-md-12">
+                                   <iframe src="" class="col-md-12 d-none" height="600" id="consultUFView"></iframe>
+                                </div>
+                                
+                            </div>
+                            
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+        <!-- end Consulta de USUARIO FINAL -->
 
 
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
@@ -690,73 +736,118 @@
 
     var stack_bar_bottom = {"dir1": "up", "dir2": "right", "spacing1": 0, "spacing2": 0};
     
-$('input[name="optionsRadios"]').on('click', function() {
-    let radioOption = $(this).val();
-    let msisdnProductChange = $('#w5-msisdn').val();
-    let msisdnProductPurchase = $('#w6-msisdn').val();
+    $('input[name="optionsRadios"]').on('click', function() {
+        let radioOption = $(this).val();
+        let msisdnProductChange = $('#w5-msisdn').val();
+        let msisdnProductPurchase = $('#w6-msisdn').val();
 
-    if(msisdnProductChange.length == 10){
-        $('#nextChangeProduct').removeClass('disabled');
-        $('#nextChangeProductLink').removeClass('not-action');
-    }else{
-        $('#nextChangeProduct').addClass('disabled');
-        $('#nextChangeProductLink').addClass('not-action');
-    }
+        if(msisdnProductChange.length == 10){
+            $('#nextChangeProduct').removeClass('disabled');
+            $('#nextChangeProductLink').removeClass('not-action');
+        }else{
+            $('#nextChangeProduct').addClass('disabled');
+            $('#nextChangeProductLink').addClass('not-action');
+        }
 
-    if(msisdnProductPurchase.length == 10){
-        $('#nextproductPurchase').removeClass('disabled');
-        $('#nextproductPurchaseLink').removeClass('not-action');
-    }else{
-        $('#nextproductPurchase').addClass('disabled');
-        $('#nextproductPurchaseLink').addClass('not-action');
-    }
-    
-    if(radioOption == 'predeactivate' || radioOption == 'reactivate'){
-        $('#pre-reactivateContent').removeClass('d-none');
-        $('#changeProductForm').addClass('d-none');
-        $('#productPurchaseForm').addClass('d-none');
-        $('#changeLinkContent').addClass('d-none');
-	    $('#serviciabilidadForm').addClass('d-none');
-        $('#lockedIMEIForm').addClass('d-none');
-    }else if(radioOption == 'changeProduct'){
-        $('#pre-reactivateContent').addClass('d-none');
-        $('#changeProductForm').removeClass('d-none');
-        $('#productPurchaseForm').addClass('d-none');
-        $('#changeLinkContent').addClass('d-none');
-        $('#serviciabilidadForm').addClass('d-none');
-        $('#lockedIMEIForm').addClass('d-none');
-    }else if(radioOption == 'productPurchase'){
-        $('#pre-reactivateContent').addClass('d-none');
-        $('#changeProductForm').addClass('d-none');
-        $('#productPurchaseForm').removeClass('d-none');
-        $('#changeLinkContent').addClass('d-none');
-	    $('#serviciabilidadForm').addClass('d-none');
-        $('#lockedIMEIForm').addClass('d-none');
-    }else if(radioOption == 'changeLink'){
-        $('#pre-reactivateContent').addClass('d-none');
-        $('#changeProductForm').addClass('d-none');
-        $('#productPurchaseForm').addClass('d-none');
-        $('#changeLinkContent').removeClass('d-none');
-	    $('#serviciabilidadForm').addClass('d-none');
-        $('#lockedIMEIForm').addClass('d-none');
-    }else if(radioOption == "serviciabilidadConsult"){
-        $('#pre-reactivateContent').addClass('d-none');
-        $('#changeProductForm').addClass('d-none');
-        $('#productPurchaseForm').addClass('d-none');
-        $('#changeLinkContent').addClass('d-none');
-        $('#serviciabilidadForm').removeClass('d-none');
-        $('#lockedIMEIForm').addClass('d-none');
-    }else if(radioOption == "lockUnlockIMEI"){
-        $('#pre-reactivateContent').addClass('d-none');
-        $('#changeProductForm').addClass('d-none');
-        $('#productPurchaseForm').addClass('d-none');
-        $('#changeLinkContent').addClass('d-none');
-        $('#serviciabilidadForm').addClass('d-none');
-        $('#lockedIMEIForm').removeClass('d-none');
-    }
+        if(msisdnProductPurchase.length == 10){
+            $('#nextproductPurchase').removeClass('disabled');
+            $('#nextproductPurchaseLink').removeClass('not-action');
+        }else{
+            $('#nextproductPurchase').addClass('disabled');
+            $('#nextproductPurchaseLink').addClass('not-action');
+        }
+        
+        if(radioOption == 'predeactivate' || radioOption == 'reactivate'){
+            $('#pre-reactivateContent').removeClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == 'changeProduct'){
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').removeClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == 'productPurchase'){
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').removeClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == 'changeLink'){
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').removeClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == "serviciabilidadConsult"){
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').removeClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == "lockUnlockIMEI"){
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').removeClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+        }else if(radioOption == "consultUF"){
+            $('#formConsultUF').removeClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+        }
+    });
 
-    
-});
+    $('#consultUFSpecial').click(function(){
+        let msisdn = $('#msisdn_consultUF').val();
+        let url = "{{route('consultUFSpecial.get',['msisdn' => 'temp'])}}"
+        
+        if(msisdn.length == 0 || /^\s+$/.test(msisdn)){
+            Swal.fire({
+                icon: 'error',
+                title: 'Por favor introduzca un MSISDN.',
+                showConfirmButton: false,
+                timer: 1500
+            })
+            return false;
+        }
+
+        if((msisdn.length > 0 && msisdn.length < 10) || (msisdn.length >10)){
+            Swal.fire({
+                icon: 'error',
+                title: 'Por favor introduzca un MSISDN válido.',
+                text: 'La longitud requerida es de 10 dígitos.',
+                showConfirmButton: false,
+                timer: 2000
+            })
+            return false;
+        }
+
+        url = url.replace('temp',msisdn);
+        console.log(url);
+        $('#consultUFView').attr('src',url);
+        $('#consultUFView').removeClass('d-none');
+    });
+
+
     $("#go").click(function() {
         let msisdn = $('#msisdn').val();
         let scheduleDateFirst = $('#scheduleDate').val();
@@ -1599,7 +1690,7 @@ $("#serviciabilidad").click(function(){
 $('#locked').addClass('d-none');
 $('#unlocked').addClass('d-none');
 
-$('#msisdn_locked').on('input', function () {
+$('#msisdn_locked, #msisdn_consultUF').on('input', function () {
     this.value = this.value.replace(/[^0-9.]/g, '');
 });
 

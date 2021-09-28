@@ -338,7 +338,29 @@
                                         <li id="data_rate"></li>
                                         <li id="data_device"></li>
                                     </ul>
-                                    <p class="text-bold" id="amount_total_tag"></p>
+                                    
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="alert alert-warning fade in nomargin">
+                                    <h4>Falta por pagar</h4>
+                                    <ul>
+                                        <li id="pending_cpe"></li>
+                                        <li id="pending_rate"></li>
+                                    </ul>
+
+                                    <div class="d-none mt-md" id="pending_monthly_content">
+                                        <h4>MENSUALIDAD PENDIENTE</h4>
+                                        <ul>
+                                            <li id="pending_monthly"></li>
+                                            <li id="date_pay"></li>
+                                            <li id="date_pay_limit"></li>
+                                        </ul>
+                                        <input type="hidden" id="payment_id" value="0">
+                                        <input type="hidden" id="sim_monthly" value="0">
+                                    </div>
+                                    
                                 </div>
                             </div>
 
@@ -346,15 +368,32 @@
                             <input type="hidden" id="type">
                             <input type="hidden" id="attrID">
                             <input type="hidden" id="amount_rate">
-                            <input type="hidden" id="amount_extra">
-                            <input type="hidden" id="amount_total">
+                            <input type="hidden" id="amount_device">
+                            <input type="hidden" id="received_amount_rate">
+                            <input type="hidden" id="received_amount_device">
 
-                            <div class="form-group col-md-6">
-                                <div class="col-md-12">
+                            <div class="form-group col-md-12" >
+                                <div class="col-md-6" id="cpe_amount_content">
                                     <section class="form-group-vertical">
                                         <div class="input-group input-group-icon">
-                                            <label for="received_amount_device">Monto Recibido</label>
-                                            <input class="form-control" type="text" id="received_amount" name="received_amount" autocomplete="off">
+                                            <label for="collected_amount_device">Monto CPE</label>
+                                            <input class="form-control" type="text" id="collected_amount_device" name="collected_amount_device" autocomplete="off">
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-md-6" id="rate_amount_content">
+                                    <section class="form-group-vertical">
+                                        <div class="input-group input-group-icon">
+                                            <label for="collected_amount_rate">Monto Plan</label>
+                                            <input class="form-control" type="text" id="collected_amount_rate" name="collected_amount_rate" autocomplete="off">
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="col-md-6 d-none" id="monthly_amount_content">
+                                    <section class="form-group-vertical">
+                                        <div class="input-group input-group-icon">
+                                            <label for="collected_amount_monthly">Monto Mensualidad</label>
+                                            <input class="form-control" type="text" id="collected_amount_monthly" name="collected_amount_monthly" autocomplete="off">
                                         </div>
                                     </section>
                                 </div>
@@ -372,15 +411,20 @@
     </div>
 </div>
 <script src="{{asset('octopus/assets/vendor/pnotify/pnotify.custom.js')}}"></script>
+@if(Auth::user()->role_id == 5)
 <script>
     $('.get-data-payment').click(function(){
         let id = $(this).attr('data-id');
         let type = $(this).attr('data-type');
+        let received_amount_device = 0;
+        let received_amount_rate = 0;
+        let waited_amount_rate = 0;
+        let waited_amount_device = 0;
+        let substract_device = 0;
+        let substract_rate = 0;
         // let attrID = $(this).attr('id');
         console.log(id);
         console.log(type);
-        return false;
-        let amount_total = 0;
 
         $.ajax({
             url: "{{route('getDataPayment.get')}}",
@@ -390,27 +434,94 @@
                 // console.log(response);
 
                 if(type == 'activation'){
+                    waited_amount_device = response.amount_device;
+                    waited_amount_rate = response.amount_rate;
+                    received_amount_device = response.received_amount_device;
+                    received_amount_rate = response.received_amount_rate;
+                    
                     $('#client').html('<b>Cliente:</b> '+response.name+' '+response.lastname);
                     $('#service').html('<b>Servicio:</b> '+response.service);
-                    $('#data_rate').html('<b>Plan:</b> '+response.rate_name+' $'+response.amount_rate);
+                    $('#data_rate').html('<b>Plan Activación:</b> $'+response.amount_rate);
                     $('#data_device').html('<b>Dispositivo:</b> '+response.device_description+' $'+response.amount_device);
-                    amount_total = parseFloat(response.amount_rate)+parseFloat(response.amount_device);
-                    $('#amount_total_tag').html('Total: $'+amount_total);
-                    $('#amount_total').val(amount_total);
+
+                    substract_device =  parseFloat(waited_amount_device)-parseFloat(received_amount_device);
+                    substract_rate =  parseFloat(waited_amount_rate)-parseFloat(received_amount_rate);
+                    
+                    $('#pending_cpe').html('CPE: $'+substract_device.toFixed(2));
+                    $('#pending_rate').html('Plan Activación: $'+substract_rate.toFixed(2));
+                    // $('#amount_total').val(amount_total);
                     $('#amount_rate').val(response.amount_rate);
-                    $('#amount_extra').val(response.amount_device);
+                    $('#amount_device').val(response.amount_device);
+                    $('#received_amount_device').val(received_amount_device);
+                    $('#received_amount_rate').val(received_amount_rate);
+
                 }else if(type == 'instalation'){
+                    waited_amount_device = response.amount_install;
+                    waited_amount_rate = response.amount_pack;
+                    received_amount_device = response.received_amount_install;
+                    received_amount_rate = response.received_amount;
+
                     $('#client').html('<b>Cliente:</b> '+response.name+' '+response.lastname);
                     $('#service').html('<b>Servicio:</b> '+response.service);
-                    $('#data_rate').html('<b>Paquete:</b> '+response.pack_name+' $'+response.amount_pack);
+                    $('#data_rate').html('<b>Paquete Instalación:</b> $'+response.amount_pack);
                     $('#data_device').html('<b>Instalación:</b> $'+response.amount_install);
-                    amount_total = parseFloat(response.amount_pack)+parseFloat(response.amount_install);
-                    $('#amount_total_tag').html('Total: $'+amount_total);
-                    $('#amount_total').val(+amount_total);
+
+                    substract_device = parseFloat(waited_amount_device)-parseFloat(received_amount_device);
+                    substract_rate = parseFloat(waited_amount_rate)-parseFloat(received_amount_rate);
+
+                    $('#pending_cpe').html('CPE: $'+substract_device.toFixed(2));
+                    $('#pending_rate').html('Plan Activación: $'+substract_rate.toFixed(2));
+            
+                    // $('#amount_total').val(+amount_total);
                     $('#amount_rate').val(response.amount_pack);
-                    $('#amount_extra').val(response.amount_install);
+                    $('#amount_device').val(response.amount_install);
+                    $('#received_amount_device').val(received_amount_device);
+                    $('#received_amount_rate').val(received_amount_rate);
                 }
-                // console.log(amount_total);
+                // console.log('Se debe: '+substract_device+' de CPE...');
+                // console.log('Se debe: '+substract_rate+' de Plan de Activación...');
+
+                if(substract_device == 0){
+                    $('#cpe_amount_content').addClass('d-none');
+                    // console.log('Ocultar cpe');
+                }else{
+                    // console.log('Mostrar cpe');
+                    $('#cpe_amount_content').removeClass('d-none');
+                }
+
+                if(substract_rate == 0){
+                    // console.log('Ocultar rate y mostrar monthly');
+
+                    $('#rate_amount_content').addClass('d-none');
+                    $('#monthly_amount_content').removeClass('d-none');
+
+                    $.ajax({
+                        url: "{{route('getDataMonthly.get')}}",
+                        data: {id:id, type:type},
+                        success: function(response){
+                            console.log(response);
+                            if(response.http_monthly_code == 0){
+                                $('#monthly_amount_content').addClass('d-none');
+                                $('#pending_monthly_content').addClass('d-none');
+                                $('#payment_id').val(0);
+                                $('#sim_monthly').val(0);
+                            }else{
+                                $('#pending_monthly_content').removeClass('d-none');
+                                $('#pending_monthly').html(response.rate_name+' <strong>$'+parseFloat(response.amount,2).toFixed(2)+'</strong>');
+                                $('#date_pay').html('FECHA DE PAGO: <strong>'+response.date_pay+'</strong>');
+                                $('#date_pay_limit').html('FECHA DE LÍMITE PAGO: <strong>'+response.date_pay_limit+'</strong>');
+                                $('#payment_id').val(response.payment_id);
+                                $('#sim_monthly').val(response.sim);
+                            }
+                        }
+                    });
+                }else{
+                    // console.log('Ocultar monhtly y mostrar rate');
+                    $('#rate_amount_content').removeClass('d-none');
+                    $('#monthly_amount_content').addClass('d-none');
+                    $('#pending_monthly_content').addClass('d-none');
+                    $('#payment_id').val(0);
+                }
 
                 $('#received_amount').val('');
                 $('#id_sale').val(id);
@@ -421,96 +532,195 @@
         });
     });
 
-    $('#received_amount_rate, #received_amount_device').on('input', function () {
-        this.value = this.value.replace(/[^0-9.]/g, '');
+    $('#collected_amount_rate, #collected_amount_device').on('input', function () {
+        this.value = this.value.replace(/[^0-9-.]/g, '');
+    });
+
+    $('#collected_amount_device').keyup(function(){
+        let received_amount = $('#received_amount_device').val();
+        let collected_amount = $(this).val();
+        let amount = $('#amount_device').val();
+
+        if(collected_amount.length == 0 || /^\s+$/.test(collected_amount)){
+            collected_amount = 0;
+        }
+
+        let new_collected_amount = parseFloat(received_amount)+parseFloat(collected_amount);
+        let residuary_temp = parseFloat(amount)-parseFloat(new_collected_amount);
+
+        $('#pending_cpe').html('CPE: $'+parseFloat(residuary_temp).toFixed(2));
+        console.log(residuary_temp);
+
+    });
+
+    $('#collected_amount_rate').keyup(function(){
+        let received_amount = $('#received_amount_rate').val();
+        let collected_amount = $(this).val();
+        let amount = $('#amount_rate').val();
+
+        if(collected_amount.length == 0 || /^\s+$/.test(collected_amount)){
+            collected_amount = 0;
+        }
+
+        let new_collected_amount = parseFloat(received_amount)+parseFloat(collected_amount);
+        let residuary_temp = parseFloat(amount)-parseFloat(new_collected_amount);
+
+        $('#pending_rate').html('Plan Activación: $'+parseFloat(residuary_temp).toFixed(2));
+        console.log(residuary_temp);
+
     });
 
     $('#save_payment').click(function(){
         let id = $('#id_sale').val();
         let type = $('#type').val();
         let attrID = $('#attrID').val();
-        let amount_total = $('#amount_total').val();
-        let amount_rate = $('#amount_rate').val();
-        let amount_extra = $('#amount_extra').val();
-        let received_amount = $('#received_amount').val();
+        let waited_amount_device = $('#amount_device').val();
+        let waited_amount_rate = $('#amount_rate').val();
+        let collected_amount_rate = $('#collected_amount_rate').val();
+        let collected_amount_device = $('#collected_amount_device').val();
+        let received_amount_rate = $('#received_amount_rate').val();
+        let received_amount_device = $('#received_amount_device').val();
 
-        let received_amount_rate = 0;
-        let received_amount_extra = 0;
+        // DATOS DE PAGO DE MENSUALIDAD
+        let payment_id = $('#payment_id').val();
+        let collected_amount_monthly = $('#collected_amount_monthly').val();
+        let sim_monthly = $('#sim_monthly').val();
 
-        amount_total = parseFloat(amount_total);
-        amount_rate = parseFloat(amount_rate);
-        amount_extra = parseFloat(amount_extra);
-        received_amount = parseFloat(received_amount);
         let data;
         
-        if(received_amount.length == 0 || /^\s+$/.test(received_amount)){
-            Swal.fire({
-                icon: 'error',
-                title: 'Ingrese monto recibido.',
-                showConfirmButton: false,
-                timer: 1500
-            })
-            return false;
+        if(collected_amount_rate.length == 0 || /^\s+$/.test(collected_amount_rate)){
+           collected_amount_rate = 0;
         }
 
-        if(received_amount < amount_total){
-            if(received_amount < amount_rate){
-                received_amount_rate = received_amount;
-                received_amount_extra = 0;
-            }
-
-            if(received_amount >= amount_rate){
-                received_amount_rate = amount_rate;
-                received_amount = received_amount-amount_rate;
-                received_amount_extra = received_amount;
-            }
+        if(collected_amount_device.length == 0 || /^\s+$/.test(collected_amount_device)){
+            collected_amount_device = 0;
         }
 
-        if(received_amount >= amount_total){
-            received_amount_rate = amount_rate;
-            received_amount_extra = amount_extra;
+        if(collected_amount_monthly.length == 0 || /^\s+$/.test(collected_amount_monthly)){
+            collected_amount_monthly = 0;
         }
 
-        console.log('Monto recibido del plan: '+received_amount_rate+' - Monto recibido extra: '+received_amount_extra);
+        Swal.fire({
+            title: 'Verifique los datos siguientes:',
+            html: "<li class='list-alert'><b>Monto del Dispositivo: </b>$"+collected_amount_device+"</li><br>"+
+            "<li class='list-alert'><b>Monto del Plan Activación: </b>$"+collected_amount_rate+"</li><br>"+
+            "<li class='list-alert'><b>Monto de Mensualidad: </b>$"+collected_amount_monthly+"</li>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-success mr-md',
+                cancelButton: 'btn btn-danger '
+            },
+            buttonsStyling: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if(waited_amount_rate == received_amount_rate){
 
-        
-        // return false;
-
-
-        if(type == 'activation'){
-            data = {id:id, type:type, received_amount_rate:received_amount_rate, received_amount_device:received_amount_extra}
-        }else if(type == 'instalation'){
-            data = {id:id, type:type, received_amount:received_amount_rate, received_amount_install:received_amount_extra}
-        }
-        
-        $.ajax({
-            url: "{{route('setPaymentStatus.get')}}",
-            data: data,
-            success: function(response){
-                
-                if(response == 1){
-                    $('#'+attrID).addClass('d-none');
-                    new PNotify({
-                        title: 'Hecho.',
-                        text: "<a href='{{route('activations.index')}}' style='color: white !important;'>Click aquí para actualizar.</a>",
-                        type: 'success',
-                        icon: 'fa fa-home'
-                    });
-                }else if(response == 0){
-                    new PNotify({
-                        title: 'Ooops!',
-                        text: "<a href='{{route('activations.index')}}' style='color: white !important;'>Click aquí para actualizar.</a>",
-                        type: 'error',
-                        icon: 'fa fa-times'
-                    });
+                    if(payment_id != 0){
+                        if(collected_amount_monthly != 0){
+                            saveMonthlyPayment(payment_id,collected_amount_monthly,type,sim_monthly);
+                        }
+                    }
+                }else{
+                console.log('Se ejecutará pago de plan de activación');
                 }
+
+                // return false;
+
+                data = {
+                id:id,
+                type:type,
+                received_amount_rate:received_amount_rate,
+                received_amount_device:received_amount_device,
+                waited_amount_device: waited_amount_device,
+                waited_amount_rate: waited_amount_rate,
+                collected_amount_rate: collected_amount_rate,
+                collected_amount_device: collected_amount_device
+                }
+
+                // console.log(data);
+                // return false;
+
+                $.ajax({
+                    url: "{{route('setPaymentStatus.get')}}",
+                    data: data,
+                    success: function(response){
+                        console.log(response);
+                        if(response == 1){
+                            $('#'+attrID).addClass('d-none');
+                            new PNotify({
+                                title: 'Los pagos pendientes han sido guardados con éxito.',
+                                text: "<a href='{{route('activations.index')}}' style='color: white !important;'>Click aquí para actualizar.</a>",
+                                type: 'success',
+                                icon: 'fa fa-home'
+                            });
+                        }else if(response == 0){
+                            new PNotify({
+                                title: 'Ooops!',
+                                text: "<a href='{{route('activations.index')}}' style='color: white !important;'>Click aquí para actualizar.</a>",
+                                type: 'error',
+                                icon: 'fa fa-times'
+                            });
+                        }
+                    }
+                });
+            } else if (
+                /* Read more about handling dismissals below */
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Operación cancelada',
+                    text: 'No se registro ningún pago.',
+                    showConfirmButton: false,
+                    timer: 1000
+                })
             }
-        });
+        })
            
     });
+
+    function saveMonthlyPayment(payment_id,collected_amount_monthly,type,sim_monthly){
+        $.ajax({
+            url: "{{route('setDataMonthly.get')}}",
+            data: {payment_id:payment_id, amount:collected_amount_monthly, type:type, msisdn:sim_monthly},
+            beforeSend: function(){
+                Swal.fire({
+                    title: 'Estamos guardando la mensualidad y verificando el estado del servicio...',
+                    html: 'Espera un poco, un poquito más...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
+            success: function(response){
+                Swal.close();
+                if(response.bool == 1){
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Hecho',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    location.reload();
+                }else if(response.bool != 1){
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Woops!',
+                        text: 'Ocurrió algo con el registro del pago mensual o con el estado del servicio del cliente, consulte a Desarrollo.'
+                    });
+                }
+                // console.log(response);
+            }
+        });
+    }
 
     $('.location-reload').click(function(){
         location.reload();
     })
 </script>
+@endif
 @endsection
