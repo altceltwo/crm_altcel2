@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Http;
 use App\Petition;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
 use App\User;
+use App\Client;
 use App\Activation;
+use App\Mail\SendPetition;
+use Illuminate\Support\Facades\Mail;
 
 class PetitionController extends Controller
 {
@@ -154,11 +158,11 @@ class PetitionController extends Controller
                 'comment'=>$comment,
                 'badgeFecha'=>$badgeFecha,
                 'badgeStatus'=>$badgeStatus
-            ));
+            )); 
         }
         // return $data['completadas'];
         
-        return view('petitions/completadosOperaciones', $data);
+        return view('petitions.completadosOperaciones', $data);
     }
 
     public function recibidosFinance(Request $request){
@@ -259,7 +263,7 @@ class PetitionController extends Controller
                   ->join('users','users.id','=','clients.user_id')
                   ->where('clients.user_id', $id_client)
                   ->select('users.name','users.lastname','users.email','clients.address','clients.rfc','clients.ine_code', 'clients.date_born','clients.cellphone')
-                  ->get();
+                  ->get();  
         return $data;
     }
 
@@ -298,7 +302,6 @@ class PetitionController extends Controller
         $who_received = $request->post('who_received');
         $activation_id = $request->post('activation_id');
         $petition_id = $request->post('petition_id');
-        
 
         $dataActivation = Activation::where('id',$activation_id)->first();
         $dataPetition = Petition::where('id',$petition_id)->first();
@@ -320,6 +323,8 @@ class PetitionController extends Controller
             $statusPetition = 'recibido';
         }
 
+        
+
         $x = Activation::where('id',$activation_id)->update([
                 'received_amount_rate' => $received_amount_rate,
                 'received_amount_device' => $received_amount_device,
@@ -334,6 +339,28 @@ class PetitionController extends Controller
                 'date_received' => $date_received
             ]);
 
+        
+            if($statusPetition == 'recibido'){
+                $name_remitente = auth()->user()->name;
+                $comment = Petition::where('id',$petition_id)->select('comment','client_id','product')->get();
+                
+                $client = $comment[0]->client_id;
+                $user = User::where('id', $client)->select('name', 'lastname','email')->get();
+    
+                //correos finanzas
+                $response = Http::withHeaders([
+                    'Conten-Type'=>'application/json'
+                ])->get('http://localhost/crm_altcel2/public/petitions-notifications',[
+                    'name'=>$user[0]->name,
+                    'lastname'=>$user[0]->lastname,
+                    'correo'=> $user[0]->email,
+                    'comment'=>$comment[0]->comment,
+                    'status'=>'recibido',
+                    'product'=>$comment[0]->product,
+                    'remitente'=>$name_remitente
+                ]);
+            }
+
         if($x && $y){
             return 1;
         }else{
@@ -341,37 +368,65 @@ class PetitionController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Petition  $petition
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Petition $petition)
-    {
-        //
-    }
+    public function petitiosNotification(Request $request){
+        $status = $request->get('status');
+        $name = $request->get('name');
+        $lastname = $request->get('lastname');
+        $remitente = $request->get('remitente');
+        $comment = $request->get('comment');
+        $correo = $request->get('correo');
+        $product = $request->get('product');
+        $email_remitente = $request->get('email_remitente');
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Petition  $petition
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Petition $petition)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Petition  $petition
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Petition $petition)
-    {
-        //
+        $email = ['c.banda07@hotmail.com','a160239@unach.mx'];
+        
+        if ($status == 'solicitud') {
+            $data= [
+                "subject" => "Solicitud de Activación de Sim",
+                "destinatario"=> "Alejandro Macias",
+                "name" => $name,
+                "lastname" => $lastname,
+                "comment"=>$comment,
+                "remitente"=>$remitente,
+                "email_remitente"=>$email_remitente,
+                "status"=>$status,
+                "correo"=>$correo,
+                "product"=>$product,
+                "email"=>$email,
+                "body"=>"Joel Maza, tienes una nueva solicitud de",
+            ];
+            // return $data;
+            Mail::to($email[0])->send(new SendPetition($data));
+        }elseif ($status == 'activado') {
+            $data= [
+                "subject" => "Sim solicitado ha sido activado",
+                "name" => $name,
+                "lastname" => $lastname,
+                "comment"=>$comment,
+                "remitente"=>$remitente,
+                "email_remitente"=>$email_remitente,
+                "status"=>$status,
+                "correo"=>$correo,
+                "product"=>$product,
+                "email"=>$email,
+                "body"=>"para notificarles que se activo"
+            ];
+            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+        }elseif ($status == 'recibido') {
+            $data= [
+                "subject" => "El cliente recibió dispositivo",
+                "name" => $name,
+                "lastname" => $lastname,
+                "comment"=>$comment,
+                "remitente"=>$remitente,
+                "email_remitente"=>$email_remitente,
+                "status"=>$status,
+                "correo"=>$correo,
+                "product"=>$product,
+                "email"=>$email,
+                "body"=>"para notificarles que se entrego"
+            ];
+            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+        }
     }
 }

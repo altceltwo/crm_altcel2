@@ -47,7 +47,7 @@
                     <td>{{$solicitud['client']}}</td>
                     <td>{{$solicitud['product']}}</td>
                     <td>{{$solicitud['comment']}}</td>
-                    <td><button class="btn btn-warning solicitud" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}">Enviar</button></td>
+                    <td><button class="btn btn-warning solicitud" id="notification" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}" data-comment="{{$solicitud['comment']}}">Activar</button></td>
                 </tr>
                 @endforeach
             </tbody>
@@ -59,10 +59,11 @@
         let idClient = $(this).attr('data-client');
         let id_petition = $(this).attr('data-id');
         let route = "{{route('activations.create')}}"
+        let comment = $(this).attr('data-comment');
         $.ajax({
             url:"{{route('activation.get')}}",
             method:'GET',
-            data:{idClient:idClient},
+            data:{idClient:idClient, comment:comment},
             success:function(response){
                 let name = response[0].name;
                 let lastname = response[0].lastname;

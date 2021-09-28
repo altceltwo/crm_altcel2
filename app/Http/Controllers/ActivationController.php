@@ -297,11 +297,27 @@ class ActivationController extends Controller
             ];
 
             if($petition != 0){
+                $name_remitente = auth()->user()->name;
+
                 $date = date('Y-m-d H:i:s');
                 DB::table('petitions')->where('id',$petition)->update([
                     'status' => 'activado',
                     'who_attended' => $user_id,
                     'date_activated' => $date
+                ]);
+
+                $comment = DB::table('petitions')->where('id', $petition)->get('comment');
+                  //correos operaciones
+                $response = Http::withHeaders([
+                    'Conten-Type'=>'application/json'
+                ])->get('http://localhost/crm_altcel2/public/petitions-notifications',[
+                    'name'=> $name_child,
+                    'lastname'=>$lastname_child,
+                    'correo'=> $email_child,
+                    'comment'=>$comment,
+                    'status'=>'activado',
+                    'remitente'=>$name_remitente,
+                    'product'=> $product
                 ]);
             }
 
