@@ -197,3 +197,5 @@ Route::get('completadas','PetitionController@show')->name('completadas')->middle
 Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
 Route::post('collect-money', 'PetitionController@collectMoney')->name('collectMoney');
 Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCollected');
+
+Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');
