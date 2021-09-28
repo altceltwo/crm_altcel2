@@ -96,13 +96,13 @@
                                     <input type="file" class="form-control custom-file-input" id="image" name="image" required>
                                     <label class="custom-file-label" for="image">Elegir</label>
                                 </div> -->
-                                <div class="col-md-12 mt-lg">
+                                <!-- <div class="col-md-12 mt-lg">
                                     <div class="col-md-6">
                                         <div class="fileupload fileupload-new" data-provides="fileupload">
                                         <label for="image">Imagen</label>
                                             <div class="input-append">
                                                 <div class="uneditable-input">
-                                                    <!-- <i class="fa fa-file fileupload-exists"></i> -->
+                                                    <i class="fa fa-file fileupload-exists"></i>
                                                     <span class="fileupload-preview"></span>
                                                 </div>
                                                 <span class="btn btn-default btn-file">
@@ -117,7 +117,28 @@
                                     <div class="col-md-3" >
                                         <img src="" id="img1" style="max-width: 200px;">
                                     </div>
+                                </div> -->
+
+                                <div class="col-md-3 mt-xl">
+                                    <div class="checkbox">
+                                        <label class="control-label">
+                                            <input type="checkbox" id="promo_check">
+                                            Promoción
+                                        </label>
+                                    </div>
                                 </div>
+
+                                <div class="col-md-3 d-none content-promo">
+                                    <label for="name">Cantidad de Promos</label>
+                                    <input type="text" class="form-control form-control-sm" id="promo_quantity" name="promo_quantity">
+                                </div>
+
+                                <div class="col-md-3 d-none content-promo">
+                                    <label for="name">Descuento a Dispositivo</label>
+                                    <input type="text" class="form-control form-control-sm" id="device_price" name="device_price">
+                                </div>
+
+                                <input type="hidden" name="promo_bool" id="promo_bool" value="0">
                                
 
                                 <div class="col-md-12" style="margin-top: 1rem;">
@@ -141,16 +162,16 @@
 </div>
 
 <script>
-document.getElementById("image").onchange = function(event) {
-    console.log($(this).val());
-    var file = event.target.files[0];
-  var reader = new FileReader();
-  reader.onload = function(event) {
-    var img = document.getElementById('img1');
-    img.src= event.target.result;
-  }
-  reader.readAsDataURL(file);
-}
+// document.getElementById("image").onchange = function(event) {
+//     console.log($(this).val());
+//     var file = event.target.files[0];
+//   var reader = new FileReader();
+//   reader.onload = function(event) {
+//     var img = document.getElementById('img1');
+//     img.src= event.target.result;
+//   }
+//   reader.readAsDataURL(file);
+// }
 
     $('#price, #price_subsequent, #recurrency').on('input', function () {
         this.value = this.value.replace(/[^0-9.]/g, '');
@@ -162,6 +183,16 @@ $('#pack_altcel').click(function(){
     }else{
         $('#pack-altcel-content').addClass('d-none');
         $('#altcel_pack_id').val('');
+    }
+});
+
+$('#promo_check').click(function(){
+    if($('#promo_check').prop('checked')){
+        $('#promo_bool').val(1);
+        $('.content-promo').removeClass('d-none');
+    }else{
+        $('#promo_bool').val(0);
+        $('.content-promo').addClass('d-none');
     }
 });
 

@@ -25,6 +25,7 @@ class RateController extends Controller
     }
 
     public function store(Request $request) {
+        // return $request;
         $time = time();
         $h = date("g", $time);
         $request = request()->except('_token');
