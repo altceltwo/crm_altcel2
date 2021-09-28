@@ -314,7 +314,7 @@ class ActivationController extends Controller
                     'name'=> $name_child,
                     'lastname'=>$lastname_child,
                     'correo'=> $email_child,
-                    'comment'=>$comment,
+                    'comment'=>$comment[0]->comment,
                     'status'=>'activado',
                     'remitente'=>$name_remitente,
                     'product'=> $product

@@ -13,7 +13,7 @@
         <div class="card">
             <div class="card-body col-md-12">
                 <h5 class="card-title">Remitente: {{$remitente}}, {{$email_remitente}}</h5>
-                <h5 class="card-title">Destinatario: {{$email[0]}} {{$email[1]}}</h5><br>
+                <h5 class="card-title">Destinatario: {{$email[0]}} {{$email[1]}} {{$email[2]}} {{$email[3]}} {{$email[4]}} {{$email[5]}} {{$email[5]}}</h5><br>
                 <p class="card-text">Hola, {{$body}} {{$product}} para el cliente {{$name}} {{$lastname}} con correo {{$correo}}<br><br>
 
                 <strong>Comentario: </strong>{{$comment}}
