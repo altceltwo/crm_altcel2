@@ -300,6 +300,7 @@ class ActivationController extends Controller
 
             if($petition != 0){
                 $name_remitente = auth()->user()->name;
+                $email_remitente = auth()->user()->email;
 
                 $date = date('Y-m-d H:i:s');
                 DB::table('petitions')->where('id',$petition)->update([
@@ -319,6 +320,7 @@ class ActivationController extends Controller
                     'comment'=>$comment[0]->comment,
                     'status'=>'activado',
                     'remitente'=>$name_remitente,
+                    'email_remitente'=>$email_remitente,
                     'product'=> $product
                 ]);
             }
@@ -1053,7 +1055,25 @@ class ActivationController extends Controller
                 ]);
 
                 if($statusPetition == 'recibido'){
+                    $name_remitente = auth()->user()->name;
+                    $email_remitente = auth()->user()->email;
+
+                    $comment = DB::table('petitions')->where('id', $petition_id)->select('product','comment', 'client_id')->get();
+                    $id_client = $comment[0]->client_id;
+                    $client = DB::table('users')->where('id', $id_client)->select('name','lastname','email')->get();
                     // AQUÍ VA EL ENVÍO DE CORREO
+                    $response = Http::withHeaders([
+                        'Conten-Type'=>'application/json'
+                    ])->get('http://localhost/crm_altcel2/public/petitions-notifications',[
+                        'name'=> $client[0]->name,
+                        'lastname'=>$client[0]->lastname,
+                        'correo'=> $client[0]->email,
+                        'comment'=>$comment[0]->comment,
+                        'status'=>'recibido',
+                        'remitente'=>$name_remitente,
+                        'email_remitente'=>$email_remitente,
+                        'product'=> $comment[0]->product
+                    ]);
                 }
             }
 
