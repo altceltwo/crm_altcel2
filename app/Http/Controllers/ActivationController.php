@@ -1051,6 +1051,10 @@ class ActivationController extends Controller
                     'who_received' => $current_id,
                     'date_received' => $date_received
                 ]);
+
+                if($statusPetition == 'recibido'){
+                    // AQUÍ VA EL ENVÍO DE CORREO
+                }
             }
 
         }else if($type == 'instalation'){
