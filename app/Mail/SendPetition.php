@@ -34,7 +34,10 @@ class SendPetition extends Mailable
         $comment = $this->info['comment'];
         $status = $this->info['status'];
         $remitente = $this->info['remitente'];
+        $email_remitente = $this->info['email_remitente'];
         $correo = $this->info['correo'];
+        $product = $this->info['product'];
+        $body = $this->info['body'];
 
         return $this->subject($subject)
                     ->view('mails.notificationActivation',$this->info)
@@ -45,7 +48,10 @@ class SendPetition extends Mailable
                             'comment'=>$comment,
                             'status'=>$status,
                             'remitente'=>$remitente,
-                            'correo'=>$correo
+                            'email_remitente'=>$email_remitente,
+                            'product'=>$product,
+                            'correo'=>$correo,
+                            'body'=>$body
                         ]);
     }
 }

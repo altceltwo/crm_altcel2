@@ -378,12 +378,11 @@ class PetitionController extends Controller
         $product = $request->get('product');
         $email_remitente = $request->get('email_remitente');
 
-        $email = ['c.banda07@hotmail.com','a160239@unach.mx'];
+        $email = ['alejandro.macias@altcel2.com', 'joel_maza@altcel.com', 'stephanni_hernandez@altcel.com', 'mirza_chacon@altcel.com', 'mario.molina@altcel2.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com'];
         
         if ($status == 'solicitud') {
             $data= [
-                "subject" => "Solicitud de Activación de Sim",
-                "destinatario"=> "Alejandro Macias",
+                "subject"=>"Solicitud de Activación de Sim",
                 "name" => $name,
                 "lastname" => $lastname,
                 "comment"=>$comment,
@@ -393,10 +392,10 @@ class PetitionController extends Controller
                 "correo"=>$correo,
                 "product"=>$product,
                 "email"=>$email,
-                "body"=>"Joel Maza, tienes una nueva solicitud de",
+                "body"=>$email[0]+" y "+$email[1]+", tienen una nueva solicitud de",
             ];
-            // return $data;
-            Mail::to($email[0])->send(new SendPetition($data));
+            return $data;
+            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
         }elseif ($status == 'activado') {
             $data= [
                 "subject" => "Sim solicitado ha sido activado",
@@ -411,7 +410,7 @@ class PetitionController extends Controller
                 "email"=>$email,
                 "body"=>"para notificarles que se activo"
             ];
-            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+            Mail::to($email[2])->cc($email[3])->cc($email[4])->cc($email[5])->cc($email[6])->send(new SendPetition($data));
         }elseif ($status == 'recibido') {
             $data= [
                 "subject" => "El cliente recibió dispositivo",
@@ -426,7 +425,9 @@ class PetitionController extends Controller
                 "email"=>$email,
                 "body"=>"para notificarles que se entrego"
             ];
-            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+            Mail::to($email[0])->cc($email[1])->cc($email[5])->cc($email[6])->send(new SendPetition($data));
         }
     }
 }
+
+// ->cc($email[5])->cc($email[6]) ->cc($email[4])->cc($email[5])->cc($email[6])
