@@ -350,7 +350,7 @@ class PetitionController extends Controller
                 //correos finanzas
                 $response = Http::withHeaders([
                     'Conten-Type'=>'application/json'
-                ])->get('http://localhost/crm_altcel2/public/petitions-notifications',[
+                ])->get('http://crm.altcel/petitions-notifications',[
                     'name'=>$user[0]->name,
                     'lastname'=>$user[0]->lastname,
                     'correo'=> $user[0]->email,

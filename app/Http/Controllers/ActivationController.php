@@ -312,7 +312,7 @@ class ActivationController extends Controller
                   //correos operaciones
                 $response = Http::withHeaders([
                     'Conten-Type'=>'application/json'
-                ])->get('http://localhost/crm_altcel2/public/petitions-notifications',[
+                ])->get('http://crm.altcel/petitions-notifications',[
                     'name'=> $name_child,
                     'lastname'=>$lastname_child,
                     'correo'=> $email_child,
