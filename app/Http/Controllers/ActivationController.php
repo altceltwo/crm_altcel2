@@ -14,6 +14,7 @@ use App\Device;
 use App\Number;
 use App\Petition;
 use App\Schedule;
+use App\Promotion;
 use App\Radiobase;
 use App\Activation;
 use App\Assignment;
@@ -76,6 +77,15 @@ class ActivationController extends Controller
             $data['ine_code'] = $request->get('ine_code');
             $data['cellphone'] = $request->get('cellphone');
             $data['petition'] = $request->get('petition');
+            $petitionData = Petition::where('id',$data['petition'])->first();
+            $rate_activation_id = $petitionData->rate_activation;
+            $rate_secondary_id = $petitionData->rate_secondary;
+
+            $data['flag_rate'] = $rate_activation_id == $rate_secondary_id ? 1 : 0;
+
+            $rateData = Rate::where('id',$rate_activation_id)->first();
+            $data['rate_activation'] = $rateData->name;
+            $data['rate_subsequent'] = $rate_secondary_id;
         }else{
             $data['name'] = '';
             $data['lastname'] = '';
@@ -86,6 +96,8 @@ class ActivationController extends Controller
             $data['ine_code'] = '';
             $data['cellphone'] = '';
             $data['petition'] = 0;
+            $data['flag_rate'] = 1;
+            $data['rate_subsequent'] = 0;
         }
         $data['packs'] = Pack::all()->where('status','activo');
         $data['radiobases'] = Radiobase::all();
@@ -101,6 +113,7 @@ class ActivationController extends Controller
         $rate_recurrency = $request->get('rate_recurrency');
         $imei = $request->get('imei');
         $serial_number = $request->get('serial_number');
+        $mac_address = $request->get('mac_address');
         $icc_id = $request->get('icc_id');
         $msisdn = $request->get('msisdn');
         $price = $request->get('price');
@@ -135,9 +148,11 @@ class ActivationController extends Controller
         $activate_bool = $request->get('activate_bool');
         $status = $request->get('statusActivation');
         $petition = $request->get('petition');
+        $flag_rate = $request->get('flag_rate');
+        $rate_subsequent = $request->get('rate_subsequent');
         $promo_boolean = $request->get('promo_boolean');
         
-        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate','petition','promo_boolean');
+        $request = request()->except('_token','offer_id','rate_id','imei','icc_id','msisdn','from','name','lastname','email','email_not','activate_bool','scheduleDate','petition','promo_boolean','flag_rate','rate_subsequent');
         
         $number = Number::where('icc_id',$icc_id)->where('MSISDN',$msisdn)->first();
         $number_id = $number->id;
@@ -282,6 +297,7 @@ class ActivationController extends Controller
                 'numbers_id' => $number_id,
                 'devices_id' => $device_id,
                 'serial_number' => $serial_number,
+                'mac_address' => $mac_address,
                 'date_activation' => $now,
                 'who_did_id' => $user_id,
                 'offer_id' => $offer_id,
@@ -295,7 +311,9 @@ class ActivationController extends Controller
                 'lng_hbb' => $lng_hbb,
                 'payment_status' => 'pendiente',
                 'status' => $status,
-                'petition_id' => $petition
+                'petition_id' => $petition,
+                'flag_rate' => $flag_rate,
+                'rate_subsequent' => $rate_subsequent
             ];
 
             if($petition != 0){
@@ -331,10 +349,15 @@ class ActivationController extends Controller
 
             if($promo_boolean == 1){
                 $dataRate = Rate::where('id',$rate_id)->first();
-                $promo_quantity = $dataRate->promo_quantity;
-                $promo_quantity = $promo_quantity-1;
+                $promotion_id = $dataRate->promotion_id;
 
-                Rate::where('id',$rate_id)->update(['promo_quantity'=>$promo_quantity]);
+                $dataPromotion = Promotion::where('id',$promotion_id)->first();
+                $device_quantity = $dataPromotion->device_quantity;
+
+                $device_quantity = $device_quantity-1;
+                Promotion::where('id',$promotion_id)->update([
+                    'device_quantity' => $device_quantity
+                ]);
             }
 
             if($sim_altcel != 'nothing'){
@@ -356,27 +379,15 @@ class ActivationController extends Controller
                     return 4;
                 }
             }
+
+            if($petition != 0){
+                $activationData = Activation::where('petition_id',$petition)->first();
+                $activation_id = $activationData->id;
+                return response()->json(['http_code'=>1,'activation_id'=>$activation_id]);
+            }
+
+
             return 1;
-            /* else{
-                $date_now = date("Y-m-d");
-
-                $date_pay = new DateTime($date_now);
-                // $date_pay = $date_pay->format('Y-m-d');
-                $date_pay->modify('last day of this month');
-                $date_pay = $date_pay->format('Y-m-d');
-
-                $date_limit = strtotime('+5 days', strtotime($date_pay));
-                $date_limit = date('Y-m-d', $date_limit);
-
-                Pay::insert([
-                    'date_pay' => $date_pay,
-                    'date_pay_limit' => $date_limit,
-                    'status' => 'pendiente',
-                    'activation_id' => $activationID,
-                    'amount' => $rate_price
-                ]);
-                return 1;
-            } */
     }
 
     public function activationEthernet(Request $request) {
@@ -1009,6 +1020,7 @@ class ActivationController extends Controller
         // return $request;
         $id = $request->get('id');
         $type = $request->get('type');
+        $x = false;
 
         $waited_amount_rate = $request->get('waited_amount_rate');
         $waited_amount_device = $request->get('waited_amount_device');
@@ -1062,6 +1074,7 @@ class ActivationController extends Controller
                     $id_client = $comment[0]->client_id;
                     $client = DB::table('users')->where('id', $id_client)->select('name','lastname','email')->get();
                     // AQUÍ VA EL ENVÍO DE CORREO
+                    
                     $response = Http::withHeaders([
                         'Conten-Type'=>'application/json'
                     ])->get('http://crm.altcel/petitions-notifications',[
@@ -1074,6 +1087,12 @@ class ActivationController extends Controller
                         'email_remitente'=>$email_remitente,
                         'product'=> $comment[0]->product
                     ]);
+
+                    // return $response;
+                    if($response['http_code'] == 200){
+                        $x = true;
+                    }
+
                 }
             }
 
@@ -1272,5 +1291,62 @@ class ActivationController extends Controller
         }
 
         return $request;
+    }
+
+    public function createDeliveryFormat($activation){
+        $deliveryData = DB::table('activations')
+                    ->join('numbers','numbers.id','=','activations.numbers_id')
+                    ->leftJoin('devices','devices.id','=','activations.devices_id')
+                    ->join('petitions','petitions.id','=','activations.petition_id')
+                    ->join('rates','rates.id','=','activations.rate_id')
+                    ->where('activations.id',$activation)
+                    ->select('numbers.icc_id','numbers.MSISDN','devices.no_serie_imei','devices.description AS especifications','activations.serial_number','activations.mac_address',
+                    'petitions.who_attended','petitions.sender','activations.client_id','rates.name AS rate_name')
+                    ->get();
+
+        $data['ICC'] = $deliveryData[0]->icc_id;
+        $data['MSISDN'] = $deliveryData[0]->MSISDN;
+        $data['rate_name'] = $deliveryData[0]->rate_name;
+
+        $data['IMEI'] = $deliveryData[0]->no_serie_imei;
+        $data['device_quantity'] = $data['IMEI'] == null ? 0 : 1;
+        $data['IMEI'] = $data['IMEI'] == null ? 'No Asignado' : $deliveryData[0]->no_serie_imei;
+
+        $data['especifications'] = $deliveryData[0]->especifications;
+        $data['especifications'] = $data['especifications'] == null ? 'No Asignado' : $deliveryData[0]->especifications;
+
+        $data['serial_number'] = $deliveryData[0]->serial_number;
+        $data['serial_number'] = $data['serial_number'] == null ? 'No Asignado' : $deliveryData[0]->serial_number;
+
+        $mac_address = $deliveryData[0]->mac_address;
+
+        if($mac_address == null){
+            $mac_address_reverse = strrev($mac_address);
+            $afterPrefix = substr($mac_address_reverse,4,1).substr($mac_address_reverse,3,1).substr($mac_address_reverse,1,1).substr($mac_address_reverse,0,1);
+            $data['password'] = 'No Asignado';
+            $data['red'] = 'No Asignado';
+        }else{
+            $mac_address_reverse = strrev($mac_address);
+            $afterPrefix = substr($mac_address_reverse,4,1).substr($mac_address_reverse,3,1).substr($mac_address_reverse,1,1).substr($mac_address_reverse,0,1);
+            $data['password'] = 'Altcel_'.$afterPrefix;
+            $data['red'] = 'Altcel'.$afterPrefix;
+        }
+        
+
+        $who_attended = $deliveryData[0]->who_attended;
+        $who_attendedData = User::where('id',$who_attended)->first();
+        $data['who_attended_name'] = strtoupper($who_attendedData->name.' '.$who_attendedData->lastname);
+
+        $sender = $deliveryData[0]->sender;
+        $senderData = User::where('id',$sender)->first();
+        $data['sender_name'] = strtoupper($senderData->name.' '.$senderData->lastname);
+
+        $client = $deliveryData[0]->client_id;
+        $clientData = User::where('id',$client)->first();
+        $data['client_name'] = strtoupper($clientData->name.' '.$clientData->lastname);
+
+        $data['fecha'] = date('Y-M-d H:i:s');
+
+        return view('activations.deliveryFormat',$data);
     }
 }

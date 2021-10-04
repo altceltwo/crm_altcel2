@@ -379,7 +379,7 @@
                                         <span>Dashboard</span>
                                     </a>
                                 </li>
-                                @if(Auth::user()->role_id == 1)
+                                @if(Auth::user()->role_id == 1 && Auth::user()->id != 1)
                                     <li class="nav-parent">
                                         <a>
                                             <i class="fa fa-plus-circle" aria-hidden="true"></i>
@@ -460,6 +460,17 @@
                                                             </li>
                                                         </ul>
                                                     </li>
+                                                    <li class="nav-parent">
+                                                        <a>Promociones</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('promotion.index')}}">Ver</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="{{route('promotion.create')}}">Crear</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
                                                     <li>
                                                         <a href="{{route('ethernet-admin.get')}}">Internet</a>
                                                     </li>
@@ -505,6 +516,47 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('schedules.index')}}">Administración</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Solicitudes</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('solicitudes')}}">Nuevas</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('completadas')}}">Completadas</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                @elseif(Auth::user()->id == 1)
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            <span>Clientes</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('activations.create')}}">Nuevo</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('clients-pay-all.get')}}"> Ver</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('clients.index')}}">Resumen</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('prospects.index')}}">Prospectos</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('operations.specials')}}">Operaciones Especiales</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('preactivations.index')}}">Preactivaciones</a>
                                             </li>
                                         </ul>
                                     </li>

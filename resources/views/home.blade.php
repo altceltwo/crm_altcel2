@@ -40,7 +40,9 @@
                                 </div>
                                 <div class="summary-footer">
                                     <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
+                                    @if(Auth::user()->id != 1)
                                     <a href="{{route('webhook-payments-pending.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -66,7 +68,9 @@
                                 </div>
                                 <div class="summary-footer">
                                     <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
+                                    @if(Auth::user()->id != 1)
                                     <a href="{{route('webhook-payments-overdue.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -92,7 +96,9 @@
                                 </div>
                                 <div class="summary-footer">
                                 <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
+                                @if(Auth::user()->id != 1)
                                 <a href="{{route('webhook-openpay.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                @endif
                                 </div>
                             </div>
                         </div>
@@ -117,8 +123,10 @@
                                     </div>
                                 </div>
                                 <div class="summary-footer">
+                                @if(Auth::user()->id != 1)
                                     <a href="{{route('newClients.excel')}}" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a>
                                     <a href="{{route('prospects.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                @endif
                                 </div>
                             </div>
                         </div>
@@ -143,8 +151,10 @@
                                     </div>
                                 </div>
                                 <div class="summary-footer">
+                                @if(Auth::user()->id != 1)
                                     <a href="{{route('rates.excel')}}" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a>
                                     <a href="{{route('rates.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                @endif
                                 </div>
                             </div>
                         </div>
@@ -169,8 +179,10 @@
                                     </div>
                                 </div>
                                 <div class="summary-footer">
+                                @if(Auth::user()->id != 1)
                                     <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a>
                                     <a href="{{route('activations.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                @endif
                                 </div>
                             </div>
                         </div>

@@ -145,8 +145,7 @@ class ClientController extends Controller
     public function searchClients(Request $request){
         $term = $request->get('term');
         $querys = DB::table('users')
-                        ->join('clients', 'clients.user_id', '=', 'users.id')
-                        ->where('role_id',3)
+                        ->leftJoin('clients', 'clients.user_id', '=', 'users.id')
                         ->where('users.name', 'LIKE', '%'. $term. '%')
                         ->orWhere('users.email','LIKE','%'. $term. '%')
                         ->select('clients.*','users.name','users.lastname','users.email','users.id as user_id')

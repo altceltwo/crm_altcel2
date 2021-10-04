@@ -36,6 +36,13 @@
                 <!-- MIFI Content -->
                 <div class="toggle-content">
                     <form class="form-horizontal form-bordered">
+
+                    @if($petition != 0)
+                        <div class="alert alert-warning">
+                            <h3>¡¡ATENCIÓN!!</h3>
+                            <strong>EL PLAN DE ACTIVACIÓN SOLICITADO ES {{$rate_activation}}</strong>.
+                        </div>
+                    @endif
                         <div class="form-group">
                             <div class="col-sm-12">
                                 <div class="row">
@@ -59,6 +66,10 @@
                                             <option selected value="0">Nothing</option>
                                         </select>
                                     </div>
+
+                                    <input type="hidden" id="flag_rate" value="{{$flag_rate}}">
+                                    <input type="hidden" id="rate_subsequent" value="{{$rate_subsequent}}">
+
                                     <div class="form-group col-md-12">
                                         
                                         <div class="col-md-6 d-none" id="coordinates">
@@ -272,6 +283,11 @@
                                     <div class="col-md-3">
                                         <label for="serial_number" class="form-label">No. Serie</label>
                                         <input type="text" class="form-control" id="serial_number" name="serial_number" required >
+                                    </div>
+                                    <div class="col-md-3" id="content-MAC">
+                                        <label for="mac_address_activation" class="form-label">MAC Address</label>
+                                        <input type="text" class="form-control" id="mac_address_activation" name="mac_address_activation" required >
+                                        <input type="hidden" id="mac_address_boolean" value="0">
                                     </div>
                                     <div class="col-md-3 d-none">
                                         <label for="sim" class="form-label">Precio Dispositivo</label>
@@ -799,6 +815,29 @@
     var altcel;
     var promo_boolean_global = 0;
     var device_price_global = 0;
+
+    $('#mac_address_activation').keyup(function(){
+        this.value = 
+            (this.value.toUpperCase()
+            .replace(/[^\d|A-Z]/g, '')
+            .match(/.{1,2}/g) || [])
+            .join(":");
+
+            let valor = $(this).val();
+
+            let regex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+            let tag   = document.getElementById('tag');
+            if( regex.test( valor ) ) {
+                $('#content-MAC').removeClass('has-error');
+                $('#content-MAC').addClass('has-success');
+                $('#mac_address_boolean').val(1);
+            } else {
+                $('#content-MAC').removeClass('has-success');
+                $('#content-MAC').addClass('has-error');
+                $('#mac_address_boolean').val(0);
+            }
+    });
+
     $('#date-pay').click(function(){
         let x = $('#input').val();
         let token = $('meta[name="csrf-token"]').attr('content');
@@ -930,13 +969,11 @@
                     product:product
                     },
                 success: function(data){
+                    // console.log(data);
+                    // return false;
                     data.forEach(function(element){
-                        
-                        if((element.promo_bool == 1 && element.promo_quantity > 0) || (element.promo_bool == 0)){
-                            options+="<option value='"+element.offerID+"' data-rate-id='"+element.id+"' data-plan-price='"+element.price+"' data-plan-name='"+element.name+"' data-plan-recurrency='"+element.recurrency+"' data-product='"+element.offer_product+"' data-promo-bool='"+element.promo_bool+"' data-device-price='"+element.device_price+"'>"+element.name+"</option>"
-                            console.log(element);
-                            count+=1;
-                        }
+                        options+="<option value='"+element.offerID+"' data-rate-id='"+element.id+"' data-plan-price='"+element.price+"' data-plan-name='"+element.name+"' data-plan-recurrency='"+element.recurrency+"' data-product='"+element.offer_product+"' data-promo-bool='"+element.promo_bool+"' data-device-price='"+element.device_price+"'>"+element.name+"</option>"
+                        count+=1;
                     });
                     console.log(count);
                     $('#offers').html(options);
@@ -1093,6 +1130,8 @@
 
         let imei = $('#imei').val();
         let serial_number = $('#serial_number').val();
+        let mac_address = $('#mac_address_activation').val();
+        let mac_address_boolean = $('#mac_address_boolean').val();
         let offer = $('#offers').val();
         let rate =  $('#offers option:selected').attr('data-rate-id');
         let rate_name =  $('#offers option:selected').attr('data-plan-name');
@@ -1115,8 +1154,21 @@
         let activate = 0;
         let statusActivation = 'activated';
         let petition = $('#petition_id').val();
+        let flag_rate = $('#flag_rate').val();
+        let rate_subsequent = $('#rate_subsequent').val();
         // console.log(name+' - '+lastname+' - '+address+' - '+email+' - '+ine_code+' - '+imei+' - '+offer+' - '+rate);
 
+        if(mac_address.length == 0 || /^\s+$/.test(mac_address)){
+
+        }else{
+            if(mac_address_boolean == 0){
+                let message = "Ingrese una dirección MAC válida..";
+                sweetAlertFunction(message);
+                document.getElementById('mac_address_activation').focus();
+                return false;
+            }
+        }
+        
         if(petition == 0){
             petition = '';
         }
@@ -1285,6 +1337,7 @@
                         type_person:type_person,
                         imei:imei,
                         serial_number:serial_number,
+                        mac_address:mac_address,
                         offer_id:offer,
                         rate_id:rate,
                         icc_id:icc_id,
@@ -1304,10 +1357,27 @@
                         scheduleDate:scheduleDate,
                         statusActivation:statusActivation,
                         petition:petition,
-                        promo_boolean:promo_boolean_global
+                        promo_boolean:promo_boolean_global,
+                        flag_rate:flag_rate,
+                        rate_subsequent:rate_subsequent
                         },
                     success: function(data){
-                        if(data == 1){
+                        if(data.activation_id){
+                            let url = "{{route('formatDelivery',['activation'=>'temp'])}}";
+                            url = url.replace('temp',data.activation_id);
+                            // window.open(url, '_blank');
+                            window.open(url,'','width=600,height=400,left=50,top=50,toolbar=yes');
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Activación hecha con éxito.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            $('#send').attr('disabled',false);
+                            setTimeout(function(){ location.href = "{{route('activations.create')}}"; }, 1500);
+                            
+                        }else if(data == 1){
                             
                             Swal.fire({
                                 icon: 'success',

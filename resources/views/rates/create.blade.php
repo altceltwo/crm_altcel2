@@ -129,13 +129,18 @@
                                 </div>
 
                                 <div class="col-md-3 d-none content-promo">
-                                    <label for="name">Cantidad de Promos</label>
-                                    <input type="text" class="form-control form-control-sm" id="promo_quantity" name="promo_quantity">
+                                    <label for="name">Precio Dispositivo</label>
+                                    <input type="text" class="form-control form-control-sm" id="device_price" name="device_price">
                                 </div>
 
                                 <div class="col-md-3 d-none content-promo">
-                                    <label for="name">Descuento a Dispositivo</label>
-                                    <input type="text" class="form-control form-control-sm" id="device_price" name="device_price">
+                                    <label for="promotion_id">Promociones</label>
+                                    <select id="promotion_id" name="promotion_id" class="form-control form-control-sm" required>
+                                        <option selected value="0">Choose...</option>
+                                        @foreach($promotions as $promotion)
+                                        <option value="{{$promotion->id}}">{{$promotion->name.' - Dispositivos disponibles: '.$promotion->device_quantity}}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <input type="hidden" name="promo_bool" id="promo_bool" value="0">

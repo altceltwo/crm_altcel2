@@ -99,6 +99,7 @@
                 <tr>
                 <th>Cliente</th>
                 <th>Producto</th>
+                <th>Plan Activación</th>
                 <th>Status</th>
                 <th>Cobro cpe</th>
                 <th>Cobro Plan</th>
@@ -115,6 +116,7 @@
                 <tr>
                     <td>{{$completado['client']}}</td>
                     <td>{{$completado['product']}}</td>
+                    <td>{{$completado['rate_activation']}}</td>
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
                     <td>${{number_format($completado['cobroCpe'],2)}}</td>
                     <td>${{number_format($completado['cobroPlan'],2)}}</td>

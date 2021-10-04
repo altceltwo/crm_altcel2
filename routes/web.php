@@ -28,6 +28,7 @@ Route::resource('clients','ClientController')->middleware('auth');
 Route::resource('facturacion', 'InvoiceController')->middleware('auth');
 Route::resource('assignment', 'AssignmentController')->middleware('auth');
 Route::resource('dealer', 'DealerController')->middleware('auth');
+Route::resource('promotion', 'PromotionController')->middleware('auth');
 
 // Petitions
 // Route::post('/petition');
@@ -53,6 +54,7 @@ Route::post('/change-rate-preactivate','ActivationController@changeRatePreactiva
 Route::delete('/rollback-preactivate/{activation}','ActivationController@rollbackPreactivate')->name('rollbackPreactivate')->middleware('auth');
 Route::delete('/rollback-preactivate-api/{activation}','ActivationController@rollbackPreactivate');
 Route::post('/execute-activation/{activation}','ActivationController@executeActivation')->name('executeActivation')->middleware('auth');
+Route::get('/create-delivery-format/{activation}','ActivationController@createDeliveryFormat')->name('formatDelivery')->middleware('auth');
 
 // Administrator Routes
 Route::get('/users', 'UserController@showUsers')->name('show-users.get')->middleware('auth');
@@ -189,13 +191,13 @@ Route::post('updateStatusCortes', 'AdminController@statusCortes')->name('status.
 Route::post('payAll','AdminController@payAll')->name('payAll');
 
 // Petitions
-Route::get('solicitudes', 'PetitionController@index')->name('solicitudes');
-Route::get('completadas','PetitionController@show')->name('completadas');
-Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
-Route::get('completadasFinanzas','PetitionController@recibidosFinance')->name('recibidos');
+Route::get('solicitudes', 'PetitionController@index')->name('solicitudes')->middleware('auth');
 Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth');
+Route::get('completadasFinanzas','PetitionController@recibidosFinance')->name('recibidos')->middleware('auth');
+Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth')->middleware('auth');
 Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
 Route::post('collect-money', 'PetitionController@collectMoney')->name('collectMoney');
 Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCollected');
+Route::get('/get-activation-by-petition/{petition}', 'PetitionController@getActivation')->name('getActivation');
 
 Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');

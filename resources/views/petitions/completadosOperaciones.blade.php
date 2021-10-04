@@ -31,6 +31,7 @@
                 <tr>
                 <th>Cliente</th>
                 <th>Producto</th>
+                <th>Plan Activación</th>
                 <th>Status</th>
                 <th>Cobro cpe</th>
                 <th>Cobro Plan</th>
@@ -40,7 +41,7 @@
                 <th>Recibido Por</th>
                 <th>Fecha Recibido</th>
                 <th>Comentario</th>
-                @if(Auth::user()->role_id == 5)
+                @if(Auth::user()->role_id == 5 || Auth::user()->role_id == 1)
                 <th>Opciones</th>
                 @endif
                 </tr>
@@ -50,6 +51,7 @@
                 <tr>
                     <td>{{$completado['client']}}</td>
                     <td>{{$completado['product']}}</td>
+                    <td>{{$completado['rate_activation']}}</td>
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
                     <td>${{number_format($completado['cobroCpe'],2)}}</td>
                     <td>${{number_format($completado['cobroPlan'],2)}}</td>
@@ -62,6 +64,10 @@
                     @if(Auth::user()->role_id == 5)
                     <td>
                         <button class="btn btn-success btn-sm collect" data-petition-id="{{$completado['id']}}" data-collected-cpe="{{number_format($completado['cobroCpe'],2)}}" data-collected-rate="{{number_format($completado['cobroPlan'],2)}}"><i class="fa fa-usd"></i></button>
+                    </td>
+                    @elseif(Auth::user()->role_id == 1)
+                    <td>
+                        <button class="btn btn-success btn-sm format" data-petition-id="{{$completado['id']}}" data-toggle="tooltip" data-placement="top" data-original-title="Formato de Entrega" ><i class="fa fa-file-text-o"></i></button>
                     </td>
                     @endif
                 </tr>
@@ -294,6 +300,7 @@
                                 showConfirmButton: false,
                                 timer: 1000
                             })
+                            setTimeout(function(){ location.reload(); }, 1200);
                         }else if(response == 0){
                             Swal.fire({
                                 icon: 'error',
@@ -318,6 +325,21 @@
             }
         })
 
+    });
+
+    $('.format').click(function(){
+        let petition = $(this).data('petition-id');
+        let url = "{{route('getActivation',['petition'=>'temp'])}}";
+        url = url.replace('temp',petition);
+        let urlFormat = "{{route('formatDelivery',['activation' => 'temp'])}}";
+
+        $.ajax({
+            url: url,
+            success: function(response){
+                urlFormat = urlFormat.replace('temp',response);
+                window.open(urlFormat,'','width=600,height=400,left=50,top=50,toolbar=yes');
+            }
+        });
     });
 </script>
 

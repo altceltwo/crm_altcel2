@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Offer;
-use App\Rate;
-use App\Politic;
 use DB;
+use App\Rate;
+use App\Offer;
+use App\Politic;
+use App\Promotion;
+use App\Exports\RatesExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\RatesExport;
 
 class RateController extends Controller
 {
@@ -21,11 +22,15 @@ class RateController extends Controller
 
     public function create(){
         $data['offers'] = Offer::all()->where('type','normal');
+        $data['promotions'] = Promotion::all();
         return view('rates.create',$data);
     }
 
     public function store(Request $request) {
         // return $request;
+        if($request['promotion_id'] == 0){
+            $request['promotion_id'] = null;
+        }
         $time = time();
         $h = date("g", $time);
         $request = request()->except('_token');
@@ -63,12 +68,52 @@ class RateController extends Controller
         $product = $request->post('product');
         $rates = DB::table('rates')
                     ->join('offers','offers.id','=','rates.alta_offer_id')
+                    ->where('rates.promotion_id','=',null)
                     ->where('offers.product','=',$product)
                     ->where('rates.status','activo')
                     ->where('offers.type','normal')
                     ->select('rates.*','offers.name AS offer_name','offers.id AS offer_id','offers.product AS offer_product', 'offers.offerID')
                     ->get();
-        return $rates;
+
+        $ratesPromotion = DB::table('rates')
+                             ->join('offers','offers.id','=','rates.alta_offer_id')
+                             ->join('promotions','promotions.id','=','rates.promotion_id')
+                             ->where('rates.promotion_id','!=',null)
+                             ->where('offers.product','=',$product)
+                             ->where('rates.status','activo')
+                             ->where('offers.type','normal')
+                             ->where('promotions.device_quantity','!=','0')
+                             ->select('rates.*','offers.name AS offer_name','offers.id AS offer_id','offers.product AS offer_product', 'offers.offerID')
+                             ->get();
+
+        $ratesFinal = [];
+        foreach ($rates as $rate) {
+            array_push($ratesFinal,array(
+                'offerID' => $rate->offerID,
+                'id' => $rate->id,
+                'price' => $rate->price,
+                'name' => $rate->name,
+                'recurrency' => $rate->recurrency,
+                'offer_product' => $rate->offer_product,
+                'promo_bool' => $rate->promo_bool,
+                'device_price' => $rate->device_price
+            ));
+        }
+
+        foreach ($ratesPromotion as $ratePromotion) {
+            array_push($ratesFinal,array(
+                'offerID' => $ratePromotion->offerID,
+                'id' => $ratePromotion->id,
+                'price' => $ratePromotion->price,
+                'name' => $ratePromotion->name,
+                'recurrency' => $ratePromotion->recurrency,
+                'offer_product' => $ratePromotion->offer_product,
+                'promo_bool' => $ratePromotion->promo_bool,
+                'device_price' => $ratePromotion->device_price
+            ));
+        }
+        // array_push($rates,$ratesPromotion);
+        return $ratesFinal;
     }
 
     public function getRatesAltaApi(Request $request) {
@@ -127,7 +172,8 @@ class RateController extends Controller
                              ->join('rates','rates.id','=','activations.rate_id')
                              ->join('offers','offers.id','=','activations.offer_id')
                              ->where('MSISDN',$msisdn)
-                             ->select('numbers.*','activations.offer_id','activations.rate_id','offers.name AS offer_name','rates.name AS rate_name','activations.lat_hbb AS lat','activations.lng_hbb AS lng')
+                             ->select('numbers.*','activations.offer_id','activations.rate_id','offers.name AS offer_name','rates.name AS rate_name','activations.lat_hbb AS lat','activations.lng_hbb AS lng',
+                             'activations.flag_rate','activations.rate_subsequent')
                              ->get();
         
         $offer_id = $dataActivation[0]->offer_id;
@@ -138,6 +184,8 @@ class RateController extends Controller
         $lng = $dataActivation[0]->lng;
         $producto = $dataActivation[0]->producto;
         $producto = trim($producto);
+        $flag_rate = $dataActivation[0]->flag_rate;
+        $rate_subsequent = $dataActivation[0]->rate_subsequent;
 
         $response['dataMSISDN'] = array(
             'offer_name' => $offer_name,
@@ -149,12 +197,21 @@ class RateController extends Controller
             'lng' => $lng
         );
 
-        $response['offersAndRates'] = DB::table('offers')
+        if($flag_rate == 0){
+            $response['offersAndRates'] = DB::table('offers')
+                             ->join('rates','rates.alta_offer_id','=','offers.id')
+                             ->where('rates.id','=',$rate_subsequent)
+                             ->where('offers.product',$producto)
+                             ->select('offers.id AS offer_id','offers.offerID AS offerID','offers.name AS offer_name','rates.id AS rate_id','rates.name AS rate_name','rates.price_subsequent AS rate_price')
+                             ->get();
+        }else{
+            $response['offersAndRates'] = DB::table('offers')
                              ->join('rates','rates.alta_offer_id','=','offers.id')
                              ->where('rates.id','!=',$rate_id)
                              ->where('offers.product',$producto)
                              ->select('offers.id AS offer_id','offers.offerID AS offerID','offers.name AS offer_name','rates.id AS rate_id','rates.name AS rate_name','rates.price_subsequent AS rate_price')
-                             ->get();
+                             ->get();   
+        }
 
         return response()->json($response);
     }

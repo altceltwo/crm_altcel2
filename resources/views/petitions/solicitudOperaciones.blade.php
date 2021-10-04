@@ -33,7 +33,8 @@
                 <th scope="col">Status</th>
                 <th scope="col">Fecha de envio</th>
                 <th scope="col">Cliente</th>
-                <th scope="col">producto</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Plan Activación</th>
                 <th scope="col">Comentario</th>
                 <th scope="col">Acción</th>
                 </tr>
@@ -46,6 +47,7 @@
                     <td>{{$solicitud['date_sent']}}</td>
                     <td>{{$solicitud['client']}}</td>
                     <td>{{$solicitud['product']}}</td>
+                    <td>{{$solicitud['rate_activation']}}</td>
                     <td>{{$solicitud['comment']}}</td>
                     <td><button class="btn btn-warning solicitud" id="notification" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}" data-comment="{{$solicitud['comment']}}">Activar</button></td>
                 </tr>

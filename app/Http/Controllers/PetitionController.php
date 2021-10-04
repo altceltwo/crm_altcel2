@@ -17,14 +17,15 @@ class PetitionController extends Controller
 {
     public function index()
     {
-        $x = DB::table('petitions')
+        $y = DB::table('petitions')
                ->join('users', 'users.id', '=', 'petitions.sender')
+               ->join('rates','rates.id','=','petitions.rate_activation')
                ->where('petitions.status', '=', 'solicitud')
-               ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+               ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender','rates.name AS rate_name')
                ->get();
         // return $x;
         $data['solicitudes'] = [];
-        foreach($x as $x){
+        foreach($y as $x){
             $id = $x->id;
             $id_sender = $x->sender;
             $name_sender = $x->name_sender.' '.$x->lastname_sender;
@@ -46,11 +47,12 @@ class PetitionController extends Controller
                 'comment'=>$comment,
                 'product'=>$product,
                 'client'=>$client[0]->name.' '.$client[0]->lastname,
+                'rate_activation' => $x->rate_name
             ));
 
         }
         // return $data;
-        return view('petitions/solicitudOperaciones', $data);
+        return view('petitions.solicitudOperaciones', $data);
     }
 
     /**
@@ -86,15 +88,17 @@ class PetitionController extends Controller
         if ($currentRol == 1) {
             $x = DB::table('petitions')
                    ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->leftJoin('rates','rates.id','=','petitions.rate_activation')
                    ->where('petitions.status', '=', 'recibido')
                    ->orwhere('petitions.status', '=', 'activado')
-                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender','rates.name AS rate_name')
                    ->get();
         }elseif ($currentRol == 5) {
             $x = DB::table('petitions')
                    ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->join('rates','rates.id','=','petitions.rate_activation')
                    ->where('petitions.status', '=', 'activado')
-                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender','rates.name AS rate_name')
                    ->get();
         }
         // return $x;
@@ -157,7 +161,8 @@ class PetitionController extends Controller
                 'dateRecibido'=>$fechaRecibido,
                 'comment'=>$comment,
                 'badgeFecha'=>$badgeFecha,
-                'badgeStatus'=>$badgeStatus
+                'badgeStatus'=>$badgeStatus,
+                'rate_activation' => $y->rate_name
             )); 
         }
         // return $data['completadas'];
@@ -182,9 +187,10 @@ class PetitionController extends Controller
                 // return $date_init.' y '.$date_final;
                 $x = DB::table('petitions')
                         ->join('users', 'users.id', '=', 'petitions.sender')
+                        ->join('rates','rates.id','=','petitions.rate_activation')
                         ->where('petitions.status', '=', 'recibido')
                         ->whereBetween('petitions.date_received', [$date_init, $date_final])
-                        ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                        ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender','rates.name AS rate_name')
                         ->get();
 
                 $data['fecha'] = 'Mostrando registros en el rango de '.substr($date_init,0,-8).' a '.substr($date_final,0,-8);
@@ -193,8 +199,9 @@ class PetitionController extends Controller
         }else{
             $x = DB::table('petitions')
                    ->join('users', 'users.id', '=', 'petitions.sender')
+                   ->join('rates','rates.id','=','petitions.rate_activation')
                    ->where('petitions.status', '=', 'recibido')
-                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender')
+                   ->select('petitions.*', 'users.name AS name_sender', 'users.lastname AS lastname_sender','rates.name AS rate_name')
                    ->get();
 
             $data['fecha'] = 'Mostrando todos los registros';
@@ -247,7 +254,8 @@ class PetitionController extends Controller
                 'dateRecibido'=>$fechaRecibido,
                 'comment'=>$comment,
                 'badgeFecha'=>$badgeFecha,
-                'badgeStatus'=>$badgeStatus
+                'badgeStatus'=>$badgeStatus,
+                'rate_activation' => $y->rate_name
             ));
             $data['totalcpe'] += $y->collected_device;
             $data['totalplan'] += $y->collected_rate;
@@ -368,6 +376,12 @@ class PetitionController extends Controller
         }
     }
 
+    public function getActivation($petition){
+        $activation = Activation::where('petition_id',$petition)->first();
+        $activation_id = $activation->id;
+        return $activation_id;
+    }
+
     public function petitiosNotification(Request $request){
         $status = $request->get('status');
         $name = $request->get('name');
@@ -378,11 +392,11 @@ class PetitionController extends Controller
         $product = $request->get('product');
         $email_remitente = $request->get('email_remitente');
 
-        $email = ['alejandro.macias@altcel2.com', 'joel_maza@altcel.com', 'stephanni_hernandez@altcel.com', 'mirza_chacon@altcel.com', 'mario.molina@altcel2.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com'];
+        $email = ['alejandro.macias@altcel2.com', 'joel_maza@altcel.com', 'stephanni_hernandez@altcel.com', 'mirza_chacon@altcel.com', 'mario_molina@altcel.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com'];
         
         if ($status == 'solicitud') {
             $data= [
-                "subject"=>"Solicitud de Activación de Sim",
+                "subject"=>"SOLICITUD DE ACTIVACIÓN DE SIM",
                 "name" => $name,
                 "lastname" => $lastname,
                 "comment"=>$comment,
@@ -392,13 +406,13 @@ class PetitionController extends Controller
                 "correo"=>$correo,
                 "product"=>$product,
                 "email"=>$email,
-                "body"=>$email[0]+" y "+$email[1]+", tienen una nueva solicitud de",
+                "body"=>$email[0]." y ".$email[1].", tienen una nueva solicitud de",
             ];
-            return $data;
             Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+            return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }elseif ($status == 'activado') {
             $data= [
-                "subject" => "Sim solicitado ha sido activado",
+                "subject" => "LA SIM SOLICITADA HA SIDO ACTIVADA",
                 "name" => $name,
                 "lastname" => $lastname,
                 "comment"=>$comment,
@@ -408,12 +422,17 @@ class PetitionController extends Controller
                 "correo"=>$correo,
                 "product"=>$product,
                 "email"=>$email,
-                "body"=>"para notificarles que se activo"
+                "body"=>"para notificarles que se activó"
             ];
-            Mail::to($email[2])->cc($email[3])->cc($email[4])->cc($email[5])->cc($email[6])->send(new SendPetition($data));
+            Mail::to($email[2])->send(new SendPetition($data));
+            Mail::to($email[3])->send(new SendPetition($data));
+            Mail::to($email[4])->send(new SendPetition($data));
+            Mail::to($email[5])->send(new SendPetition($data));
+            Mail::to($email[6])->send(new SendPetition($data));
+            return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }elseif ($status == 'recibido') {
             $data= [
-                "subject" => "El cliente recibió dispositivo",
+                "subject" => "IMPORTE DE ACTIVACIÓN DE SIM RECIBIDO COMPLETAMENTE",
                 "name" => $name,
                 "lastname" => $lastname,
                 "comment"=>$comment,
@@ -423,9 +442,13 @@ class PetitionController extends Controller
                 "correo"=>$correo,
                 "product"=>$product,
                 "email"=>$email,
-                "body"=>"para notificarles que se entrego"
+                "body"=>"para notificarles que se entregó"
             ];
-            Mail::to($email[0])->cc($email[1])->cc($email[5])->cc($email[6])->send(new SendPetition($data));
+            Mail::to($email[0])->send(new SendPetition($data));
+            Mail::to($email[1])->send(new SendPetition($data));
+            Mail::to($email[5])->send(new SendPetition($data));
+            Mail::to($email[6])->send(new SendPetition($data));
+            return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }
     }
 }
