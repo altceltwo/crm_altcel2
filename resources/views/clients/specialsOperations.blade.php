@@ -100,15 +100,16 @@
                                         Consulta de UF
                                     </label>
                                 </div>
-
-                                <div class="radio col-md-3">
-                                    <label>
-                                        <input type="radio" name="optionsRadios" id="optionsRadios6" value="reemSim">
-                                        Reemplazo de Sim
                                 <div class="radio col-md-3">
                                     <label>
                                         <input type="radio" name="optionsRadios" id="optionsRadios7" value="changeMSISDN">
                                         Cambio de MSISDN
+                                    </label>
+                                </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios8" value="reemSim">
+                                        Reemplazo de SIM
                                     </label>
                                 </div>
                             </div>
@@ -683,14 +684,9 @@
                             <div class="col-md-12">
                             </div>
                         </div>
-                        <br>
-                        <button type="button" class="btn btn-success" id="replacementSim">Aceptar</button>
-{{--                        
-                        <div class="col-md-12">
-                           <iframe src="" class="col-md-12 d-none" height="600" id="consultUFView"></iframe>
-                        </div> --}}
                         
                     </div>
+                    <button type="button" class="btn btn-success mt-md" id="replacementSim">Aceptar</button>
                     
                 </div>
             </form>
@@ -907,8 +903,18 @@
             $('#changeLinkContent').addClass('d-none');
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
             $('#reemSim').addClass('d-none');
         }else if(radioOption == "reemSim"){
+            $('#reemSim').removeClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == 'changeMSISDN'){
             $('#formChangeMSISDN').removeClass('d-none');
@@ -919,7 +925,7 @@
             $('#changeLinkContent').addClass('d-none');
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
-            $('#reemSim').removeClass('d-none');
+            $('#reemSim').addClass('d-none');
         }
     });
 
@@ -1975,7 +1981,49 @@ function getData(){
 $('#replacementSim').click(function(){
     let msisdn = $('#msisdn_replacementSim').val();
     let icc = $('#new_icc').val();
-    console.log(msisdn);
+
+    if((msisdn.length > 0 && msisdn.length < 10) || (msisdn.length >10)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN válido.',
+            text: 'La longitud requerida es de 10 dígitos.',
+            showConfirmButton: false,
+            timer: 2000
+        })
+        return false;
+    }
+
+    if(msisdn.length == 0 || /^\s+$/.test(msisdn)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN.',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return false;
+    }
+
+    if((icc.length > 0 && icc.length < 19) || (icc.length >19)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un ICC válido.',
+            text: 'La longitud requerida es de 19 dígitos.',
+            showConfirmButton: false,
+            timer: 2000
+        })
+        return false;
+    }
+
+    if(icc.length == 0 || /^\s+$/.test(icc)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un ICC.',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return false;
+    }
+    // console.log(msisdn);
     $.ajax({
         url:"{{route('replacementSim')}}",
         data: {msisdn:msisdn, icc:icc ,type:'replace'},
@@ -1984,7 +2032,7 @@ $('#replacementSim').click(function(){
             if(response.http_code == 1){
                 Swal.fire({
                     icon: 'success',
-                    title: 'EL reemplazo de SIM se realizó correctamente',
+                    title: 'El reemplazo de SIM se realizó correctamente',
                     text: (response),
                     showConfirmButton: true
                 })
