@@ -201,3 +201,7 @@ Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCol
 Route::get('/get-activation-by-petition/{petition}', 'PetitionController@getActivation')->name('getActivation');
 
 Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');
+
+//reemplazo Sim
+Route::get('replacementSim', 'AltanController@replacementSim')->name('replacementSim');
+Route::get('consultaVinculacion', 'AltanController@consultaVinculacion')->name('consultaVinculacion');

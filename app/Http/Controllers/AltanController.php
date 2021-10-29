@@ -10,6 +10,8 @@ use App\Number;
 use App\Activation;
 use App\Purchase;
 use App\Change;
+use App\Assignment;
+use App\Reference;
 
 class AltanController extends Controller
 {
@@ -498,4 +500,44 @@ class AltanController extends Controller
         }
     }
 
+    public function replacementSim(Request $request){
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+        $msisdn = $request['msisdn'];
+        $icc = $request['icc'];
+        $type = $request['type'];
+
+        if ($accessTokenResponse['status']== 'approved') {
+            $accessToken = $accessTokenResponse['accessToken'];
+            $urlServices = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$accessToken,
+                'Content-Type' => 'application/json'
+            ])->patch($urlServices,[
+                'changeSubscriberSIM'=> array(
+                    'newIccid'=>$icc
+                )
+            ]);
+            if (isset($response['order'])) {
+                $id_replaced = Number::where('MSISDN', $msisdn)->first();
+                Number::where('id',$id_replaced->id)->delete();
+                Number::where('icc_id', 'LIKE','%'.$icc.'%')->update(['MSISDN'=> $msisdn, 'status'=>'taken']);
+
+                $id_new = Number::where('icc_id', 'LIKE','%'.$icc.'%')->first();
+                Activation::where('numbers_id', $id_replaced->id)->update(['numbers_id'=> $id_new->id]);
+                Assignment::where('number_id', $id_replaced->id)->update(['number_id'=> $id_new->id]);
+                Change::where('number_id', $id_replaced->id)->update(['number_id'=> $id_new->id]);
+                Purchase::where('number_id', $id_replaced->id)->update(['number_id'=> $id_new->id]);
+                Reference::where('number_id', $id_replaced->id)->update(['number_id'=> $id_new->id]);
+
+                return response()->json(['http_code'=>1, 'message'=>$response]);
+            }else if ($response['errorCode']) {
+                return response()->json(['http_code'=>0, 'message'=>$response['description']]);
+            }
+        }
+    }
+
+    public function consultaVinvulacion(){
+
+    }
 }

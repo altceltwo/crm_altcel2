@@ -29,6 +29,7 @@ class CreateNumbersTable extends Migration
             $table->string('traffic_outbound')->default('activo');
             $table->string('traffic_outbound_incoming')->default('activo');
             $table->string('status_altan')->default('activo');
+            $table->deleted_at();
             $table->timestamps();
         });
     }

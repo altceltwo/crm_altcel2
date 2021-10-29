@@ -100,6 +100,13 @@
                                         Consulta de UF
                                     </label>
                                 </div>
+
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios6" value="reemSim">
+                                        Reemplazo de Sim
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -648,6 +655,46 @@
             </section>
         </div>
         <!-- end Consulta de USUARIO FINAL -->
+<!--reemplazo sim -->
+<div class="col-md-12 d-none" id="reemSim">
+    <section class="panel form-wizard" >
+        <header class="panel-heading">
+            <div class="panel-actions">
+                <a href="#" class="fa fa-caret-down"></a>
+                <a href="#" class="fa fa-times"></a>
+            </div>
+
+            <h2 class="panel-title">Reemplazo SIM</h2>
+        </header>
+        <div class="panel-body">
+            
+            <form class="form-horizontal" novalidate="novalidate">
+                <div class="tab-content">
+                    <div class="col-md-12" style="padding-left: 0px !important; padding-right: 0px !important;">
+                        <div class="col-md-4" style="padding-left: 0px !important; padding-right: 0px !important;">
+                            <label for="msisdn_locked">MSISDN</label>
+                            <input type="text" class="form-control" id="msisdn_replacementSim" maxlength="10">
+                            <label for="msisdn_locked">ICC Nuevo</label>
+                            <input type="text" class="form-control" id="new_icc" maxlength="19">
+                            <div class="col-md-12">
+                            </div>
+                        </div>
+                        <br>
+                        <button type="button" class="btn btn-success" id="replacementSim">Aceptar</button>
+{{--                        
+                        <div class="col-md-12">
+                           <iframe src="" class="col-md-12 d-none" height="600" id="consultUFView"></iframe>
+                        </div> --}}
+                        
+                    </div>
+                    
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<!--END reemplazo sim -->
 
 
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
@@ -765,6 +812,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == 'changeProduct'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').removeClass('d-none');
@@ -773,6 +821,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == 'productPurchase'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -781,6 +830,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == 'changeLink'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -789,6 +839,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == "serviciabilidadConsult"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -797,6 +848,7 @@
             $('#serviciabilidadForm').removeClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == "lockUnlockIMEI"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -805,6 +857,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').removeClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#reemSim').addClass('d-none');
         }else if(radioOption == "consultUF"){
             $('#formConsultUF').removeClass('d-none');
             $('#pre-reactivateContent').addClass('d-none');
@@ -813,6 +866,16 @@
             $('#changeLinkContent').addClass('d-none');
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').addClass('d-none');
+        }else if(radioOption == "reemSim"){
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').removeClass('d-none');
         }
     });
 
@@ -1781,5 +1844,34 @@ function getData(){
     $('#w6-msisdn').val(msisdn);
     $('#msisdn_locked').val(msisdn);
 }
+
+$('#replacementSim').click(function(){
+    let msisdn = $('#msisdn_replacementSim').val();
+    let icc = $('#new_icc').val();
+    console.log(msisdn);
+    $.ajax({
+        url:"{{route('replacementSim')}}",
+        data: {msisdn:msisdn, icc:icc ,type:'replace'},
+        success:function(response){
+            console.log(response)
+            if(response.http_code == 1){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'EL reemplazo de SIM se realizó correctamente',
+                    text: (response),
+                    showConfirmButton: true
+                })
+            }else if(response.http_code == 0){
+                Swal.fire({
+                    icon: 'error',
+                    title: response.message,
+                    text: (response),
+                    showConfirmButton: true
+                })
+            }
+        }
+    })
+    
+})
 </script>
 @endsection
