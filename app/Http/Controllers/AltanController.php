@@ -561,7 +561,8 @@ class AltanController extends Controller
 
                 return response()->json(['http_code'=>1, 'message'=>$response]);
             }else if ($response['errorCode']) {
-            return response()->json(['http_code'=>0, 'message'=>$response['description']]);}
+                return response()->json(['http_code'=>0, 'message'=>$response['description']]);
+            }
         }
     }
 

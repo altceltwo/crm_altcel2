@@ -2032,7 +2032,7 @@ $('#replacementSim').click(function(){
             if(response.http_code == 1){
                 Swal.fire({
                     icon: 'success',
-                    title: 'El reemplazo de SIM se realizó correctamente',
+                    title: 'El reemplazo de SIM se realizó correctamente.',
                     text: (response),
                     showConfirmButton: true
                 })
