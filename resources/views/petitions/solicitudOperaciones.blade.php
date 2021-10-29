@@ -35,6 +35,7 @@
                 <th scope="col">Cliente</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Plan Activación</th>
+                <th scope="col">Forma Pago</th>
                 <th scope="col">Comentario</th>
                 <th scope="col">Acción</th>
                 </tr>
@@ -48,6 +49,7 @@
                     <td>{{$solicitud['client']}}</td>
                     <td>{{$solicitud['product']}}</td>
                     <td>{{$solicitud['rate_activation']}}</td>
+                    <td>{{$solicitud['payment_way'].' - Plazo: '.$solicitud['plazo']}}</td>
                     <td>{{$solicitud['comment']}}</td>
                     <td><button class="btn btn-warning solicitud" id="notification" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}" data-comment="{{$solicitud['comment']}}">Activar</button></td>
                 </tr>

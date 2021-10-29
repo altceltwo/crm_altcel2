@@ -14,7 +14,13 @@ use App\Change;
 use App\Purchase;
 use App\Assignment;
 use DB;
+use DateTime;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\IncomesExport;
+use App\Exports\Purchases;
+use App\Exports\MonthlyPayments;
+use App\Exports\SurplusReferencePayments;
 
 class AdminController extends Controller
 {
@@ -376,4 +382,118 @@ class AdminController extends Controller
             return 0;
         }
     }
+
+    public function income(Request $request){
+        $type = $request->get('type');
+        $date_start = '';
+        $date_end = '';
+        
+        switch ($type) {
+            case 'today':
+                $date_start = date('Y-m-d');
+                $date_end = $date_start.' 23:59:59';
+                $date_start = $date_start.' 00:00:00';
+                break;
+            case 'yesterday':
+                $date_start = date('Y-m-d');
+                $date_start = strtotime('-1 days', strtotime($date_start));
+                $date_start = date('Y-m-d',$date_start);
+                $date_end = $date_start.' 23:59:59';
+                $date_start = $date_start.' 00:00:00';
+
+                break;
+            case 'last7':
+                $date_start = date('Y-m-d');
+                $date_start = strtotime('-7 days', strtotime($date_start));
+                $date_start = date('Y-m-d',$date_start);
+                $date_start = $date_start.' 00:00:00';
+
+                $date_end = date('Y-m-d');
+                $date_end = $date_end.' 23:59:59';
+                break;
+            case 'last30':
+                $date_start = date('Y-m-d');
+                $date_start = strtotime('-30 days', strtotime($date_start));
+                $date_start = date('Y-m-d',$date_start);
+                $date_start = $date_start.' 00:00:00';
+
+                $date_end = date('Y-m-d');
+                $date_end = $date_end.' 23:59:59';
+                break;
+            case 'thisMonth':
+                $date_now = date("Y-m-d");
+
+                $date_start = new DateTime($date_now);
+                $date_start->modify('first day of this month');
+                $date_start = $date_start->format('Y-m-d');
+                $date_start = $date_start.' 00:00:00';
+
+                $date_end = $date_now.' 23:59:59';
+                break;
+            case 'pastMonth':
+                $lastMonth = date('Y-m', strtotime('-1 month'));
+                $date_start = $lastMonth.'-01 00:00:00';
+
+                $date_end = new DateTime($date_start);
+                $date_end->modify('last day of this month');
+                $date_end = $date_end->format('Y-m-d');
+                $date_end = $date_end.' 23:59:59';
+
+                break;
+            case 'personalized':
+                $date_start = $request->get('start');
+                $date_start = substr($date_start,6,4).'-'.substr($date_start,0,2).'-'.substr($date_start,3,2);
+
+                $date_end = $request->get('end');
+                $date_end = substr($date_end,6,4).'-'.substr($date_end,0,2).'-'.substr($date_end,3,2);
+                break;
+        }
+
+        $data['incomes'] = DB::table('incomes')->whereBetween('fecha',[$date_start,$date_end])->select('incomes.*')->get();
+        
+        $data['start'] = $date_start;
+        $data['end'] = $date_end;
+
+        return view('webhooks.income',$data);
+    }
+
+    public function incomesExport(Request $request){
+        $data = [
+            'date_start' => $request->get('start'),
+            'date_end' => $request->get('end')
+        ];
+        return Excel::download(new IncomesExport($data), 'ingresos.xlsx');
+    }
+
+    // public function exportChangesDayli(Request $request){
+    //     $data = [
+    //         'date_start' => $request->get('start'),
+    //         'date_end' => $request->get('end')
+    //     ];
+    //     return Excel::download(new ChangesProducts($data), 'changes_dayli.xlsx');
+    // }
+
+    // public function exportPurchasesDayli(Request $request){
+    //     $data = [
+    //         'date_start' => $request->get('start'),
+    //         'date_end' => $request->get('end')
+    //     ];
+    //     return Excel::download(new Purchases($data), 'purchases_dayli.xlsx');
+    // }
+
+    // public function exportMonthlyPaymentsDayli(Request $request){
+    //     $data = [
+    //         'date_start' => $request->get('start'),
+    //         'date_end' => $request->get('end')
+    //     ];
+    //     return Excel::download(new MonthlyPayments($data), 'monthly_payments_dayli.xlsx');
+    // }
+    
+    // public function exportSurplusReferencePaymentsDayli(Request $request){
+    //     $data = [
+    //         'date_start' => $request->get('start'),
+    //         'date_end' => $request->get('end')
+    //     ];
+    //     return Excel::download(new SurplusReferencePayments($data), 'surplus_reference_payments_dayli.xlsx');
+    // }
 }

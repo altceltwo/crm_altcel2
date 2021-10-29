@@ -77,7 +77,9 @@ class ActivationController extends Controller
             $data['ine_code'] = $request->get('ine_code');
             $data['cellphone'] = $request->get('cellphone');
             $data['petition'] = $request->get('petition');
+            // return $request;
             $petitionData = Petition::where('id',$data['petition'])->first();
+            // return $petitionData;
             $rate_activation_id = $petitionData->rate_activation;
             $rate_secondary_id = $petitionData->rate_secondary;
 
@@ -331,7 +333,7 @@ class ActivationController extends Controller
                   //correos operaciones
                 $response = Http::withHeaders([
                     'Conten-Type'=>'application/json'
-                ])->get('http://crm.altcel/petitions-notifications',[
+                ])->get('http://10.44.0.70/petitions-notifications',[
                     'name'=> $name_child,
                     'lastname'=>$lastname_child,
                     'correo'=> $email_child,
@@ -404,6 +406,7 @@ class ActivationController extends Controller
         $rfc = $request->get('rfc');
         $date_born = $request->get('date_born');
         $cellphone = $request->get('cellphone');
+        $number = $request->get('number');
 
         // Dato de Paquete
         $pack_id = $request->get('pack_id');
@@ -671,7 +674,7 @@ class ActivationController extends Controller
                               ->join('users','users.id','=','activations.client_id')
                               ->leftJoin('numbers', 'activations.numbers_id', '=', 'numbers.id')
                               ->leftJoin('devices', 'activations.devices_id', '=', 'devices.id')
-                              ->leftJoin('pays','pays.activation_id','=','activations.id')
+                              ->join('pays','pays.activation_id','=','activations.id')
                               ->join('rates', 'rates.id', '=', 'activations.rate_id')
                               ->join('clients','activations.client_id','=','user_id')
                               ->select('activations.*', 'users.name','users.lastname',
@@ -1077,7 +1080,7 @@ class ActivationController extends Controller
                     
                     $response = Http::withHeaders([
                         'Conten-Type'=>'application/json'
-                    ])->get('http://crm.altcel/petitions-notifications',[
+                    ])->get('http://10.44.0.70/petitions-notifications',[
                         'name'=> $client[0]->name,
                         'lastname'=>$client[0]->lastname,
                         'correo'=> $client[0]->email,
@@ -1301,7 +1304,7 @@ class ActivationController extends Controller
                     ->join('rates','rates.id','=','activations.rate_id')
                     ->where('activations.id',$activation)
                     ->select('numbers.icc_id','numbers.MSISDN','devices.no_serie_imei','devices.description AS especifications','activations.serial_number','activations.mac_address',
-                    'petitions.who_attended','petitions.sender','activations.client_id','rates.name AS rate_name')
+                    'petitions.who_attended','petitions.sender','activations.client_id','rates.name AS rate_name','petitions.payment_way','petitions.plazo')
                     ->get();
 
         $data['ICC'] = $deliveryData[0]->icc_id;
@@ -1317,6 +1320,12 @@ class ActivationController extends Controller
 
         $data['serial_number'] = $deliveryData[0]->serial_number;
         $data['serial_number'] = $data['serial_number'] == null ? 'No Asignado' : $deliveryData[0]->serial_number;
+
+        $data['payment_way'] = $deliveryData[0]->payment_way;
+        $data['payment_way'] = $data['payment_way'] == null ? 'No elegido' : $deliveryData[0]->payment_way;
+
+        $data['plazo'] = $deliveryData[0]->plazo;
+        $data['plazo'] = $data['plazo'] == null ? 'Sin plazo' : $deliveryData[0]->plazo;
 
         $mac_address = $deliveryData[0]->mac_address;
 

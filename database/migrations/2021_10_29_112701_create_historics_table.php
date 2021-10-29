@@ -15,14 +15,13 @@ class CreateHistoricsTable extends Migration
     {
         Schema::create('historics', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('activation_id');
-            $table->unsignedBigInteger('rate_id');
-            $table->unsignedBigInteger('offer_id');
-            $table->unsignedBigInteger('date_change');
+            $table->string('oldMSISDN',15);
+            $table->dateTime('date_change',0);
+            $table->string('order_id',15);
+            $table->unsignedBigInteger('number_id');
             $table->timestamps();
-            $table->foreign('activation_id')->references('id')->on('activations');
-            $table->foreign('rate_id')->references('id')->on('rates');
-            $table->foreign('offer_id')->references('id')->on('offers');
+
+            $table->foreign('number_id')->references('id')->on('numbers');
         });
     }
 

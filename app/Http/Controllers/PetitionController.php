@@ -47,7 +47,9 @@ class PetitionController extends Controller
                 'comment'=>$comment,
                 'product'=>$product,
                 'client'=>$client[0]->name.' '.$client[0]->lastname,
-                'rate_activation' => $x->rate_name
+                'rate_activation' => $x->rate_name,
+                'payment_way' => $x->payment_way,
+                'plazo' => $x->plazo,
             ));
 
         }
@@ -85,7 +87,7 @@ class PetitionController extends Controller
     public function show(Petition $petition)
     {
         $currentRol = auth()->user()->role_id;
-        if ($currentRol == 1) {
+        if ($currentRol == 1 || $currentRol == 6) {
             $x = DB::table('petitions')
                    ->join('users', 'users.id', '=', 'petitions.sender')
                    ->leftJoin('rates','rates.id','=','petitions.rate_activation')
@@ -118,6 +120,8 @@ class PetitionController extends Controller
             $date_activated = $y->date_activated;
             $recibido = $y->who_received;
             $fechaRecibido = $y->date_received;
+            $payment_way = $y->payment_way;
+            $plazo = $y->plazo;
 
             $client = User::where('id', $client_id)->select('name', 'lastname')->get();
             $attended = User::where('id', $who_attended)->select('name', 'lastname')->get();
@@ -145,6 +149,14 @@ class PetitionController extends Controller
                 $badgeFecha = 'warning';
             }
 
+            if($payment_way == null){
+                $payment_way = 'No elegido';
+            }
+
+            if($plazo == null){
+                $plazo = 'No elegido';
+            }
+
             array_push($data['completadas'], array(
                 'id'=>$id,
                 'id_sendt'=>$id_sender,
@@ -162,7 +174,9 @@ class PetitionController extends Controller
                 'comment'=>$comment,
                 'badgeFecha'=>$badgeFecha,
                 'badgeStatus'=>$badgeStatus,
-                'rate_activation' => $y->rate_name
+                'rate_activation' => $y->rate_name,
+                'payment_way' => $payment_way,
+                'plazo' => $plazo,
             )); 
         }
         // return $data['completadas'];
@@ -224,6 +238,8 @@ class PetitionController extends Controller
             $date_activated = $y->date_activated;
             $recibido = $y->who_received;
             $fechaRecibido = $y->date_received;
+            $payment_way = $y->payment_way;
+            $plazo = $y->plazo;
 
             $client = User::where('id', $client_id)->select('name', 'lastname')->get();
             $attended = User::where('id', $who_attended)->select('name', 'lastname')->get();
@@ -236,6 +252,14 @@ class PetitionController extends Controller
 
             if ($fechaRecibido != null) {
                 $badgeFecha = 'success';
+            }
+
+            if($payment_way == null){
+                $payment_way = 'No elegido';
+            }
+
+            if($plazo == null){
+                $plazo = 'No elegido';
             }
 
             array_push($data['completadas'], array(
@@ -255,13 +279,15 @@ class PetitionController extends Controller
                 'comment'=>$comment,
                 'badgeFecha'=>$badgeFecha,
                 'badgeStatus'=>$badgeStatus,
-                'rate_activation' => $y->rate_name
+                'rate_activation' => $y->rate_name,
+                'payment_way' => $payment_way,
+                'plazo' => $plazo,
             ));
             $data['totalcpe'] += $y->collected_device;
             $data['totalplan'] += $y->collected_rate;
         }
 
-        return view('petitions/completadosFinanzas', $data);
+        return view('petitions.completadosFinanzas', $data);
     }
 
     public function activationOperaciones(Request $request){
@@ -358,7 +384,7 @@ class PetitionController extends Controller
                 //correos finanzas
                 $response = Http::withHeaders([
                     'Conten-Type'=>'application/json'
-                ])->get('http://crm.altcel/petitions-notifications',[
+                ])->get('http://10.44.0.70/petitions-notifications',[
                     'name'=>$user[0]->name,
                     'lastname'=>$user[0]->lastname,
                     'correo'=> $user[0]->email,

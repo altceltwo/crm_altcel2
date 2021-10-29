@@ -172,16 +172,15 @@
                             </div>
                             <div class="widget-summary-col">
                                 <div class="summary">
-                                    <h4 class="title">Ventas</h4>
+                                    <h4 class="title">Ingresos</h4>
                                     <div class="info">
-                                        <strong class="amount">${{number_format($sales,2)}}</strong><br>
-                                        <span class="text-primary">Últimos 30 días</span>
+                                        <strong class="amount">Reportes</strong><br>
+                                        <span class="text-primary">Detallados</span>
                                     </div>
                                 </div>
                                 <div class="summary-footer">
                                 @if(Auth::user()->id != 1)
-                                    <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a>
-                                    <a href="{{route('activations.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                    <a href="{{route('income')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
                                 @endif
                                 </div>
                             </div>

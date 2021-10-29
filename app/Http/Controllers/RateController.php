@@ -223,7 +223,8 @@ class RateController extends Controller
                              ->join('rates','rates.id','=','activations.rate_id')
                              ->join('offers','offers.id','=','activations.offer_id')
                              ->where('MSISDN',$msisdn)
-                             ->select('numbers.*','activations.offer_id','activations.rate_id','offers.name AS offer_name','rates.name AS rate_name','activations.lat_hbb AS lat','activations.lng_hbb AS lng')
+                             ->select('numbers.*','activations.offer_id','activations.rate_id','offers.name AS offer_name','rates.name AS rate_name','activations.lat_hbb AS lat','activations.lng_hbb AS lng',
+                             'activations.flag_rate','activations.rate_subsequent')
                              ->get();
         
         $offer_id = $dataActivation[0]->offer_id;
@@ -235,6 +236,8 @@ class RateController extends Controller
         $lng = $dataActivation[0]->lng;
         $producto = $dataActivation[0]->producto;
         $producto = trim($producto);
+        $flag_rate = $dataActivation[0]->flag_rate;
+        $rate_subsequent = $dataActivation[0]->rate_subsequent;
 
         $response['dataMSISDN'] = array(
             'offer_name' => $offer_name,
@@ -246,12 +249,23 @@ class RateController extends Controller
             'lng' => $lng
         );
 
-        $response['offersAndRates'] = DB::table('offers')
+        if($flag_rate == 0){
+            $response['offersAndRates'] = DB::table('offers')
                              ->join('rates','rates.alta_offer_id','=','offers.id')
+                             ->where('rates.id','=',$rate_subsequent)
+                             ->where('rates.status','=','activo')
+                             ->where('offers.product',$producto)
+                             ->select('offers.id AS offer_id','offers.offerID AS offerID','offers.name AS offer_name','rates.id AS rate_id','rates.name AS rate_name','rates.price_subsequent AS rate_price')
+                             ->get();
+        }else{
+            $response['offersAndRates'] = DB::table('offers')
+                             ->join('rates','rates.alta_offer_id','=','offers.id')
+                             ->where('rates.status','=','activo')
                              ->where('offers.id','!=',$offer_id)
                              ->where('offers.product',$producto)
                              ->select('offers.id AS offer_id','offers.offerID AS offerID','offers.name AS offer_name','rates.id AS rate_id','rates.name AS rate_name','rates.price_subsequent AS rate_price')
                              ->get();
+        }
 
         return response()->json($response);
     }
@@ -323,7 +337,8 @@ class RateController extends Controller
                              ->join('users','users.id','=','activations.client_id')
                              ->join('clients','user_id','=','users.id')
                              ->where('numbers.MSISDN',$msisdn)
-                             ->select('numbers.MSISDN','numbers.id AS number_id','activations.offer_id','activations.rate_id',
+                             ->select('numbers.MSISDN','numbers.id AS number_id','numbers.producto',
+                             'activations.offer_id','activations.rate_id',
                              'offers.name AS offer_name','rates.name AS rate_name',
                              'activations.lat_hbb AS lat','activations.lng_hbb AS lng','offers.offerID AS offerID',
                              'users.name AS name_user','users.lastname AS lastname_user','users.email AS email_user',
@@ -331,13 +346,24 @@ class RateController extends Controller
                              ->get();
 
         $response['dataMSISDN'] = $dataActivation[0];
-        $offerID = $dataActivation[0]->offerID;
+        $producto = $dataActivation[0]->producto;
+        $producto = trim($producto);
 
-        $response['packsSurplus'] = DB::table('offers')
-                                       ->where('type','excedente')
-                                       ->where('offerID_excedente',$offerID)
-                                       ->select('offers.*')
-                                       ->get();
+        if($producto == 'MOV'){
+            $response['packsSurplus'] = DB::table('offers')
+                                        ->where('product','MOV')
+                                        ->select('offers.offerID_second AS offerID','offers.price_sale','offers.id','offers.name_second AS name')
+                                        ->get();
+        }else{
+            $offerID = $dataActivation[0]->offerID;
+
+            $response['packsSurplus'] = DB::table('offers')
+                                        ->where('type','excedente')
+                                        ->where('offerID_excedente',$offerID)
+                                        ->select('offers.*')
+                                        ->get();
+        }
+        
 
         return $response;
     }

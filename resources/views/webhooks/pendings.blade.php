@@ -166,7 +166,7 @@ use \Carbon\Carbon;
 </div>
 <input type="hidden" id="user_id" value="{{Auth::user()->id}}">
 
-
+  
 <script>
     $('#date-pay').click(function(){
         $.ajax({

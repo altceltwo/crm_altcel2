@@ -533,7 +533,7 @@
                                             </li>
                                         </ul>
                                     </li>
-                                @elseif(Auth::user()->id == 1)
+                                @elseif(Auth::user()->id == 1 || Auth::user()->id == 110)
                                     <li class="nav-parent">
                                         <a>
                                             <i class="fa fa-plus-circle" aria-hidden="true"></i>
