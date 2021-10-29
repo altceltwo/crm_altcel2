@@ -373,7 +373,7 @@ class WebhookController extends Controller
         $dataUser = User::find($user_id);
         $role = $dataUser->role_id;
         $who_consigned = $role == 1 || $role == 5 ? $user_id : null;
-        $status_consigned = $role == 1 || $role == 5 ? 'completado' : 'pendiente';
+        $status_consigned = $role == 1 || $role == 5 || $role == 8 ? 'completado' : 'pendiente';
 
         if($service == 'Telmex' || $service == 'Conecta'){
             $payment_data = Ethernetpay::where('id',$payID)->first();

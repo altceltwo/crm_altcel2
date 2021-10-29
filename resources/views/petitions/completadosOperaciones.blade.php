@@ -35,13 +35,14 @@
                 <th>Status</th>
                 <th>Cobro cpe</th>
                 <th>Cobro Plan</th>
+                <th>Forma Pago</th>
                 <th>Fecha Solicitud</th>
                 <th>Activado Por</th>
                 <th>Fecha Activación</th>
                 <th>Recibido Por</th>
                 <th>Fecha Recibido</th>
                 <th>Comentario</th>
-                @if(Auth::user()->role_id == 5 || Auth::user()->role_id == 1)
+                @if(Auth::user()->role_id == 5 || Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
                 <th>Opciones</th>
                 @endif
                 </tr>
@@ -55,6 +56,7 @@
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
                     <td>${{number_format($completado['cobroCpe'],2)}}</td>
                     <td>${{number_format($completado['cobroPlan'],2)}}</td>
+                    <td>{{$completado['payment_way'].' - Plazo: '.$completado['plazo']}}</td>
                     <td>{{$completado['fecha_solicitud']}}</td>
                     <td>{{$completado['activadoPor']}}</td>
                     <td>{{$completado['date_activated']}}</td>
@@ -65,7 +67,7 @@
                     <td>
                         <button class="btn btn-success btn-sm collect" data-petition-id="{{$completado['id']}}" data-collected-cpe="{{number_format($completado['cobroCpe'],2)}}" data-collected-rate="{{number_format($completado['cobroPlan'],2)}}"><i class="fa fa-usd"></i></button>
                     </td>
-                    @elseif(Auth::user()->role_id == 1)
+                    @elseif(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
                     <td>
                         <button class="btn btn-success btn-sm format" data-petition-id="{{$completado['id']}}" data-toggle="tooltip" data-placement="top" data-original-title="Formato de Entrega" ><i class="fa fa-file-text-o"></i></button>
                     </td>

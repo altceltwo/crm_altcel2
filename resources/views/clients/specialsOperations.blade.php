@@ -100,6 +100,12 @@
                                         Consulta de UF
                                     </label>
                                 </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios7" value="changeMSISDN">
+                                        Cambio de MSISDN
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -649,6 +655,37 @@
         </div>
         <!-- end Consulta de USUARIO FINAL -->
 
+        <!-- Cambio de MSISDN -->
+        <div class="col-md-12 d-none" id="formChangeMSISDN">
+            <section class="panel form-wizard" >
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+    
+                    <h2 class="panel-title">Cambio de MSISDN</h2>
+                </header>
+                <div class="panel-body">
+                    
+                    <form class="form-horizontal" novalidate="novalidate">
+                        <div class="tab-content">     
+                            <div class="input-group mb-md col-md-4">
+                                <label for="msisdn_to_change">MSISDN</label>
+                                <input type="text" class="form-control" id="msisdn_to_change" maxlength="10">
+                            </div>
+                            <div class="input-group mb-md col-md-4">
+                                <label for="msisdn_to_change">NIR</label>
+                                <input type="text" class="form-control" id="nir" maxlength="3">
+                            </div>
+                            <button class="btn btn-success" type="button" id="changeMSISDN"><li class="fa fa-arrow-circle-right"></li></button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+        <!--END Cambio de MSISDN -->
+
 
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-oxxo" data-toggle="modal" data-target="#referenceOxxo"><i class="fa fa-eye"></i> Referencia OXXOPay</button>
@@ -765,6 +802,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == 'changeProduct'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').removeClass('d-none');
@@ -773,6 +811,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == 'productPurchase'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -781,6 +820,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == 'changeLink'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -789,6 +829,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == "serviciabilidadConsult"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -797,6 +838,7 @@
             $('#serviciabilidadForm').removeClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == "lockUnlockIMEI"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -805,8 +847,19 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').removeClass('d-none');
             $('#formConsultUF').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == "consultUF"){
             $('#formConsultUF').removeClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
+        }else if(radioOption == 'changeMSISDN'){
+            $('#formChangeMSISDN').removeClass('d-none');
+            $('#formConsultUF').addClass('d-none');
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
             $('#productPurchaseForm').addClass('d-none');
@@ -1773,6 +1826,87 @@ $("#locked, #unlocked").click(function(){
     });
 });
 
+$('#changeMSISDN').click(function(){
+    let msisdn = $('#msisdn_to_change').val();
+    let nir = $('#nir').val();
+    let token = $('meta[name="csrf-token"]').attr('content');
+
+    if((msisdn.length > 0 && msisdn.length < 10) || (msisdn.length >10)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN válido.',
+            text: 'La longitud requerida es de 10 dígitos.',
+            showConfirmButton: false,
+            timer: 2000
+        })
+        return false;
+    }
+
+    if(msisdn.length == 0 || /^\s+$/.test(msisdn)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN.',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return false;
+    }
+
+    if((nir.length > 0 && nir.length < 3) || (nir.length >3)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un NIR válido.',
+            text: 'La longitud requerida es de 3 dígitos.',
+            showConfirmButton: false,
+            timer: 2000
+        })
+        return false;
+    }
+
+    if(nir.length == 0 || /^\s+$/.test(nir)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un NIR.',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return false;
+    }
+
+    $.ajax({
+        url: "{{route('bonding')}}",
+        method: 'POST',
+        data: {_token: token, msisdn:msisdn, nir:nir, type:'change'},
+        success: function(response){
+            if(response.http_code == 1){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cambio de MSISDN hecho con éxito.',
+                    text: response.message,
+                })
+            }else if(response.http_code == 0){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Woops!!',
+                    text: response.message,
+                })
+            }else if(response.http_code == 2){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Woops!!',
+                    text: response.message,
+                })
+            }else if(response.http_code == 3){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Woops!!',
+                    text: response.message,
+                })
+            }
+        }
+    });
+});
+
 function getData(){
     let msisdn = $('#clients').val();
     $('#msisdn').val(msisdn);
@@ -1780,6 +1914,8 @@ function getData(){
     $('#msisdnchange').val(msisdn);
     $('#w6-msisdn').val(msisdn);
     $('#msisdn_locked').val(msisdn);
+    $('#msisdn_consultUF').val(msisdn);
+    $('#msisdn_to_change').val(msisdn);
 }
 </script>
 @endsection

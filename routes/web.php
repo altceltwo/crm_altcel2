@@ -108,6 +108,7 @@ Route::post('/purchase-api','AltanController@productPurchase')->name('purchase-a
 Route::post('/locked', 'AltanController@locked')->name('locked');
 Route::get('/status', 'AltanController@statusImei')->name('status');
 Route::get('/consultUFSpecial/{msisdn}','ClientController@getInfoUF')->name('consultUFSpecial.get')->middleware('auth');
+Route::post('/bondingSIM','AltanController@bondingSIM')->name('bonding')->middleware('auth');
 
 // Rates Routes
 Route::post('/get-rates', 'RateController@getRates')->name('get-rates.post');
@@ -201,3 +202,6 @@ Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCol
 Route::get('/get-activation-by-petition/{petition}', 'PetitionController@getActivation')->name('getActivation');
 
 Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');
+
+Route::get('/income','AdminController@income')->name('income');
+Route::get('/incomes-export','AdminController@incomesExport');

@@ -103,6 +103,7 @@
                 <th>Status</th>
                 <th>Cobro cpe</th>
                 <th>Cobro Plan</th>
+                <th>Forma Pago</th>
                 <th>Fecha Solicitud</th>
                 <th>Activado Por</th>
                 <th>Fecha Activación</th>
@@ -120,6 +121,7 @@
                     <td><span class="badge label-{{$completado['badgeStatus']}}">{{$completado['status']}}</span></td>
                     <td>${{number_format($completado['cobroCpe'],2)}}</td>
                     <td>${{number_format($completado['cobroPlan'],2)}}</td>
+                    <td>{{$completado['payment_way'].' - Plazo: '.$completado['plazo']}}</td>
                     <td>{{$completado['fecha_solicitud']}}</td>
                     <td>{{$completado['activadoPor']}}</td>
                     <td>{{$completado['date_activated']}}</td> 

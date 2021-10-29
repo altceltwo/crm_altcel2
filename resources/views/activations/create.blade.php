@@ -667,6 +667,10 @@
                         <input type="text" class="form-control" id="amount-install-pack" name="amount-install-pack" required readonly>
                     </div>
                     <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label for="number_install" class="form-label">Número</label>
+                        <input type="text" class="form-control" id="number_install" name="number_install" >
+                    </div>
+                    <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
                         <label for="address" class="form-label">Total</label>
                         <input type="text" class="form-control" id="amount-total-pack" name="amount-total-pack" required readonly>
                     </div>
@@ -690,7 +694,356 @@
           
         </div>
     </div>
-    @endif
+@elseif(Auth::user()->role_id == 4)
+    <div class="tabs tabs-success">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a href="#paquete" data-toggle="tab">Oreda</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+           
+            <div id="paquete" class="tab-pane active">
+                <form class="form-horizontal form-bordered" method="POST" action="" enctype="multipart/form-data">
+                <div class="form-group" style="padding-right: 1rem; padding-left: 1rem;">
+                    @csrf
+                    <div class="form-group col-md-12">
+                        <h3>Servicios Oreda/Tonalá</h3>
+                    </div>
+
+                    <div class="form-group col-md-6 mb-1">
+                        <label class="form-label mr-1" for="offers">Paquete:</label><br>
+                        <select class="form-control col-md-12" id="pack" >
+                            <option selected value="0">Nothing</option>
+                            @foreach($packs as $pack)
+                                <option value="{{$pack->id}}" data-install="{{$pack->price_install}}" data-service="{{$pack->service_name}}" data-price="{{$pack->price}}">{{$pack->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label for="exampleDataList" class="form-label">Buscar</label>
+                            <input class="form-control" list="datalistOptions" id="clients_search" placeholder="Escribe algo...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="exampleFormControlSelect1">Clientes</label>
+                            <select multiple class="form-control" id="clients_options">
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="hidden" class="form-control" id="client_id_ethernet" name="client_id_ethernet" value='0'>
+
+                    <div class="form-group col-md-12">
+                        <h3>Datos de Contacto</h3>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Nombre" id="name_ethernet" name="name_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Apellido" id="lastname_ethernet" name="lastname_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="RFC" id="rfc_ethernet" name="rfc_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-calendar"></i></span>
+                                    </span>
+                                    <input class="form-control" type="date" id="date_born_ethernet" name="date_born_ethernet">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-home"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Dirección" id="address_ethernet" name="address_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-envelope"></i></span>
+                                    </span>
+                                    <input class="form-control" type="email" placeholder="Email" id="email_ethernet" name="email_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Código INE" id="ine_code_ethernet" name="ine_code_ethernet">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-phone"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Teléfono Contacto" id="cellphone_ethernet" name="celphone_ethernet" maxlength="10">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <h3>Datos Cliente</h3>
+                        <div class="checkbox">
+                            <label class="control-label">
+                                <input type="checkbox" id="type_person">
+                                Persona moral
+                            </label>
+                            <label class="control-label ml-sm">
+                                <input type="checkbox" id="copy_data_ethernet">
+                                Copiar datos de contacto
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group col-md-6">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Nombre" id="name_ethernet_child" name="name_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon hidden-type-person">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Apellido" id="lastname_ethernet_child" name="lastname_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="RFC" id="rfc_ethernet_child" name="rfc_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon hidden-type-person">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-calendar"></i></span>
+                                    </span>
+                                    <input class="form-control" type="date" id="date_born_ethernet_child" name="date_born_ethernet_child">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-home"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Dirección" id="address_ethernet_child" name="address_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon hidden-type-person">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-envelope"></i></span>
+                                    </span>
+                                    <input class="form-control" type="email" placeholder="Email" id="email_ethernet_child" name="email_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon hidden-type-person">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-user"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Código INE" id="ine_code_ethernet_child" name="ine_code_ethernet_child">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-phone"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Teléfono Contacto" id="cellphone_ethernet_child" name="celphone_ethernet_child" maxlength="10">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <h3>Antena Cliente</h3>
+                    </div>
+
+                    <div class="form-group col-md-6 id_content">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-rss"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="No. Serie Antena" id="no_serie_antena" name="no_serie_antena">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-rss"></i></span>
+                                    </span>
+                                    <input class="form-control" type="email" placeholder="MAC Address Antena" id="mac_address_antena" name="mac_address_antena">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-rss"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Modelo Antena" id="model_antena" name="model_antena">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-rss"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="IP Address Antena" id="ip_antena" name="ip_antena">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6 ">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-globe"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Latitud" id="lat" name="lat">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-globe"></i></span>
+                                    </span>
+                                    <input class="form-control" type="email" placeholder="Longitud" id="lng" name="lng">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-home"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Dirección Antena" id="address_antena" name="address_antena">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12 id_content">
+                        <h3>Router Cliente</h3>
+                    </div>
+                    <div class="form-group col-md-6 id_content">
+                        <!-- <label class="control-label col-md-6">Vertical Group w/ icon</label> -->
+                        <div class="col-md-12">
+                            <section class="form-group-vertical">
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-globe"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="No. Serie Router" id="no_serie_router" name="no_serie_router">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-globe"></i></span>
+                                    </span>
+                                    <input class="form-control" type="email" placeholder="MAC Address Router" id="mac_address_router" name="mac_address_router">
+                                </div>
+
+                                <div class="input-group input-group-icon">
+                                    <span class="input-group-addon">
+                                        <span class="icon"><i class="fa fa-home"></i></span>
+                                    </span>
+                                    <input class="form-control" type="text" placeholder="Modelo Router" id="model_router" name="model_router">
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <h3>Extras</h3>
+                    </div>
+                    <div class="form-group col-md-4 id_content" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label class="form-label mr-1" for="offers">Radiobase:</label><br>
+                        <select class="form-control col-md-12" id="radiobase" >
+                            <option selected value="0">Nothing</option>
+                            @foreach($radiobases as $radiobase)
+                                <option value="{{$radiobase->id}}">{{$radiobase->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label class="form-label mr-1" for="offers">Políticas:</label><br>
+                        <select class="form-control col-md-12" id="politics-pack" >
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-4" id="cobro_paquete" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label for="address" class="form-label">Cobro del paquete</label>
+                        <input type="text" class="form-control" id="amount-pack" name="amount-pack" required readonly>
+                    </div>
+                    <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label for="address" class="form-label">Cobro de Instalación</label>
+                        <input type="text" class="form-control" id="amount-install-pack" name="amount-install-pack" required readonly>
+                    </div>
+                    <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label for="number_install" class="form-label">Número</label>
+                        <input type="text" class="form-control" id="number_install" name="number_install" >
+                    </div>
+                    <div class="form-group col-md-4" style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                        <label for="address" class="form-label">Total</label>
+                        <input type="text" class="form-control" id="amount-total-pack" name="amount-total-pack" required readonly>
+                    </div>
+
+                    <input type="hidden" name="user" id="user_ethernet_id" value="{{ Auth::user()->id }}" required>
+
+                    <div class="col-md-12 mb-sm">
+                        <div class="checkbox">
+                            <label class="control-label ml-sm">
+                                <input type="checkbox" id="email-not-ethernet">
+                                Omitir envío de correo con accesos
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <button type="button" class="btn btn-primary" id="send_instalation">Aceptar</button>
+                    </div>
+                </div>
+                </form>
+            </div>
+          
+        </div>
+    </div>
+@endif
 </div>
 <!-- Modal de Cliente Nuevo -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -1593,6 +1946,7 @@
         let amount = $('#amount-pack').val();
         let amount_install = $('#amount-install-pack').val();
         let amount_total = $('#amount-total-pack').val();
+        let number = $('#number_install').val();
         let token = $('meta[name="csrf-token"]').attr('content');
 
         let name = $('#name_ethernet').val();
@@ -1766,7 +2120,8 @@
                 amount_total: amount_total,
                 pack_service: pack_service,
                 schedule_flag: 0,
-                email_not: email_not
+                email_not: email_not,
+                number:number
                 },
             success: function(data){
                 // console.log(data);
