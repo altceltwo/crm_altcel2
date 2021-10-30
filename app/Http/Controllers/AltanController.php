@@ -628,7 +628,46 @@ class AltanController extends Controller
             }
         }
 
-    public function consultaVinvulacion(){
+    public function consultaVinculacion(Request $request){
+        // return $request;
+        $msisdn = $request->post('msisdn');
+        $existsNumber = Number::where('MSISDN',$msisdn)->exists();
+
+        if(!$existsNumber){
+            return response()->json(['http_code'=>'3','message'=>'El MSISDN '.$msisdn.' no existe dentro de nuestros registros.']);
+        }
+        $dataNumber = Number::where('MSISDN',$msisdn)->first();
+        $producto = $dataNumber->producto;
+        $producto = trim($producto);
+        $number_id = $dataNumber->id;
+
+        if($producto == 'MIFI'){
+            return response()->json(['http_code'=>'2','message'=>'La consulta de Cambio de Vinculación no está permitido, debido a que es de tipo MIFI.']);
+        }
+
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+        $be = $dataNumber->be_id;
+        if(isset($accessTokenResponse['status'])){
+            if($accessTokenResponse['status'] == 'approved'){
+                $accessToken = $accessTokenResponse['accessToken'];
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/msisdns/'.$msisdn.'/linkings?be_id='.$be;
+
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'application/json'
+                ])->get($url_production);
+
+                if (isset($response['imsi'])) {
+                   $imsi = $response['imsi'];
+                   $periods = $response['period'];
+                   $records = $response['records'];
+                   return$response;
+                   return response()->json(['http_code'=>'1','message'=>'Imsi: '.$response['imsi'].' Periodo: '.$response['period'].' Registros: '.$response['records']]);
+                }else if(isset($response['errorCode'])){
+                    return response()->json(['http_code'=>'0','message'=>$response['description']]);
+                }
+            }
+        }
 
     }
 
