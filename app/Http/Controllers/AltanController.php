@@ -650,7 +650,7 @@ class AltanController extends Controller
         if(isset($accessTokenResponse['status'])){
             if($accessTokenResponse['status'] == 'approved'){
                 $accessToken = $accessTokenResponse['accessToken'];
-                $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/msisdns/'.$msisdn.'/linkings?be_id='.$be;
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/msisdns/'.$msisdn.'/linkings?be_id='.$be;
 
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer '.$accessToken,

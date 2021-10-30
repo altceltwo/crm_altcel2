@@ -116,8 +116,12 @@
                                     <label>
                                         <input type="radio" name="optionsRadios" id="optionsRadios9" value="consultVinculacion">
                                         Consulta de Cambio de Vinculación
-                                        <input type="radio" name="optionsRadios" id="optionsRadios10" value="validateIMEI">
-                                        Validación de IMEI
+                                    </label>
+                                </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios9" value="validateIMEI">
+                                        Validación IMEI
                                     </label>
                                 </div>
                             </div>
@@ -1011,6 +1015,15 @@
             $('#reemSim').addClass('d-none');
         }else if(radioOption == 'consultVinculacion'){
             $('#formConsultaChnageVinculacion').removeClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == 'validateIMEI'){
             $('#formChangeMSISDN').addClass('d-none');
@@ -1023,6 +1036,7 @@
             $('#lockedIMEIForm').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#validateIMEIForm').removeClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
         }
     });
 
@@ -2188,12 +2202,17 @@ $('#consultaVinculacion').click(function(){
                     showConfirmButton: false,
                     timer: 1500
                 })
-            }else if (response.http_code == 1) {
-                console.log(response)
+            }else if (response) {
+                
+            response = JSON.parse(response);
+            imsi = response.imsi;
+            msisdn = response.msisdn;
+            period = response.period;
+            records = response.records;
                 Swal.fire({
                 icon: 'success',
                 title: 'Consulta cambio de vinculación',
-                text: response.message,
+                html: 'MSISDN: '+response.msisdn+'<br>IMSI: '+response.imsi+'<br>Periodo: '+response.period+'<br>Registros: '+response.records,
                 showConfirmButton: true,
                 // timer: 1500
                 })
