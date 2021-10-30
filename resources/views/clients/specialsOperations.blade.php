@@ -112,6 +112,12 @@
                                         Reemplazo de SIM
                                     </label>
                                 </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios9" value="consultVinculacion">
+                                        Consulta de Cambio de Vinculación
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -726,6 +732,32 @@
             </section>
         </div>
         <!--END Cambio de MSISDN -->
+    <!--Consulta cambio de viculacion-->
+    <div class="col-md-12 d-none" id="formConsultaChnageVinculacion">
+        <section class="panel form-wizard" >
+            <header class="panel-heading">
+                <div class="panel-actions">
+                    <a href="#" class="fa fa-caret-down"></a>
+                    <a href="#" class="fa fa-times"></a>
+                </div>
+
+                <h2 class="panel-title">Consulta Cambio de Vinculación</h2>
+            </header>
+            <div class="panel-body">
+                
+                <form class="form-horizontal" novalidate="novalidate">
+                    <div class="tab-content">     
+                        <div class="input-group mb-md col-md-4">
+                            <label for="msisdn_to_change">MSISDN</label>
+                            <input type="text" class="form-control" id="msisdn_consult_vinculacion" maxlength="10">
+                        </div>
+                        <button class="btn btn-success" type="button" id="consultaVinculacion"><li class="fa fa-arrow-circle-right"></li></button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+    <!--END Consulta cambio de viculacion-->
 
 
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
@@ -918,6 +950,17 @@
             $('#formChangeMSISDN').addClass('d-none');
         }else if(radioOption == 'changeMSISDN'){
             $('#formChangeMSISDN').removeClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').addClass('d-none');
+        }else if(radioOption == 'consultVinculacion'){
+            $('#formConsultaChnageVinculacion').removeClass('d-none');
+            $('#formChangeMSISDN').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -2042,6 +2085,70 @@ $('#replacementSim').click(function(){
                     title: response.message,
                     text: (response),
                     showConfirmButton: true
+                })
+            }
+        }
+    })
+    
+})
+
+$('#consultaVinculacion').click(function(){
+    let msisdn = $('#msisdn_consult_vinculacion').val();
+
+    if((msisdn.length > 0 && msisdn.length < 10) || (msisdn.length >10)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN válido.',
+            text: 'La longitud requerida es de 10 dígitos.',
+            showConfirmButton: false,
+            timer: 2000
+        })
+        return false;
+    }
+
+    if(msisdn.length == 0 || /^\s+$/.test(msisdn)){
+        Swal.fire({
+            icon: 'error',
+            title: 'Por favor introduzca un MSISDN.',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return false;
+    }
+
+    $.ajax({
+        url:"{{route('consultaVinculacion')}}",
+        data: {msisdn},
+        success:function(response){
+             if(response.http_code == 0){
+                Swal.fire({
+                    icon: 'error',
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }else if(response.http_code == 2){
+                Swal.fire({
+                    icon: 'error',
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }else if (response.http_code == 1) {
+                console.log(response)
+                Swal.fire({
+                icon: 'success',
+                title: 'Consulta cambio de vinculación',
+                text: response.message,
+                showConfirmButton: true,
+                // timer: 1500
+                })
+            }else if(response.http_code == 3){
+                Swal.fire({
+                icon: 'error',
+                title: response.message,
+                showConfirmButton: false,
+                timer: 1500
                 })
             }
         }
