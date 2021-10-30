@@ -112,6 +112,12 @@
                                         Reemplazo de SIM
                                     </label>
                                 </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios10" value="validateIMEI">
+                                        Validación de IMEI
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -660,41 +666,41 @@
             </section>
         </div>
         <!-- end Consulta de USUARIO FINAL -->
-<!--reemplazo sim -->
-<div class="col-md-12 d-none" id="reemSim">
-    <section class="panel form-wizard" >
-        <header class="panel-heading">
-            <div class="panel-actions">
-                <a href="#" class="fa fa-caret-down"></a>
-                <a href="#" class="fa fa-times"></a>
-            </div>
-
-            <h2 class="panel-title">Reemplazo SIM</h2>
-        </header>
-        <div class="panel-body">
-            
-            <form class="form-horizontal" novalidate="novalidate">
-                <div class="tab-content">
-                    <div class="col-md-12" style="padding-left: 0px !important; padding-right: 0px !important;">
-                        <div class="col-md-4" style="padding-left: 0px !important; padding-right: 0px !important;">
-                            <label for="msisdn_locked">MSISDN</label>
-                            <input type="text" class="form-control" id="msisdn_replacementSim" maxlength="10">
-                            <label for="msisdn_locked">ICC Nuevo</label>
-                            <input type="text" class="form-control" id="new_icc" maxlength="19">
-                            <div class="col-md-12">
-                            </div>
-                        </div>
-                        
+        <!--reemplazo sim -->
+        <div class="col-md-12 d-none" id="reemSim">
+            <section class="panel form-wizard" >
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
                     </div>
-                    <button type="button" class="btn btn-success mt-md" id="replacementSim">Aceptar</button>
-                    
-                </div>
-            </form>
-        </div>
-    </section>
-</div>
 
-<!--END reemplazo sim -->
+                    <h2 class="panel-title">Reemplazo SIM</h2>
+                </header>
+                <div class="panel-body">
+                    
+                    <form class="form-horizontal" novalidate="novalidate">
+                        <div class="tab-content">
+                            <div class="col-md-12" style="padding-left: 0px !important; padding-right: 0px !important;">
+                                <div class="col-md-4" style="padding-left: 0px !important; padding-right: 0px !important;">
+                                    <label for="msisdn_locked">MSISDN</label>
+                                    <input type="text" class="form-control" id="msisdn_replacementSim" maxlength="10">
+                                    <label for="msisdn_locked">ICC Nuevo</label>
+                                    <input type="text" class="form-control" id="new_icc" maxlength="19">
+                                    <div class="col-md-12">
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <button type="button" class="btn btn-success mt-md" id="replacementSim">Aceptar</button>
+                            
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!--END reemplazo sim -->
 
         <!-- Cambio de MSISDN -->
         <div class="col-md-12 d-none" id="formChangeMSISDN">
@@ -727,6 +733,47 @@
         </div>
         <!--END Cambio de MSISDN -->
 
+        <!-- Validación de IMEI -->
+        <div class="col-md-12 d-none" id="validateIMEIForm">
+            <section class="panel form-wizard" >
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+    
+                    <h2 class="panel-title">Validación de IMEI</h2>
+                </header>
+                <div class="panel-body">
+                    
+                    <form class="form-horizontal" novalidate="novalidate">
+                        <div class="tab-content">
+                            <div class="input-group mb-md col-md-4">
+                                <label for="msisdn_to_change">IMEI</label>
+                                <input type="text" class="form-control" id="IMEIValidate">
+                            </div>
+                            <button class="btn btn-success" type="button" id="validateIMEIbtn"><li class="fa fa-arrow-circle-right"></li></button>
+                        </div>
+                    </form>
+                    <div class="alert alert-info d-none" id="infoIMEIValidate">
+                        <strong>Características del dispositivo:</strong>
+                        <ul>
+                            <li id="band28"></li>
+                            <li id="brand"></li>
+                            <li id="model"></li>
+                            <li id="volteCapable"></li>
+                        </ul>
+                        <strong>IMEI:</strong>
+                        <ul>
+                            <li id="blocked"></li>
+                            <li id="homologated"></li>
+                            <li id="imeiString"></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!--END Validación de IMEI -->
 
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-oxxo" data-toggle="modal" data-target="#referenceOxxo"><i class="fa fa-eye"></i> Referencia OXXOPay</button>
@@ -845,6 +892,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == 'changeProduct'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').removeClass('d-none');
@@ -855,6 +903,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == 'productPurchase'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -865,6 +914,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == 'changeLink'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -875,6 +925,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == "serviciabilidadConsult"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -885,6 +936,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == "lockUnlockIMEI"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -895,6 +947,7 @@
             $('#formConsultUF').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == "consultUF"){
             $('#formConsultUF').removeClass('d-none');
             $('#pre-reactivateContent').addClass('d-none');
@@ -905,6 +958,7 @@
             $('#lockedIMEIForm').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#reemSim').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == "reemSim"){
             $('#reemSim').removeClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
@@ -916,6 +970,7 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
         }else if(radioOption == 'changeMSISDN'){
             $('#formChangeMSISDN').removeClass('d-none');
             $('#formConsultUF').addClass('d-none');
@@ -926,6 +981,18 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#reemSim').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
+        }else if(radioOption == 'validateIMEI'){
+            $('#formChangeMSISDN').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').addClass('d-none');
+            $('#validateIMEIForm').removeClass('d-none');
         }
     });
 
@@ -2048,5 +2115,36 @@ $('#replacementSim').click(function(){
     })
     
 })
+
+$('#validateIMEIbtn').click(function(){
+    let imei = $('#IMEIValidate').val();
+
+    $.ajax({
+        url: "{{route('validateIMEI')}}",
+        data: {imei:imei},
+        beforeSend: function(){
+            Swal.fire({
+                title: 'Consultando información.',
+                html: 'Espera un poco, un poquito más...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
+        success: function(response){
+            response = JSON.parse(response);
+            $('#band28').html(response.deviceFeatures.band28+" compatible con banda 28.");
+            $('#brand').html("Marca: "+response.deviceFeatures.brand);
+            $('#model').html("Modelo: "+response.deviceFeatures.model);
+            $('#volteCapable').html(response.deviceFeatures.volteCapable+' compatible con VoLTE.');
+
+            $('#blocked').html(response.imei.blocked+' bloqueado.');
+            $('#homologated').html(response.imei.homologated);
+            $('#imeiString').html('IMEI: '+response.imei.imei);
+            Swal.close();
+            $('#infoIMEIValidate').removeClass('d-none');
+        }
+    });
+});
 </script>
 @endsection
