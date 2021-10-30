@@ -570,7 +570,6 @@
                                 </div>
                                 <button class="btn btn-success" type="button" id="serviciabilidad"><li class="fa fa-arrow-circle-right"></li></button>
                             </div>
-                            
                         </div>
                     </form>
                 </div>
@@ -769,6 +768,9 @@
                             <li id="homologated"></li>
                             <li id="imeiString"></li>
                         </ul>
+                    </div>
+                    <div class="alert alert-danger d-none" id="infoIMEIValidateDanger">
+                        <strong id="dangerMessage"></strong>
                     </div>
                 </div>
             </section>
@@ -1845,14 +1847,39 @@ $("#serviciabilidad").click(function(){
                 method: 'GET',
                 data:{lat_serv:lat_serv, lng_serv:lng_serv},
                 success:function(response){
+
                     if(response == 'Without Coverage'){
                         Swal.fire({
                             icon: 'error',
-                            title: 'No hay cobertura en las coordenadas '+(lat_serv)+', '+(lng_serv),
+                            title: 'Sitio sin cobertura.',
                             text: (response),
                             showConfirmButton: true
-                        })}
-                    else if (response == 'broadband10' || 'broadband5' || 'broadband20') {
+                        })
+                    }else if(response == 'E-BLK'){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Sitio bloqueado por capacidad.',
+                            showConfirmButton: true
+                        })
+                    }else if(response == 'E-WOC'){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Sitio sin serviciabilidad.',
+                            showConfirmButton: true
+                        })
+                    }else if(response == 'E-RES'){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Sitio restringido.',
+                            showConfirmButton: true
+                        })
+                    }else if(response == 'E-NSL'){
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Sitio bloqueado por infraestructura.',
+                            showConfirmButton: true
+                        })
+                    }else if (response == 'broadband10' || 'broadband5' || 'broadband20') {
                         Swal.fire({
                             icon: 'success',
                             title: 'La cobertura en las siguientes coordenadas '+(lat_serv)+', '+(lng_serv) + ' es de '+ (response),
@@ -2133,16 +2160,25 @@ $('#validateIMEIbtn').click(function(){
         },
         success: function(response){
             response = JSON.parse(response);
-            $('#band28').html(response.deviceFeatures.band28+" compatible con banda 28.");
-            $('#brand').html("Marca: "+response.deviceFeatures.brand);
-            $('#model').html("Modelo: "+response.deviceFeatures.model);
-            $('#volteCapable').html(response.deviceFeatures.volteCapable+' compatible con VoLTE.');
+            if(response.deviceFeatures){
+                $('#band28').html(response.deviceFeatures.band28+" compatible con banda 28.");
+                $('#brand').html("Marca: "+response.deviceFeatures.brand);
+                $('#model').html("Modelo: "+response.deviceFeatures.model);
+                $('#volteCapable').html(response.deviceFeatures.volteCapable+' compatible con VoLTE.');
 
-            $('#blocked').html(response.imei.blocked+' bloqueado.');
-            $('#homologated').html(response.imei.homologated);
-            $('#imeiString').html('IMEI: '+response.imei.imei);
-            Swal.close();
-            $('#infoIMEIValidate').removeClass('d-none');
+                $('#blocked').html(response.imei.blocked+' bloqueado.');
+                $('#homologated').html(response.imei.homologated);
+                $('#imeiString').html('IMEI: '+response.imei.imei);
+                Swal.close();
+                $('#infoIMEIValidateDanger').addClass('d-none');
+                $('#infoIMEIValidate').removeClass('d-none');
+            }else{
+                $('#dangerMessage').html('Woops! '+response.description+' Error: '+response.errorCode);
+                Swal.close();
+                $('#infoIMEIValidateDanger').removeClass('d-none');
+                $('#infoIMEIValidate').addClass('d-none');
+            }
+            
         }
     });
 });
