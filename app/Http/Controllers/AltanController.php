@@ -561,7 +561,8 @@ class AltanController extends Controller
 
                 return response()->json(['http_code'=>1, 'message'=>$response]);
             }else if ($response['errorCode']) {
-            return response()->json(['http_code'=>0, 'message'=>$response['description']]);}
+                return response()->json(['http_code'=>0, 'message'=>$response['description']]);
+            }
         }
     }
 
@@ -668,5 +669,28 @@ class AltanController extends Controller
             }
         }
 
+    }
+
+    public function validateIMEI(Request $request){
+        $imei = $request->get('imei');
+
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+    
+            if(isset($accessTokenResponse['status'])){
+                if($accessTokenResponse['status'] == 'approved'){
+    
+                    $accessToken = $accessTokenResponse['accessToken'];
+                    $url_production = 'https://altanredes-prod.apigee.net/ac/v1/imeis/'.$imei.'/status';
+                    
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer '.$accessToken,
+                        'Content-Type' => 'application/json'
+                    ])->get($url_production);
+    
+                    return $response;
+                }else{
+                    return "no aprobado";
+                }
+            }
     }
 }

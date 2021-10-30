@@ -208,3 +208,4 @@ Route::get('replacementSim', 'AltanController@replacementSim')->name('replacemen
 Route::get('consultaVinculacion', 'AltanController@consultaVinculacion')->name('consultaVinculacion');
 Route::get('/income','AdminController@income')->name('income');
 Route::get('/incomes-export','AdminController@incomesExport');
+Route::get('/validate-imei','AltanController@validateIMEI')->name('validateIMEI');
