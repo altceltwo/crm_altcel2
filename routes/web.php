@@ -209,3 +209,4 @@ Route::get('consultaVinculacion', 'AltanController@consultaVinculacion')->name('
 Route::get('/income','AdminController@income')->name('income');
 Route::get('/incomes-export','AdminController@incomesExport');
 Route::get('/validate-imei','AltanController@validateIMEI')->name('validateIMEI');
+Route::get('/consumos', 'ClientController@consumos')->name('consumos');

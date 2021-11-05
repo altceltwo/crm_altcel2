@@ -751,4 +751,22 @@ class ClientController extends Controller
         return response()->json($response);
     }
 
+    public function consumos(Request $request){
+        $num = $request['msisdn'];
+        $msisdn= '52'.$num;
+        $date_start = $request['date_start'];
+        $date_end = $request['date_end'];
+        $año = substr($date_start, -4);
+        $mes = substr($date_start, 0,2);
+        $dia = substr($date_start, 3, -5);
+        $dateStart = $año. '-'. $mes.'-'.$dia;
+        $añoEnd = substr($date_end, -4);
+        $mesEnd = substr($date_end, 0,2);
+        $diaEnd = substr($date_end, 3, -5);
+        $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
+
+        $consumos = DB::select('CALL sftp_altan.consumos_datos ', array($msisdn, $date_start, $date_end));
+
+        return $consumos;
+    }
 }
