@@ -124,6 +124,12 @@
                                         Validación IMEI
                                     </label>
                                 </div>
+                                <div class="radio col-md-3">
+                                    <label>
+                                        <input type="radio" name="optionsRadios" id="optionsRadios11" value="consumos">
+                                        Consumos
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -807,6 +813,44 @@
         </div>
         <!--END Validación de IMEI -->
 
+        <!-- Consumos -->
+        <div class="col-md-12 d-none" id="consumosForm">
+            <section class="panel form-wizard" >
+                <header class="panel-heading">
+                    <div class="panel-actions">
+                        <a href="#" class="fa fa-caret-down"></a>
+                        <a href="#" class="fa fa-times"></a>
+                    </div>
+    
+                    <h2 class="panel-title">Consumos</h2>
+                </header>
+                <div class="panel-body">
+                    
+                    <form class="form-horizontal" novalidate="novalidate">
+                        <div class="tab-content">
+                            <div class="input-group mb-md col-md-4">
+                                <label for="msisdn_to_change">MSISDN</label>
+                                <input type="text" class="form-control" id="MSISDNconsumos">
+                            </div>
+                            <div class="col-md-12 mt-md mb-sm">
+                                <label class="">Fecha</label>
+                                <div class="input-daterange input-group" data-plugin-datepicker>
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                    <input autocomplete="off" type="text" class="form-control" id="start_date" name="start">
+                                    <span class="input-group-addon">a</span>
+                                    <input autocomplete="off" type="text" class="form-control" id="end_date" name="end">
+                                </div>
+                            </div>
+                            <button class="btn btn-success" type="button" id="consumosBtn"><li class="fa fa-arrow-circle-right"></li></button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+        <!--END Consumos -->
+
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-openpay" data-toggle="modal" data-target="#reference"><i class="fa fa-eye"></i> Referencia OpenPay</button>
         <button type="button" class="mb-xs mt-xs mr-xs btn btn-primary d-none" id="btn-reference-oxxo" data-toggle="modal" data-target="#referenceOxxo"><i class="fa fa-eye"></i> Referencia OXXOPay</button>
     </div>
@@ -925,6 +969,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'changeProduct'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').removeClass('d-none');
@@ -936,6 +982,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'productPurchase'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -947,6 +995,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'changeLink'){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -958,6 +1008,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == "serviciabilidadConsult"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -969,6 +1021,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == "lockUnlockIMEI"){
             $('#pre-reactivateContent').addClass('d-none');
             $('#changeProductForm').addClass('d-none');
@@ -980,6 +1034,8 @@
             $('#reemSim').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == "consultUF"){
             $('#formConsultUF').removeClass('d-none');
             $('#pre-reactivateContent').addClass('d-none');
@@ -991,6 +1047,8 @@
             $('#formChangeMSISDN').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == "reemSim"){
             $('#reemSim').removeClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
@@ -1003,6 +1061,8 @@
             $('#lockedIMEIForm').addClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'changeMSISDN'){
             $('#formChangeMSISDN').removeClass('d-none');
             $('#formConsultUF').addClass('d-none');
@@ -1013,6 +1073,8 @@
             $('#serviciabilidadForm').addClass('d-none');
             $('#lockedIMEIForm').addClass('d-none');
             $('#reemSim').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'consultVinculacion'){
             $('#formConsultaChnageVinculacion').removeClass('d-none');
             $('#formChangeMSISDN').addClass('d-none');
@@ -1025,6 +1087,7 @@
             $('#lockedIMEIForm').addClass('d-none');
             $('#reemSim').addClass('d-none');
             $('#validateIMEIForm').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
         }else if(radioOption == 'validateIMEI'){
             $('#formChangeMSISDN').addClass('d-none');
             $('#formConsultUF').addClass('d-none');
@@ -1037,6 +1100,20 @@
             $('#reemSim').addClass('d-none');
             $('#validateIMEIForm').removeClass('d-none');
             $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').addClass('d-none');
+        }else if(radioOption == 'consumos'){
+            $('#formChangeMSISDN').addClass('d-none');
+            $('#formConsultUF').addClass('d-none');
+            $('#pre-reactivateContent').addClass('d-none');
+            $('#changeProductForm').addClass('d-none');
+            $('#productPurchaseForm').addClass('d-none');
+            $('#changeLinkContent').addClass('d-none');
+            $('#serviciabilidadForm').addClass('d-none');
+            $('#lockedIMEIForm').addClass('d-none');
+            $('#reemSim').addClass('d-none');
+            $('#validateIMEIForm').addClass('d-none');
+            $('#formConsultaChnageVinculacion').addClass('d-none');
+            $('#consumosForm').removeClass('d-none');
         }
     });
 
@@ -2257,6 +2334,21 @@ $('#validateIMEIbtn').click(function(){
             $('#infoIMEIValidate').removeClass('d-none');
         }
     });
+});
+
+$('#consumosBtn').click(function(){
+    let msisdn = $('#MSISDNconsumos').val();
+    let date_start = $('#start_date').val();
+    let date_end = $('#end_date').val();
+    console.log(date_start)
+    $.ajax({
+        url: "{{route('consumos')}}",
+        method: 'GET',
+        data: {msisdn:msisdn, date_start:date_start, date_end:date_end},
+        success:function(response){
+            console.log(response)
+        }
+    })
 });
 </script>
 @endsection
