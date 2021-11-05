@@ -322,51 +322,11 @@ class ClientController extends Controller
             $data['traffic_out'] = $dataQuery[0]->traffic_outbound;
             $data['traffic_out_in'] = $dataQuery[0]->traffic_outbound_incoming;
 
-            $data['mypays'] = DB::table('pays')
-                                 ->join('references','references.reference_id','=','pays.reference_id')
-                                 ->join('channels','channels.id','=','references.channel_id')
-                                 ->where('pays.activation_id',$id_act)
-                                 ->where('pays.status','completado')
-                                 ->select('pays.*','references.amount','references.currency','references.reference','references.fee_amount','channels.name AS channel_name')
-                                 ->get();
-            $data['mypaysManual'] = DB::table('pays')
-                                      ->leftJoin('references','references.reference_id','=','pays.reference_id')
-                                      ->where('pays.status','completado')
-                                      ->where('pays.type_pay','=','deposito')
-                                      ->orWhere('pays.type_pay','=','transferencia')
-                                      ->orWhere('pays.type_pay','=','efectivo')
-                                      ->orWhere('pays.type_pay','=','efectivo/referencia')
-                                      ->orWhere('pays.type_pay','=','deposito/referencia')
-                                      ->orWhere('pays.type_pay','=','transferencia/referencia')
-                                      ->select('pays.*','references.amount AS reference_amount')
-                                      ->get();
-                                    //  return $data['mypaysManual'];
-
         }else if($service == 'Conecta' || $service == 'Telmex'){
             $dataQuery = DB::table('instalations')
                             ->join('packs','packs.id','=','instalations.pack_id')
                             ->where('instalations.id',$id_act)
                             ->select('instalations.*','packs.name AS pack_name','packs.price AS pack_price')
-                            ->get();
-            
-            $data['mypays'] = DB::table('ethernetpays')
-                            ->join('references','references.reference_id','=','ethernetpays.reference_id')
-                            ->join('channels','channels.id','=','references.channel_id')
-                            ->where('ethernetpays.instalation_id',$id_act)
-                            ->where('ethernetpays.status','completado')
-                            ->select('ethernetpays.*','references.amount','references.currency','references.reference','references.fee_amount','channels.name AS channel_name')
-                            ->get();
-            
-            $data['mypaysManual'] = DB::table('ethernetpays')
-                            ->leftJoin('references','references.reference_id','=','ethernetpays.reference_id')
-                            ->where('ethernetpays.status','completado')
-                            ->where('ethernetpays.type_pay','=','deposito')
-                            ->orWhere('ethernetpays.type_pay','=','transferencia')
-                            ->orWhere('ethernetpays.type_pay','=','efectivo')
-                            ->orWhere('ethernetpays.type_pay','=','efectivo/referencia')
-                            ->orWhere('ethernetpays.type_pay','=','deposito/referencia')
-                            ->orWhere('ethernetpays.type_pay','=','transferencia/referencia')
-                            ->select('ethernetpays.*','references.amount AS reference_amount')
                             ->get();
             
             $data['service'] = $service;
