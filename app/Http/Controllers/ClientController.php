@@ -805,7 +805,7 @@ class ClientController extends Controller
         $diaEnd = substr($date_end, 3, -5);
         $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
 
-        $consumos = DB::select('CALL sftp_altan.consumos_datos ', array($msisdn, $date_start, $date_end));
+        $consumos = DB::select("CALL sftp_altan.consumos_datos_genaral($dateStart, $dateEnd)");
 
         return $consumos;
     }
