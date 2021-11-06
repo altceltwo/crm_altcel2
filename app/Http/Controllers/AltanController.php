@@ -566,67 +566,67 @@ class AltanController extends Controller
         }
     }
 
-        public function bondingSIM(Request $request){
-            $msisdn = $request->post('msisdn');
-            $nir = $request->post('nir');
-            $existsNumber = Number::where('MSISDN',$msisdn)->exists();
-    
-            if(!$existsNumber){
-                return response()->json(['http_code'=>'3','message'=>'El MSISDN '.$msisdn.' no existe dentro de nuestros registros.']);
-            }
-            $dataNumber = Number::where('MSISDN',$msisdn)->first();
-            $producto = $dataNumber->producto;
-            $producto = trim($producto);
-            $number_id = $dataNumber->id;
-    
-            if($producto == 'HBB'){
-                return response()->json(['http_code'=>'2','message'=>'El cambio de MSISDN no está permitido, debido a que es de tipo HBB.']);
-            }
-    
-            $accessTokenResponse = AltanController::accessTokenRequestPost();
-    
-            if(isset($accessTokenResponse['status'])){
-                if($accessTokenResponse['status'] == 'approved'){
-    
-                    $accessToken = $accessTokenResponse['accessToken'];
-                    $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
-                    
-                    $response = Http::withHeaders([
-                        'Authorization' => 'Bearer '.$accessToken,
-                        'Content-Type' => 'application/json'
-                    ])->patch($url_production,[
-                        'changeSubscriberMSISDN' => array(
-                            'nir' => $nir,
-                            'msisdnType' => 1,
-                        )
+    public function bondingSIM(Request $request){
+        $msisdn = $request->post('msisdn');
+        $nir = $request->post('nir');
+        $existsNumber = Number::where('MSISDN',$msisdn)->exists();
+
+        if(!$existsNumber){
+            return response()->json(['http_code'=>'3','message'=>'El MSISDN '.$msisdn.' no existe dentro de nuestros registros.']);
+        }
+        $dataNumber = Number::where('MSISDN',$msisdn)->first();
+        $producto = $dataNumber->producto;
+        $producto = trim($producto);
+        $number_id = $dataNumber->id;
+
+        if($producto == 'HBB'){
+            return response()->json(['http_code'=>'2','message'=>'El cambio de MSISDN no está permitido, debido a que es de tipo HBB.']);
+        }
+
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+
+        if(isset($accessTokenResponse['status'])){
+            if($accessTokenResponse['status'] == 'approved'){
+
+                $accessToken = $accessTokenResponse['accessToken'];
+                $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+                
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'application/json'
+                ])->patch($url_production,[
+                    'changeSubscriberMSISDN' => array(
+                        'nir' => $nir,
+                        'msisdnType' => 1,
+                    )
+                ]);
+
+                if(isset($response['order'])){
+                    $effectiveDate = $response['effectiveDate'];
+                    $newMsisdn = $response['newMsisdn'];
+                    $oldMsisdn = $response['oldMsisdn'];
+                    $order = $response['order'];
+                    $order_id = $order['id'];
+
+                    Number::where('MSISDN',$msisdn)->update(['MSISDN'=>$newMsisdn]);
+                    Historic::insert([
+                        'oldMSISDN' => $oldMsisdn,
+                        'date_change' => $effectiveDate,
+                        'order_id' => $order_id,
+                        'number_id' => $number_id
                     ]);
-    
-                    if(isset($response['order'])){
-                        $effectiveDate = $response['effectiveDate'];
-                        $newMsisdn = $response['newMsisdn'];
-                        $oldMsisdn = $response['oldMsisdn'];
-                        $order = $response['order'];
-                        $order_id = $order['id'];
-    
-                        Number::where('MSISDN',$msisdn)->update(['MSISDN'=>$newMsisdn]);
-                        Historic::insert([
-                            'oldMSISDN' => $oldMsisdn,
-                            'date_change' => $effectiveDate,
-                            'order_id' => $order_id,
-                            'number_id' => $number_id
-                        ]);
-    
-                        return response()->json(['http_code'=>1,'message'=>'El MSISDN nuevo es '.$newMsisdn]);
-                    }else{
-                        return response()->json(['http_code'=>0,'Ha ocurrido un error con la petición, consulte a Desarrollo.']);
-                    }
-    
-                    return $response;
+
+                    return response()->json(['http_code'=>1,'message'=>'El MSISDN nuevo es '.$newMsisdn]);
                 }else{
-                    return "no aprobado";
+                    return response()->json(['http_code'=>0,'Ha ocurrido un error con la petición, consulte a Desarrollo.']);
                 }
+
+                return $response;
+            }else{
+                return "no aprobado";
             }
         }
+    }
 
     public function consultaVinculacion(Request $request){
         // return $request;
@@ -642,7 +642,7 @@ class AltanController extends Controller
         $number_id = $dataNumber->id;
 
         if($producto == 'MIFI'){
-            return response()->json(['http_code'=>'2','message'=>'La consulta de Cambio de Vinculación no está permitido, debido a que es de tipo MIFI.']);
+            return response()->json(['http_code'=>2,'message'=>'Debido a que el MSISDN es de tipo MIFI no se puede hacer la consulta']);
         }
 
         $accessTokenResponse = AltanController::accessTokenRequestPost();
@@ -650,7 +650,7 @@ class AltanController extends Controller
         if(isset($accessTokenResponse['status'])){
             if($accessTokenResponse['status'] == 'approved'){
                 $accessToken = $accessTokenResponse['accessToken'];
-                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/msisdns/'.$msisdn.'/linkings?be_id='.$be;
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/msisdns/'.$msisdn.'/linkings?be_id=202';
 
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer '.$accessToken,
@@ -658,18 +658,18 @@ class AltanController extends Controller
                 ])->get($url_production);
 
                 if (isset($response['imsi'])) {
-                   $imsi = $response['imsi'];
-                   $periods = $response['period'];
-                   $records = $response['records'];
-                   return$response;
-                   return response()->json(['http_code'=>'1','message'=>'Imsi: '.$response['imsi'].' Periodo: '.$response['period'].' Registros: '.$response['records']]);
+                    $imsi = $response['imsi'];
+                    $periods = $response['period'];
+                    $records = $response['records'];
+                    return$response;
+                    return response()->json(['http_code'=>'1','message'=>'Imsi: '.$response['imsi'].' Periodo: '.$response['period'].' Registros: '.$response['records']]);
                 }else if(isset($response['errorCode'])){
                     return response()->json(['http_code'=>'0','message'=>$response['description']]);
                 }
             }
         }
 
-    }
+    } 
 
     public function validateIMEI(Request $request){
         $imei = $request->get('imei');

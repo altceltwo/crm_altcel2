@@ -2152,6 +2152,15 @@ $('#changeMSISDN').click(function(){
         url: "{{route('bonding')}}",
         method: 'POST',
         data: {_token: token, msisdn:msisdn, nir:nir, type:'change'},
+        beforeSend: function(){
+            Swal.fire({
+                title: 'Estamos trabajando en ello.',
+                html: 'Espera un poco, un poquito más...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
         success: function(response){
             if(response.http_code == 1){
                 Swal.fire({
@@ -2242,6 +2251,15 @@ $('#replacementSim').click(function(){
     $.ajax({
         url:"{{route('replacementSim')}}",
         data: {msisdn:msisdn, icc:icc ,type:'replace'},
+        beforeSend: function(){
+            Swal.fire({
+                title: 'Estamos trabajando en ello.',
+                html: 'Espera un poco, un poquito más...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
         success:function(response){
             console.log(response)
             if(response.http_code == 1){
@@ -2291,6 +2309,15 @@ $('#consultaVinculacion').click(function(){
     $.ajax({
         url:"{{route('consultaVinculacion')}}",
         data: {msisdn},
+        beforeSend: function(){
+            Swal.fire({
+                title: 'Consultando información.',
+                html: 'Espera un poco, un poquito más...',
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
         success:function(response){
              if(response.http_code == 0){
                 Swal.fire({
