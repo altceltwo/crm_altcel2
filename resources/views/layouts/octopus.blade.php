@@ -404,6 +404,9 @@
                                             <li>
                                                 <a href="{{route('preactivations.index')}}">Preactivaciones</a>
                                             </li>
+                                            <li>
+                                                <a href="{{route('reports')}}">Reportes de Consumos</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">

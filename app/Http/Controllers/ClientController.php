@@ -16,6 +16,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\NewclientsExport;
+use App\Exports\ConsumosExport;
+use App\Exports\ConsumosGeneralExport;
 
 class ClientController extends Controller
 {
@@ -751,7 +753,23 @@ class ClientController extends Controller
         return response()->json($response);
     }
 
+    public function reports(Request $request){
+        $data['clients'] = DB::table('users')
+                              ->join('activations','activations.client_id','=','users.id')
+                              ->join('numbers','numbers.id','=','activations.numbers_id')
+                              ->join('rates','rates.id','=','activations.rate_id')
+                              ->leftJoin('devices','devices.id','=','activations.devices_id')
+                              ->leftJoin('clients','clients.user_id','=','users.id')
+                              ->select('users.name AS name','users.lastname AS lastname',
+                              'clients.cellphone AS cellphone','numbers.MSISDN AS MSISDN',
+                              'numbers.producto AS service','devices.no_serie_imei AS imei',
+                              'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device')
+                              ->get();
+        return view('clients.reports', $data);
+    }
+
     public function consumos(Request $request){
+        $type = $request['type'];
         $num = $request['msisdn'];
         $msisdn= '52'.$num;
         $date_start = $request['date_start'];
@@ -765,8 +783,71 @@ class ClientController extends Controller
         $diaEnd = substr($date_end, 3, -5);
         $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
 
-        $consumos = DB::select("CALL sftp_altan.consumos_datos_genaral($dateStart, $dateEnd)");
+        if ($type == 'datosIndividual') {
+            $group = 'individual';
+            $consumos = DB::select("CALL sftp_altan.consumos_datos('".$msisdn."','".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }elseif ($type == 'datosgeneral') {
+            $group = 'general';
+            $consumos = DB::select("CALL sftp_altan.consumos_datos_general('".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }elseif ($type == 'smsIndividual') {
+            $group = 'individual';
+            $consumos = DB::select("CALL sftp_altan.consumos_sms('".$msisdn."','".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }elseif ($type == 'smsGeneral') {
+            $group = 'general';
+            $consumos = DB::select("CALL sftp_altan.consumos_sms_general('".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }elseif ($type == 'minIndividual') {
+            $group = 'individual';
+            $consumos = DB::select("CALL sftp_altan.consumos_voz('".$msisdn."','".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }elseif ($type == 'minGeneral') {
+            $group = 'general';
+            $consumos = DB::select("CALL sftp_altan.consumos_voz_general('".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
+        }
 
-        return $consumos;
+    }
+
+    public function exportConsumos(Request $request){
+        $msisdn = $request['MSISDN'];
+        
+        
+        $data = [
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+            'MSISDN' => $request->get('MSISDN'),
+            'type'=>$request->get('type')
+        ];
+        // return $data;
+        return Excel::download(new ConsumosExport($data), 'Consumos_'.$msisdn.'.xlsx');
+    }
+
+    public function exportConsumosGeneral(Request $request){
+        $date_start = $request['start_date'];
+        $date_end = $request['end_date'];
+        $año = substr($date_start, -4);
+        $mes = substr($date_start, 0,2);
+        $dia = substr($date_start, 3, -5);
+        $dateStart = $año. '_'. $mes.'_'.$dia;
+        $añoEnd = substr($date_end, -4);
+        $mesEnd = substr($date_end, 0,2);
+        $diaEnd = substr($date_end, 3, -5);
+        $dateEnd = $añoEnd. '_'. $mesEnd.'_'.$diaEnd;
+        $data = [
+            'start_date' => $request->get('start_date'),
+            'end_date' => $request->get('end_date'),
+            'type' => $request->get('type')
+        ];
+        // return $data;
+        return Excel::download(new ConsumosGeneralExport($data), 'ConsumosGeneral_'.$dateStart.'-'.$dateEnd.'.xlsx');
     }
 }

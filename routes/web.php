@@ -162,6 +162,8 @@ Route::post('/create-payments-sandbox','PaymentController@createPaymentsSandbox'
     // Exports
 Route::get('/new-clients-export-excel','ClientController@exportNewClients')->name('newClients.excel');
 Route::get('/rates-actives-export-excel','RateController@exportRatesActives')->name('rates.excel');
+Route::get('/consumos-export-excel','ClientController@exportConsumos')->name('consumos.excel');
+Route::get('/consumos-general-export-excel','ClientController@exportConsumosGeneral')->name('consumosGeneral.excel');
 
 //Invoice
 Route::resource('invoice', 'InvoiceController@invoice');
@@ -209,4 +211,5 @@ Route::get('consultaVinculacion', 'AltanController@consultaVinculacion')->name('
 Route::get('/income','AdminController@income')->name('income');
 Route::get('/incomes-export','AdminController@incomesExport');
 Route::get('/validate-imei','AltanController@validateIMEI')->name('validateIMEI');
+Route::get('/reports', 'ClientController@reports')->name('reports');
 Route::get('/consumos', 'ClientController@consumos')->name('consumos');
