@@ -213,3 +213,6 @@ Route::get('/incomes-export','AdminController@incomesExport');
 Route::get('/validate-imei','AltanController@validateIMEI')->name('validateIMEI');
 Route::get('/reports', 'ClientController@reports')->name('reports');
 Route::get('/consumos', 'ClientController@consumos')->name('consumos');
+
+//reports Activations
+Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');

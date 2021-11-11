@@ -14,15 +14,51 @@
         <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
     </div>
 </header>
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel">
+            <div class="panel-body">
+                <div class="form-group">
+                    <form class="form-horizontal form-bordered" action="{{route('reportscAtivations')}}">
+                        <div class="col-md-4">
+                            <label for="type">Concepto:</label>
+                            <select class="form-control" data-plugin-multiselect name="type" id="type">
+                                <option value="" selected>Seleccione un opción</option>
+                                <option value="general">General</option>
+                                <option value="MIFI">MIFI</option>
+                                <option value="HBB">HBB</option>
+                                <option value="MOV">MOV</option>
+                            </select>
+                        </div>
+                            
+                        <div class="col-md-8  mb-sm">
+                            <label class="">Fecha</label>
+                            <div class="input-daterange input-group" data-plugin-datepicker>
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                                <input autocomplete="off" type="text" class="form-control" id="start_date" name="start">
+                                <span class="input-group-addon">a</span>
+                                <input autocomplete="off" type="text" class="form-control" id="end_date" name="end">
+                            </div>
+                        </div>
 
+                        <div class="col-md-12 mt-md">
+                            <button class="btn btn-primary btn-sm" ><i class="fa fa-cloud-download"></i> Consultar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 <section class="panel">
     <header class="panel-heading">
         <div class="panel-actions">
             <a href="#" class="fa fa-caret-down"></a>
             <a href="#" class="fa fa-times"></a>
         </div>
-
-        <h2 class="panel-title">Clientes</h2>
+            <h2 class="panel-title">Clientes</h2>
     </header>
     <div class="panel-body">
         <table class="table table-bordered table-striped mb-none" id="datatable-default">
@@ -32,6 +68,7 @@
                     <th>Contacto</th>
                     <th>MSISDN</th>
                     <th>IMEI</th>
+                    <th>ICC</th>
                     <th>Plan/Paquete</th>
                     <th>Servicio</th>
                     <th>Plan</th>
@@ -51,6 +88,7 @@
                     <td>{{ $client->cellphone }}</td>
                     <td>{{ $client->MSISDN }}</td>
                     <td>{{ substr($client->imei,4) }}</td>
+                    <td>{{$client->icc }}</td>
                     <td>{{ $rate = strtoupper($client->rate_name) }}</td>
                     <td>{{ $service = strtoupper($client->service) }}</td>
                     <td>${{ number_format($client->amount_rate,2) }}</td>

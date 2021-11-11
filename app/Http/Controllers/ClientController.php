@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\NewclientsExport;
 use App\Exports\ConsumosExport;
 use App\Exports\ConsumosGeneralExport;
+use App\Exports\ReportsActivations;
 
 class ClientController extends Controller
 {
@@ -31,7 +32,7 @@ class ClientController extends Controller
                               ->select('users.name AS name','users.lastname AS lastname',
                               'clients.cellphone AS cellphone','numbers.MSISDN AS MSISDN',
                               'numbers.producto AS service','devices.no_serie_imei AS imei',
-                              'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device')
+                              'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device','numbers.icc_id AS icc')
                               ->get();
 
         $data['clientsTwo'] = DB::table('users')
@@ -849,5 +850,33 @@ class ClientController extends Controller
         ];
         // return $data;
         return Excel::download(new ConsumosGeneralExport($data), 'ConsumosGeneral_'.$dateStart.'-'.$dateEnd.'.xlsx');
+    }
+
+    public function reportsActivations(Request $request){
+        $type = $request['type'];
+        $date_start = $request['start'];
+        $date_end = $request['end'];
+        $año = substr($date_start, -4);
+        $mes = substr($date_start, 0,2);
+        $dia = substr($date_start, 3, -5);
+        $dateStart = $año. '_'. $mes.'_'.$dia;
+        $añoEnd = substr($date_end, -4);
+        $mesEnd = substr($date_end, 0,2);
+        $diaEnd = substr($date_end, 3, -5);
+        $dateEnd = $añoEnd. '_'. $mesEnd.'_'.$diaEnd;
+        $data = [
+            'start_date' => $request->get('start'),
+            'end_date' => $request->get('end'),
+            'type'=> $request->get('type')
+        ];
+        // return $data;
+
+        if ($type == 'general') {
+            return Excel::download(new ReportsActivations($data), 'Reportes_Activaciones_General_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }else{
+            return Excel::download(new ReportsActivations($data), 'Reportes_Activaciones_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }
+
+        
     }
 }
