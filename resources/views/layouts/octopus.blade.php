@@ -671,6 +671,20 @@
                                                             <li>
                                                                 <a href="{{route('rates.index')}}">Ver</a>
                                                             </li>
+                                                            <li>
+                                                                <a href="{{route('rates.create')}}">Crear</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="nav-parent">
+                                                        <a>Promociones</a>
+                                                        <ul class="nav nav-children">
+                                                            <li>
+                                                                <a href="{{route('promotion.index')}}">Ver</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="{{route('promotion.create')}}">Crear</a>
+                                                            </li>
                                                         </ul>
                                                     </li>
                                                     <li>

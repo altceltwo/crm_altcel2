@@ -2148,47 +2148,83 @@ $('#changeMSISDN').click(function(){
         return false;
     }
 
-    $.ajax({
-        url: "{{route('bonding')}}",
-        method: 'POST',
-        data: {_token: token, msisdn:msisdn, nir:nir, type:'change'},
-        beforeSend: function(){
+    Swal.fire({
+        title: 'ATENCIÓN',
+        html: "¿Está seguro de aplicar el cambio de número al MSISDN <b>"+msisdn+"</b>?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'SÍ, ESTOY SEGURO',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            confirmButton: 'btn btn-primary mr-md',
+            cancelButton: 'btn btn-danger '
+        },
+        buttonsStyling: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
             Swal.fire({
                 title: 'Estamos trabajando en ello.',
                 html: 'Espera un poco, un poquito más...',
                 didOpen: () => {
                     Swal.showLoading();
+                    // setTimeout(function(){ Swal.close(); }, 2000);
+                    $.ajax({
+                        url: "{{route('bonding')}}",
+                        method: 'POST',
+                        data: {_token: token, msisdn:msisdn, nir:nir, type:'change'},
+                        beforeSend: function(){
+                            Swal.fire({
+                                title: 'Estamos trabajando en ello.',
+                                html: 'Espera un poco, un poquito más...',
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        },
+                        success: function(response){
+                            if(response.http_code == 1){
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Cambio de MSISDN hecho con éxito.',
+                                    text: response.message,
+                                })
+                            }else if(response.http_code == 0){
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Woops!!',
+                                    text: response.message,
+                                })
+                            }else if(response.http_code == 2){
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Woops!!',
+                                    text: response.message,
+                                })
+                            }else if(response.http_code == 3){
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Woops!!',
+                                    text: response.message,
+                                })
+                            }
+                        }
+                    });
                 }
             });
-        },
-        success: function(response){
-            if(response.http_code == 1){
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Cambio de MSISDN hecho con éxito.',
-                    text: response.message,
-                })
-            }else if(response.http_code == 0){
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Woops!!',
-                    text: response.message,
-                })
-            }else if(response.http_code == 2){
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Woops!!',
-                    text: response.message,
-                })
-            }else if(response.http_code == 3){
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Woops!!',
-                    text: response.message,
-                })
-            }
+            
+        } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+        ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Operación cancelada',
+                text: 'No se registro ningún pago.',
+                showConfirmButton: false,
+                timer: 1000
+            })
         }
-    });
+    })
 });
 
 function getData(){

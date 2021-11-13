@@ -303,6 +303,7 @@ class ClientController extends Controller
 
     public function productDetails($id_dn,$id_act,$service){
         if($service == 'MIFI' || $service == 'HBB' || $service == 'MOV'){
+            $data['channels'] = Channel::all();
             $dataQuery = DB::table('activations')
                        ->join('numbers','numbers.id','=','activations.numbers_id')
                        ->join('rates','rates.id','=','activations.rate_id')
@@ -311,16 +312,246 @@ class ClientController extends Controller
                        ->select('numbers.MSISDN AS DN','numbers.traffic_outbound AS traffic_outbound',
                        'numbers.traffic_outbound_incoming AS traffic_outbound_incoming',
                        'rates.name AS rate_name','rates.price AS rate_price',
-                       'activations.date_activation AS date_activation')
+                       'activations.date_activation AS date_activation','activations.lat_hbb AS lat','activations.lng_hbb AS lng','numbers.id AS number_id')
                        ->get();
             
             $data['DN'] = $dataQuery[0]->DN;
+            $data['lat'] = $dataQuery[0]->lat;
+            $data['lng'] = $dataQuery[0]->lng;
             $data['service'] = $service;
             $data['pack_name'] = $dataQuery[0]->rate_name;
             $data['pack_price'] = $dataQuery[0]->rate_price;
             $data['date_activation'] = $dataQuery[0]->date_activation;
             $data['traffic_out'] = $dataQuery[0]->traffic_outbound;
             $data['traffic_out_in'] = $dataQuery[0]->traffic_outbound_incoming;
+            $number_id = $dataQuery[0]->number_id;
+
+            $consultUF = app('App\Http\Controllers\AltanController')->consultUF($data['DN']);
+            // return $consultUF;
+
+            $responseSubscriber = $consultUF['responseSubscriber'];
+            $information = $responseSubscriber['information'];
+            $status = $responseSubscriber['status']['subStatus'];
+            $freeUnits = $responseSubscriber['freeUnits'];
+            $coordinates = $responseSubscriber['information']['coordinates'];
+            $char = explode(',',$coordinates);
+
+            if($service == 'HBB'){
+                $lat_hbb = $char[0];
+                $lng_hbb = $char[1];
+                $data['lat'] = $lat_hbb;
+                $data['lng'] = $lng_hbb;
+            }else if($service == 'MIFI' || $service == 'MOV'){
+                $lat_hbb = null;
+                $lng_hbb = null;
+            }
+
+            $data['consultUF']['status'] = $status;
+            $data['consultUF']['imei'] = $information['IMEI'];
+            $data['consultUF']['icc'] = $information['ICCID'];
+
+            if($status == 'Active'){
+                $data['consultUF']['status_color'] = 'success';
+            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)'){
+                $data['consultUF']['status_color'] = 'warning';
+            }
+
+            if($service == 'MIFI' || $service == 'HBB'){
+                $data['FreeUnitsBoolean'] = 0;
+                $data['FreeUnits2Boolean'] = 0;
+                $data['consultUF']['offerID'] = 0;
+
+                for ($i=0; $i < sizeof($freeUnits); $i++) {
+                    if($freeUnits[$i]['name'] == 'Free Units' || $freeUnits[$i]['name'] == 'FU_Altan-RN'){
+                        $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
+                        $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
+                        $percentageFree = ($unusedAmt/$totalAmt)*100;
+                        $data['FreeUnits'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
+                        $data['FreeUnitsBoolean'] = 1;
+
+                        $detailOfferings = $freeUnits[$i]['detailOfferings'];
+
+                        $data['effectiveDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
+                        $data['expireDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                        $expire_date = $detailOfferings[0]['expireDate'];
+                        $expire_date = substr($expire_date,0,8);
+
+                        $data['consultUF']['offerID'] = $detailOfferings[0]['offeringId'];
+                    }
+
+                    if($freeUnits[$i]['name'] == 'Free Units 2' || $freeUnits[$i]['name'] == 'FU_Altan-RN_P2'){
+                        $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
+                        $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
+                        $percentageFree = ($unusedAmt/$totalAmt)*100;
+                        $data['FreeUnits2'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
+                        $data['FreeUnits2Boolean'] = 1;
+
+                        $detailOfferings = $freeUnits[$i]['detailOfferings'];
+
+                        $data['effectiveDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
+                        $data['expireDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                    }
+                }
+
+                $rateData = DB::table('numbers')
+                                   ->leftJoin('activations','activations.numbers_id','=','numbers.id')
+                                   ->leftJoin('rates','rates.id','=','activations.rate_id')
+                                   ->where('numbers.MSISDN',$data['DN'])
+                                   ->select('rates.name AS rate_name')
+                                   ->get();
+
+                if($status == 'Suspend (B2W)'){
+                    $data['consultUF']['rate'] = $rateData[0]->rate_name.'/Suspendido por falta de pago';    
+                }else if($status == 'Active'){
+                    $data['consultUF']['rate'] = $rateData[0]->rate_name;
+                }
+
+                if($status == 'Active'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+    
+                    if($service = 'MIFI'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date]);
+                    }
+    
+                    if($service = 'HBB'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date,'lat_hbb'=>$lat_hbb,'lng_hbb'=>$lng_hbb]);
+                    }
+                }else if($status == 'Suspend (B2W)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'inactivo',
+                        'status_altan' => 'activo'
+                    ]);
+                    if($service = 'MIFI'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date]);
+                    }
+                    if($service = 'HBB'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date,'lat_hbb'=>$lat_hbb,'lng_hbb'=>$lng_hbb]);
+                    }
+                }else if($status == 'Predeactivate'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'predeactivate'
+                    ]);
+                }else if($status == 'Barring (B1W) (Notified by client)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'inactivo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }
+
+                if($data['FreeUnits2Boolean'] == 0){
+                    $data['FreeUnits2'] = array('totalAmt'=>0,'unusedAmt'=>0,'freePercentage'=>0);
+                    $data['effectiveDateSurplus'] = 'No se ha generado recarga.';
+                    $data['expireDateSurplus'] = 'No se ha generado recarga.';
+                }
+            }else if($service == 'MOV'){
+                $data['consultUF']['freeUnits']['extra'] = [];
+                $data['consultUF']['freeUnits']['nacionales'] = [];
+                $data['consultUF']['freeUnits']['ri'] = [];
+                $data['consultUF']['offerID'] = 0;
+                for ($i=0; $i < sizeof($freeUnits); $i++) {
+                    $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
+                    $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
+                    $percentageFree = ($unusedAmt/$totalAmt)*100;
+                    $indexDetailtOfferings = sizeof($freeUnits[$i]['detailOfferings']);
+                    $indexDetailtOfferings = $indexDetailtOfferings-1;
+                    $effectiveDate = ClientController::formatDateConsultUF($freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['effectiveDate']);
+                    $expireDate = ClientController::formatDateConsultUF($freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['expireDate']);
+
+                    if($freeUnits[$i]['name'] == 'FreeData_Altan-RN'){
+                        $data['consultUF']['offerID'] = $freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['offeringId'];
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Datos Nacionales','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_SMS_Altan-NR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'SMS Nacionales','description'=>'sms','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Min_Altan-NR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'Minutos Nacionales','description'=>'min','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Data_Altan-NR-IR_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Datos RI','description'=>'GB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_SMS_Altan-NR-IR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'SMS RI','description'=>'sms','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Min_Altan-NR-IR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'Minutos RI','description'=>'min','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Redirect_Altan-RN'){
+                        array_push($data['consultUF']['freeUnits']['extra'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Navegación en Portal Cautivo','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_ThrMBB_Altan-RN_512kbps'){
+                        array_push($data['consultUF']['freeUnits']['extra'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Velocidad Reducida','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }
+                    // else if($freeUnits[$i]['name'] == 'FU_Data_Altan-RN_RG18'){
+                    //     array_push($data['consultUF']['freeUnits']['extra'],array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'no sabe','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate));
+
+                    // }
+                    // print_r($freeUnits[$i]['name'].'  --  ');
+                    // print_r($freeUnits[$i]['freeUnit']['totalAmt'].'  --  ');
+                    // print_r($freeUnits[$i]['freeUnit']['unusedAmt'].'<br>');
+                    
+                }
+
+                if($data['consultUF']['offerID'] == 0){
+                    $data['consultUF']['rate'] = 'PLAN NO CONTRATADO';    
+                }else{
+                    $rateData = Offer::where('offerID_second',$data['consultUF']['offerID'])->first();
+                    $data['consultUF']['rate'] = $rateData->name_second;
+                }
+
+                if($status == 'Active'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }else if($status == 'Suspend (B2W)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'inactivo',
+                        'status_altan' => 'activo'
+                    ]);
+                }else if($status == 'Predeactivate'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'predeactivate'
+                    ]);
+                }else if($status == 'Barring (B1W) (Notified by client)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'inactivo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }
+            }
+
+            // return $data['consultUF']['freeUnits'];
 
         }else if($service == 'Conecta' || $service == 'Telmex'){
             $dataQuery = DB::table('instalations')
@@ -646,6 +877,11 @@ class ClientController extends Controller
         $bool = Number::where('MSISDN',$msisdn)->exists();
 
         if($bool){
+            $numberData = Number::where('MSISDN',$msisdn)->first();
+            $service = $numberData->producto;
+            $number_id = $numberData->id;
+            $service = trim($service);
+
             $consultUF = app('App\Http\Controllers\AltanController')->consultUF($msisdn);
             // return $consultUF;
             $responseSubscriber = $consultUF['responseSubscriber'];
@@ -653,51 +889,223 @@ class ClientController extends Controller
             $status = $responseSubscriber['status']['subStatus'];
             $freeUnits = $responseSubscriber['freeUnits'];
 
+            $coordinates = $responseSubscriber['information']['coordinates'];
+            $char = explode(',',$coordinates);
+
+            if($service == 'HBB'){
+                $lat_hbb = $char[0];
+                $lng_hbb = $char[1];
+            }else if($service == 'MIFI' || $service == 'MOV'){
+                $lat_hbb = null;
+                $lng_hbb = null;
+            }
+
             $data = [];
             $data['status'] = $status;
             $data['imei'] = $information['IMEI'];
             $data['icc'] = $information['ICCID'];
-
+            // return $status;
             if($status == 'Active'){
                 $data['status_color'] = 'success';
-            }else if($status == 'Suspend (B2W)'){
+            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)'){
                 $data['status_color'] = 'warning';
             }
-            $data['FreeUnitsBoolean'] = 0;
-            $data['FreeUnits2Boolean'] = 0;
 
-            for ($i=0; $i < sizeof($freeUnits); $i++) {
-                if($freeUnits[$i]['name'] == 'Free Units' || $freeUnits[$i]['name'] == 'FU_Altan-RN'){
+            $data['service'] = $service;
+
+            if($service == 'MIFI' || $service == 'HBB'){
+                $data['FreeUnitsBoolean'] = 0;
+                $data['FreeUnits2Boolean'] = 0;
+                $data['consultUF']['offerID'] = 0;
+
+                for ($i=0; $i < sizeof($freeUnits); $i++) {
+                    if($freeUnits[$i]['name'] == 'Free Units' || $freeUnits[$i]['name'] == 'FU_Altan-RN'){
+                        $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
+                        $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
+                        $percentageFree = ($unusedAmt/$totalAmt)*100;
+                        $data['FreeUnits'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
+                        $data['FreeUnitsBoolean'] = 1;
+
+                        $detailOfferings = $freeUnits[$i]['detailOfferings'];
+
+                        $data['effectiveDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
+                        $data['expireDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                        $expire_date = $detailOfferings[0]['expireDate'];
+                        $expire_date = substr($expire_date,0,8);
+
+                        $data['consultUF']['offerID'] = $detailOfferings[0]['offeringId'];
+                    }
+
+                    if($freeUnits[$i]['name'] == 'Free Units 2' || $freeUnits[$i]['name'] == 'FU_Altan-RN_P2'){
+                        $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
+                        $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
+                        $percentageFree = ($unusedAmt/$totalAmt)*100;
+                        $data['FreeUnits2'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
+                        $data['FreeUnits2Boolean'] = 1;
+
+                        $detailOfferings = $freeUnits[$i]['detailOfferings'];
+
+                        $data['effectiveDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
+                        $data['expireDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                    }
+                }
+
+                $rateData = DB::table('numbers')
+                                   ->leftJoin('activations','activations.numbers_id','=','numbers.id')
+                                   ->leftJoin('rates','rates.id','=','activations.rate_id')
+                                   ->where('numbers.MSISDN',$msisdn)
+                                   ->select('rates.name AS rate_name')
+                                   ->get();
+
+                if($status == 'Suspend (B2W)'){
+                    $data['consultUF']['rate'] = $rateData[0]->rate_name.'/Suspendido por falta de pago';    
+                }else if($status == 'Active'){
+                    $data['consultUF']['rate'] = $rateData[0]->rate_name;
+                }
+
+                if($status == 'Active'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+    
+                    if($service = 'MIFI'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date]);
+                    }
+    
+                    if($service = 'HBB'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date,'lat_hbb'=>$lat_hbb,'lng_hbb'=>$lng_hbb]);
+                    }
+                }else if($status == 'Suspend (B2W)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'inactivo',
+                        'status_altan' => 'activo'
+                    ]);
+                    if($service = 'MIFI'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date]);
+                    }
+                    if($service = 'HBB'){
+                        Activation::where('numbers_id',$number_id)->update(['expire_date'=>$expire_date,'lat_hbb'=>$lat_hbb,'lng_hbb'=>$lng_hbb]);
+                    }
+                }else if($status == 'Predeactivate'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'predeactivate'
+                    ]);
+                }else if($status == 'Barring (B1W) (Notified by client)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'inactivo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }
+
+                if($data['FreeUnits2Boolean'] == 0){
+                    $data['FreeUnits2'] = array('totalAmt'=>0,'unusedAmt'=>0,'freePercentage'=>0);
+                    $data['effectiveDateSurplus'] = 'No se ha generado recarga.';
+                    $data['expireDateSurplus'] = 'No se ha generado recarga.';
+                }
+            }else if($service == 'MOV'){
+                $data['consultUF']['freeUnits']['extra'] = [];
+                $data['consultUF']['freeUnits']['nacionales'] = [];
+                $data['consultUF']['freeUnits']['ri'] = [];
+                $data['consultUF']['offerID'] = 0;
+                for ($i=0; $i < sizeof($freeUnits); $i++) {
                     $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
                     $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
                     $percentageFree = ($unusedAmt/$totalAmt)*100;
-                    $data['FreeUnits'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
-                    $data['FreeUnitsBoolean'] = 1;
+                    $indexDetailtOfferings = sizeof($freeUnits[$i]['detailOfferings']);
+                    $indexDetailtOfferings = $indexDetailtOfferings-1;
+                    $effectiveDate = ClientController::formatDateConsultUF($freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['effectiveDate']);
+                    $expireDate = ClientController::formatDateConsultUF($freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['expireDate']);
 
-                    $detailOfferings = $freeUnits[$i]['detailOfferings'];
+                    if($freeUnits[$i]['name'] == 'FreeData_Altan-RN'){
+                        $data['consultUF']['offerID'] = $freeUnits[$i]['detailOfferings'][$indexDetailtOfferings]['offeringId'];
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Datos Nacionales','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
 
-                    $data['effectiveDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
-                    $data['expireDatePrimary'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                    }else if($freeUnits[$i]['name'] == 'FU_SMS_Altan-NR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'SMS Nacionales','description'=>'sms','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Min_Altan-NR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['nacionales'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'Minutos Nacionales','description'=>'min','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Data_Altan-NR-IR_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Datos RI','description'=>'GB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_SMS_Altan-NR-IR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'SMS RI','description'=>'sms','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Min_Altan-NR-IR-LDI_NA'){
+                        array_push($data['consultUF']['freeUnits']['ri'],array(
+                            'totalAmt'=>$totalAmt,'unusedAmt'=>$unusedAmt,'freePercentage'=>$percentageFree,'name'=>'Minutos RI','description'=>'min','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_Redirect_Altan-RN'){
+                        array_push($data['consultUF']['freeUnits']['extra'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Navegación en Portal Cautivo','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }else if($freeUnits[$i]['name'] == 'FU_ThrMBB_Altan-RN_512kbps'){
+                        array_push($data['consultUF']['freeUnits']['extra'],array(
+                            'totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'Velocidad Reducida','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate
+                        ));
+
+                    }
+                    // else if($freeUnits[$i]['name'] == 'FU_Data_Altan-RN_RG18'){
+                    //     array_push($data['consultUF']['freeUnits']['extra'],array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree,'name'=>'no sabe','description'=>'MB','effectiveDate'=>$effectiveDate,'expireDate'=>$expireDate));
+
+                    // }
+                    // print_r($freeUnits[$i]['name'].'  --  ');
+                    // print_r($freeUnits[$i]['freeUnit']['totalAmt'].'  --  ');
+                    // print_r($freeUnits[$i]['freeUnit']['unusedAmt'].'<br>');
+                    
                 }
 
-                if($freeUnits[$i]['name'] == 'Free Units 2' || $freeUnits[$i]['name'] == 'FU_Altan-RN_P2'){
-                    $totalAmt = $freeUnits[$i]['freeUnit']['totalAmt'];
-                    $unusedAmt = $freeUnits[$i]['freeUnit']['unusedAmt'];
-                    $percentageFree = ($unusedAmt/$totalAmt)*100;
-                    $data['FreeUnits2'] = array('totalAmt'=>$totalAmt/1024,'unusedAmt'=>$unusedAmt/1024,'freePercentage'=>$percentageFree);
-                    $data['FreeUnits2Boolean'] = 1;
-
-                    $detailOfferings = $freeUnits[$i]['detailOfferings'];
-
-                    $data['effectiveDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['effectiveDate']);
-                    $data['expireDateSurplus'] = ClientController::formatDateConsultUF($detailOfferings[0]['expireDate']);
+                if($data['consultUF']['offerID'] == 0){
+                    $data['consultUF']['rate'] = 'PLAN NO CONTRATADO';    
+                }else{
+                    $rateData = Offer::where('offerID_second',$data['consultUF']['offerID'])->first();
+                    $data['consultUF']['rate'] = $rateData->name_second;
                 }
-            }
 
-            if($data['FreeUnits2Boolean'] == 0){
-                $data['FreeUnits2'] = array('totalAmt'=>0,'unusedAmt'=>0,'freePercentage'=>0);
-                $data['effectiveDateSurplus'] = 'No se ha generado recarga.';
-                $data['expireDateSurplus'] = 'No se ha generado recarga.';
+                if($status == 'Active'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }else if($status == 'Suspend (B2W)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'inactivo',
+                        'status_altan' => 'activo'
+                    ]);
+                }else if($status == 'Predeactivate'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'activo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'predeactivate'
+                    ]);
+                }else if($status == 'Barring (B1W) (Notified by client)'){
+                    Number::where('id',$number_id)->update([
+                        'traffic_outbound' => 'inactivo',
+                        'traffic_outbound_incoming' => 'activo',
+                        'status_altan' => 'activo'
+                    ]);
+                }
             }
 
             return view('clients.consumptions',$data);
@@ -756,16 +1164,17 @@ class ClientController extends Controller
         $msisdn= '52'.$num;
         $date_start = $request['date_start'];
         $date_end = $request['date_end'];
-        $año = substr($date_start, -4);
+        $ano = substr($date_start, -4);
         $mes = substr($date_start, 0,2);
         $dia = substr($date_start, 3, -5);
-        $dateStart = $año. '-'. $mes.'-'.$dia;
-        $añoEnd = substr($date_end, -4);
+        $dateStart = $ano. '-'. $mes.'-'.$dia;
+        $anoEnd = substr($date_end, -4);
         $mesEnd = substr($date_end, 0,2);
         $diaEnd = substr($date_end, 3, -5);
-        $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
+        $dateEnd = $anoEnd. '-'. $mesEnd.'-'.$diaEnd;
 
-        $consumos = DB::select('CALL sftp_altan.consumos_datos ', array($msisdn, $date_start, $date_end));
+        // return $dateStart.'  -  '.$dateEnd;
+        $consumos = DB::select("CALL sftp_altan.consumos_datos('".$msisdn."','".$dateStart."','".$dateEnd."')");
 
         return $consumos;
     }

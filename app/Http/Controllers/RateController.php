@@ -155,6 +155,7 @@ class RateController extends Controller
             'type' => $request->type,
             'price' => $request->price,
             'price_subsequent' => $request->price_subsequent,
+            'price_list' => $request->price_list,
             'recurrency' => $request->recurrency
         ]);
         
