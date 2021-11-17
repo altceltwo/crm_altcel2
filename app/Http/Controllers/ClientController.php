@@ -19,6 +19,11 @@ use App\Exports\NewclientsExport;
 use App\Exports\ConsumosExport;
 use App\Exports\ConsumosGeneralExport;
 use App\Exports\ReportsActivations;
+use App\Exports\ReportsPaymentsActivations;
+use App\Exports\ReportsPaymentsMonthly;
+use App\Exports\ReportsPaymentsChange;
+use App\Exports\ReportsPaymentsReferences;
+use App\Exports\ReportsPaymentsPurchases;
 
 class ClientController extends Controller
 {
@@ -876,7 +881,73 @@ class ClientController extends Controller
         }else{
             return Excel::download(new ReportsActivations($data), 'Reportes_Activaciones_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
         }
+    }
 
-        
+    public function reportMoney(Request $request){
+        return view('clients.reportMoney');
+    }
+
+    public function consultMoney(Request $request){
+        $type = $request['type'];
+        $date_start = $request['start'];
+        $date_end = $request['end'];
+
+        $año = substr($date_start, -4);
+        $mes = substr($date_start, 0,2);
+        $dia = substr($date_start, 3, -5);
+        $dateStart = $año. '_'. $mes.'_'.$dia;
+        $añoEnd = substr($date_end, -4);
+        $mesEnd = substr($date_end, 0,2);
+        $diaEnd = substr($date_end, 3, -5);
+        $dateEnd = $añoEnd. '_'. $mesEnd.'_'.$diaEnd;
+
+        if ($type == 'activations') {
+            $data = DB::table('activations_cash')->whereBetween('date_activation',[$dateStart,$dateEnd])->get();
+            return $data;
+        }elseif ($type == 'change') {
+            $data = DB::table('changes_dayli')->whereBetween('fecha',[$dateStart,$dateEnd])->get();
+            return $data;
+        }elseif ($type == 'monthly') {
+            $data = DB::table('monthly_payments_dayli')->whereBetween('fecha',[$dateStart,$dateEnd])->get();
+            return $data;
+        }elseif ($type == 'reference') {
+            $data = DB::table('surplus_reference_payments_dayli')->whereBetween('fecha',[$dateStart,$dateEnd])->get();
+            return $data;
+        }elseif ($type == 'purchases') {
+            $data = DB::table('purchases_dayli')->whereBetween('fecha',[$dateStart,$dateEnd])->get();
+            return $data;
+        }
+    }
+
+    public function exportReportMoney(Request $request){
+        $type = $request['type'];
+        $date_start = $request['start'];
+        $date_end = $request['end'];
+        $año = substr($date_start, -4);
+        $mes = substr($date_start, 0,2);
+        $dia = substr($date_start, 3, -5);
+        $dateStart = $año. '-'. $mes.'-'.$dia;
+        $añoEnd = substr($date_end, -4);
+        $mesEnd = substr($date_end, 0,2);
+        $diaEnd = substr($date_end, 3, -5);
+        $dateEnd = $añoEnd. '-'. $mesEnd.'-'.$diaEnd;
+
+        $data = [
+            'start'=>$dateStart,
+            'end'=>$dateEnd,
+            'type'=>$type
+        ];
+
+        if ($type == 'activations') {
+            return Excel::download(new ReportsPaymentsActivations($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }elseif ($type == 'change') {
+            return Excel::download(new ReportsPaymentsChange($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }elseif ($type == 'monthly') {
+            return Excel::download(new ReportsPaymentsMonthly($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }elseif ($type == 'reference') {
+            return Excel::download(new ReportsPaymentsReferences($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }elseif ($type == 'purchases') {
+            return Excel::download(new ReportsPaymentsPurchases($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
+        }
     }
 }

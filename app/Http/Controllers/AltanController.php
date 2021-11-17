@@ -18,25 +18,25 @@ use App\Historic;
 class AltanController extends Controller
 {
     public function accessTokenRequestPost(){
-        // $prelaunch = 'TzBpSndNOWlkc1ZvZDdoVThrOHcyQTJuQXhQTDdORWU6bm1GaHlCWjdYbWhtaTRTUw==';
-        $production = 'ZjRWc3RzQXM4V1c0WFkyQVVtbVBSTE1pRDFGZldFQ0k6YkpHakpCcnBkWGZoajczUg==';
+        $prelaunch = 'TzBpSndNOWlkc1ZvZDdoVThrOHcyQTJuQXhQTDdORWU6bm1GaHlCWjdYbWhtaTRTUw==';
+        // $production = 'ZjRWc3RzQXM4V1c0WFkyQVVtbVBSTE1pRDFGZldFQ0k6YkpHakpCcnBkWGZoajczUg==';
 
         $response = Http::withHeaders([
-            'Authorization' => 'Basic '.$production
+            'Authorization' => 'Basic '.$prelaunch
         ])->post('https://altanredes-prod.apigee.net/v1/oauth/accesstoken?grant-type=client_credentials', [
-            'Authorization' => 'Basic '.$production,
+            'Authorization' => 'Basic '.$prelaunch,
         ]);
         return $response->json();
     }
 
     public function activationRequestPost($accessToken,$MSISDN,$offerID,$lat_hbb,$lng_hbb,$product,$scheduleDate){
         // return $accessToken.' - '.$MSISDN.' - '.$offerID;
-        // $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$MSISDN."/activate";
-        $url_production = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$MSISDN."/activate";
+        $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$MSISDN."/activate";
+        // $url_production = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$MSISDN."/activate";
         if($product == 'HBB'){
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
-            ])->post($url_production,[
+            ])->post($url_prelaunch,[
                 "offeringId" => $offerID,
                 "address" => $lat_hbb.",".$lng_hbb,
                 "startEffectiveDate" => "",
@@ -47,7 +47,7 @@ class AltanController extends Controller
         }else{
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
-            ])->post($url_production,[
+            ])->post($url_prelaunch,[
                 "offeringId" => $offerID,
                 "startEffectiveDate" => "",
                 "expireEffectiveDate" => "",

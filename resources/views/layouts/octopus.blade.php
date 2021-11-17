@@ -407,6 +407,9 @@
                                             <li>
                                                 <a href="{{route('reports')}}">Reportes de Consumos</a>
                                             </li>
+                                            <li>
+                                                <a href="{{route('reportMoney')}}">Reportes de Dinero</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">

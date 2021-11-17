@@ -216,3 +216,7 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
+//rerports money
+Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
+Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');
+Route::get('consultMoney', 'ClientController@consultMoney')->name('consultMoney');
