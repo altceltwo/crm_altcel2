@@ -280,7 +280,7 @@ $('.promoter-assignment').click(function(){
             "<td>"+element.MSISDN+" - "+element.producto+"</td>"+
             "<td>"+element.PUK+"</td>"+
             "<td class='actions-hover'><a class='btn btn-sm btn-danger delete-assignment' style='color: white !important;' onclick='destroy(this)' data-assignment='"+element.assignment_id+"'><i class='fa fa-trash-o text-white'></i></a></td>"+
-             );
+            "</tr>");
             $('#body-numbers').html(numbersTable);
 
             devices.forEach(element => devicesTable+="<tr id='assignment-"+element.assignment_id+"'><td>"+element.imei+"</td>"+

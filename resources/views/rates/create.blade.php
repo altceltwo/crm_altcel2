@@ -76,6 +76,10 @@
                                     <input type="text" class="form-control form-control-sm" id="price_subsequent" name="price_subsequent" required>
                                 </div>
                                 <div class="col-md-3">
+                                    <label for="name">Precio de Lista</label>
+                                    <input type="text" class="form-control form-control-sm" id="price_list" name="price_list" required>
+                                </div>
+                                <div class="col-md-3">
                                     <label for="name">Recurrencia</label>
                                     <input type="text" class="form-control form-control-sm" id="recurrency" name="recurrency" required>
                                 </div>

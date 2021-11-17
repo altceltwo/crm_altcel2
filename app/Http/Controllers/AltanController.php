@@ -446,12 +446,17 @@ class AltanController extends Controller
             // return $response;
             //actualizacion de coordenadas
             if ($result != 'Without Coverage') {
-                $url_updateLink = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$msisdn;
+                $url_updateLink = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$msisdn;
                     $response = Http::withHeaders([
                         'Authorization' => 'Bearer '.$accessToken
                     ])->patch($url_updateLink,[
                         "updateLinking"=>array("coordinates"=> $lat_hbb.',' .$lng_hbb)
                     ]);
+
+                    $dataNumber = Number::where('MSISDN',$msisdn)->first();
+                    $number_id = $dataNumber->id;
+                    Activation::where('numbers_id',$number_id)->update(['lat_hbb'=>$lat_hbb,'lng_hbb'=>$lng_hbb]);
+                    
                     if (isset($response['msisdn'])) {
                         return response()->json(['http_code'=>1, 'message'=>'Las coordenadas se han actualizado']);
                     }else{

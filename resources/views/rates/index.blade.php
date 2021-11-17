@@ -35,10 +35,10 @@
                 <th scope="col">Oferta Primaria</th>
                 <th scope="col">Paquete Altcel</th>
                 <th scope="col">Precio</th>
-                @if(Auth::user()->role_id != 4)
+                
                 <th scope="col">Satus</th>
                 <th scope="col">Opciones</th>
-                @endif
+                
                 </tr>
             </thead>
             <tbody>
@@ -51,7 +51,7 @@
                 @endphp
                 <td>{{ $pack_altcel }}</td>
                 <td>{{ '$'.number_format($rate->price,2) }}</td>
-                @if(Auth::user()->role_id != 4)
+                
                 <td>
                     @if($rate->status == 'activo')
                         <button type="button" class="mb-xs mt-xs mr-xs btn btn-danger btn-xs button-status button-danger" data-status="activo" data-id="{{$rate->id}}" data-type="altan">Desactivar</button>
@@ -62,7 +62,7 @@
                 <td>   
                     <button type="button" class="mb-xs mt-xs mr-xs btn btn-info btn-sm update-rate" data-rate="{{ $rate->id }}" data-toggle="modal" ><i class="fa fa-edit"></i></button>
                 </td>
-                @endif
+                
             </tr>
             @endforeach
             </tbody>
@@ -96,6 +96,10 @@
                                 <div class="col-md-4">
                                     <label for="name" class="form-label">Precio Subsecuente</label>
                                     <input type="text" class="form-control" id="price_subsequent" name="price_subsequent" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="name" class="form-label">Precio de Lista</label>
+                                    <input type="text" class="form-control" id="price_list" name="price_list" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="name" class="form-label">Recurrencia</label>
@@ -164,6 +168,7 @@
                 $('#name').val(data.name);
                 $('#price').val(data.price);
                 $('#price_subsequent').val(data.price_subsequent);
+                $('#price_list').val(data.price_list);
                 $('#price_c_iva_offer').val(data.price_c_iva_offer);
                 $('#price_sale_offer').val(data.price_sale_offer);
                 $('#recurrency').val(data.recurrency);

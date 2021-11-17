@@ -90,6 +90,8 @@
 							</div>
 						</div>
 						
+                        @if($service == 'MIFI' || $service == 'HBB')
+						<h4 class="h4 m-none text-dark text-bold">Plan contratado: {{$consultUF['rate']}}</h4>
                         <div class="row">
                             <div class="col-md-6">
                                 <meter min="0" max="100" value="{{$FreeUnits['freePercentage']}}" id="meter"></meter>
@@ -150,6 +152,53 @@
                             </div>
                             
                         </div>
+                        @elseif($service == 'MOV')
+						<h4 class="h4 m-none text-dark text-bold">Plan contratado: {{$consultUF['rate']}}</h4>
+                        <div class="panel-body">
+                            @foreach($consultUF['freeUnits']['nacionales']  as $units)
+                                <div class="col-md-4 text-dark mb-md">
+                                    <h4 class="h4 m-none text-dark text-bold">{{$units['name']}}</h4>
+                                    <h6 class="m-none text-dark text-bold">Total: {{number_format($units['totalAmt'],2).' '.$units['description']}}</h6>
+                                    <h6 class="m-none text-dark text-bold">Restante: {{number_format($units['unusedAmt'],2).' '.$units['description']}}</h6>
+                                    <div class="progress progress-striped light active m-md">
+                                        <div class="progress-bar progress-bar-dark" role="progressbar" aria-valuenow="{{number_format($units['freePercentage'],2)}}" aria-valuemin="0" aria-valuemax="100" style="width: {{number_format($units['freePercentage'],2)}}%;">
+                                            {{number_format($units['freePercentage'])}}%
+                                        </div>
+                                    </div>
+                                    Inicio: <span class="badge label label-success">{{$units['effectiveDate']}}</span><br>
+                                    Expira: <span class="badge label label-danger">{{$units['expireDate']}}</span>
+                                </div>
+                            @endforeach
+                            @foreach($consultUF['freeUnits']['ri']  as $units)
+                                <div class="col-md-4 text-dark mb-md">
+                                    <h4 class="h4 m-none text-dark text-bold">{{$units['name']}}</h4>
+                                    <h6 class="m-none text-dark text-bold">Total: {{number_format($units['totalAmt'],2).' '.$units['description']}}</h6>
+                                    <h6 class="m-none text-dark text-bold">Restante: {{number_format($units['unusedAmt'],2).' '.$units['description']}}</h6>
+                                    <div class="progress progress-striped light active m-md">
+                                        <div class="progress-bar progress-bar-dark" role="progressbar" aria-valuenow="{{number_format($units['freePercentage'],2)}}" aria-valuemin="0" aria-valuemax="100" style="width: {{number_format($units['freePercentage'],2)}}%;">
+                                            {{number_format($units['freePercentage'])}}%
+                                        </div>
+                                    </div>
+                                    Inicio: <span class="badge label label-success">{{$units['effectiveDate']}}</span><br>
+                                    Expira: <span class="badge label label-danger">{{$units['expireDate']}}</span>
+                                </div>
+                            @endforeach
+                            @foreach($consultUF['freeUnits']['extra']  as $units)
+                                <div class="col-md-6 text-dark mb-md">
+                                    <h4 class="h4 m-none text-dark text-bold">{{$units['name']}}</h4>
+                                    <h6 class="m-none text-dark text-bold">Total: {{number_format($units['totalAmt'],2).' '.$units['description']}}</h6>
+                                    <h6 class="m-none text-dark text-bold">Restante: {{number_format($units['unusedAmt'],2).' '.$units['description']}}</h6>
+                                    <div class="progress progress-striped light active m-md">
+                                        <div class="progress-bar progress-bar-dark" role="progressbar" aria-valuenow="{{number_format($units['freePercentage'],2)}}" aria-valuemin="0" aria-valuemax="100" style="width: {{number_format($units['freePercentage'],2)}}%;">
+                                            {{number_format($units['freePercentage'])}}%
+                                        </div>
+                                    </div>
+                                    Inicio: <span class="badge label label-success">{{$units['effectiveDate']}}</span><br>
+                                    Expira: <span class="badge label label-danger">{{$units['expireDate']}}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                     </div>
                 </section>
             </div>
