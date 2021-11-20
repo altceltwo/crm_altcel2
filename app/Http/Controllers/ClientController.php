@@ -32,7 +32,8 @@ class ClientController extends Controller
                               ->select('users.name AS name','users.lastname AS lastname',
                               'clients.cellphone AS cellphone','numbers.MSISDN AS MSISDN',
                               'numbers.producto AS service','devices.no_serie_imei AS imei',
-                              'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device','numbers.icc_id AS icc')
+                              'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device','numbers.icc_id AS icc',
+                              'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan')
                               ->get();
 
         $data['clientsTwo'] = DB::table('users')
@@ -1113,7 +1114,7 @@ class ClientController extends Controller
 
             return view('clients.consumptions',$data);
         }else{
-            return view('home');
+            return view('layouts.404');
         }
     }
 

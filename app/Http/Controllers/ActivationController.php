@@ -177,7 +177,7 @@ class ActivationController extends Controller
                 // if(isset($x['simAltcel'])){
                 //     $r = $x['simAltcel'];
                 // }
-                // return $x;
+                return $x;
             }
         }
 

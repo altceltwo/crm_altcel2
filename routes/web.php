@@ -216,3 +216,4 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
+Route::get('/batch-activations','AltanController@activationsBatch');

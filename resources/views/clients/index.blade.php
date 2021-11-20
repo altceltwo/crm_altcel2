@@ -71,6 +71,7 @@
                     <th>ICC</th>
                     <th>Plan/Paquete</th>
                     <th>Servicio</th>
+                    <th>Status</th>
                     <th>Plan</th>
                     <th>CPE</th>
                     <th>Fecha</th>
@@ -91,6 +92,39 @@
                     <td>{{$client->icc }}</td>
                     <td>{{ $rate = strtoupper($client->rate_name) }}</td>
                     <td>{{ $service = strtoupper($client->service) }}</td>
+                    @php
+                    $service = trim($service);
+                    @endphp
+                    @if($service == 'MOV')
+                     <td>
+                         @if($client->traffic_outbound == 'inactivo')
+                            <span class="label label-danger mb-sm">Tráfico: {{ $client->traffic_outbound }}</span>
+                        @else
+                            <span class="label label-success mb-sm">Tráfico: {{ $client->traffic_outbound }}</span>
+                        @endif
+
+                        @if($client->status_altan == 'activo')
+                            <span class="label label-success mb-sm">Status: {{ $client->status_altan }}</span>
+                        @else
+                            <span class="label label-danger mb-sm">Status: {{ $client->status_altan }}</span>
+                        @endif
+                     </td>
+                     @else
+                     <td>
+                        @if($client->traffic_outbound_incoming == 'inactivo')
+                            <span class="label label-danger mb-sm">Tráfico: {{ $client->traffic_outbound_incoming }}</span>
+                        @else
+                            <span class="label label-success mb-sm">Tráfico: {{ $client->traffic_outbound_incoming }}</span>
+                        @endif
+
+                        @if($client->status_altan == 'activo')
+                            <span class="label label-success mb-sm">Status: {{ $client->status_altan }}</span>
+                        @else
+                            <span class="label label-danger mb-sm">Status: {{ $client->status_altan }}</span>
+                        @endif
+                    </td>
+
+                    @endif
                     <td>${{ number_format($client->amount_rate,2) }}</td>
                     <td>${{ number_format($client->amount_device,2) }}</td>
                     <td>{{ $client->date_activation }}</td>
@@ -102,8 +136,10 @@
                     <td>{{ $clientTwo->cellphone }}</td>
                     <td>{{ $clientTwo->number }}</td>
                     <td>N/A</td>
+                    <td>N/A</td>
                     <td>{{ $rate = strtoupper($clientTwo->pack_name) }}</td>
                     <td>{{ $service = strtoupper($clientTwo->service) }}</td>
+                    <td>N/A</td>
                     <td>${{ number_format($clientTwo->amount_pack,2) }}</td>
                     <td>${{ number_format($clientTwo->amount_install,2) }}</td>
                     <td>{{ $clientTwo->date_instalation }}</td>
