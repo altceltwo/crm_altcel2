@@ -1786,11 +1786,20 @@
                             // data = JSON.stringify(data);
                             
                             altcel = data;
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Ocurrió lo siguiente',
-                                html: data,
-                            })
+                            if (data.simAltcel) {
+                                console.log(data.simAltcel[0])
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Ocurrió lo siguiente',
+                                    html: data.simAltcel[0],
+                                })
+                            }else if (data.MSISDNAltcel2) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Ocurrió lo siguiente',
+                                    html: data.MSISDNAltcel2[0],
+                                })
+                            }
                             console.log(data);
                             return false;
                         }
