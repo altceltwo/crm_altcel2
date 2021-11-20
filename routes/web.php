@@ -216,11 +216,8 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
-<<<<<<< HEAD
 Route::get('/batch-activations','AltanController@activationsBatch');
-=======
 //rerports money
 Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
 Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');
 Route::get('consultMoney', 'ClientController@consultMoney')->name('consultMoney');
->>>>>>> 5708dcef7648199c584924c241d3190bd65c2d99
