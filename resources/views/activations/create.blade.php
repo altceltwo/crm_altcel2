@@ -1400,6 +1400,19 @@
 
         if(imei.length == 0 || /^\s+$/.test(imei)){
             price_device = 0;
+            price_device = parseFloat(price_device);
+
+            total = parseFloat(total);
+            monto = parseFloat(monto);
+
+            total = monto+price_device;
+            console.log('Total + Device: '+total);
+
+            $('#monto').val(total);
+            $('#price_rate').val(monto);
+            $('#label-rate').html('Tarifa: $'+monto.toFixed(2));
+            $('#label-total').html('Total a Cobrar: $'+total.toFixed(2));
+
         }else{
             if(imei.length >= 15){
                 $.ajax({

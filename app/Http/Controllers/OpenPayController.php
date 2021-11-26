@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Pay;
 use Openpay;
 use DB;
 use App\Offer;
-use App\Reference;
-use App\Number;
-use App\Ethernetpay;
-use App\Pay;
 use Exception;
+use App\Number;
+use App\Reference;
+use App\Ethernetpay;
 use OpenpayApiError;
 use OpenpayApiAuthError;
 use OpenpayApiRequestError;
+use Illuminate\Http\Request;
 use OpenpayApiConnectionError;
 use OpenpayApiTransactionError;
 use Illuminate\Http\JsonResponse;

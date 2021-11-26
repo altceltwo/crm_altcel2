@@ -49,37 +49,37 @@
                         <div class="col md-12">
                             <div class="row">
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="datosIndividual">
                                         <input class="option" type="radio" data-type="datosIndividual" name="optionsRadios" id="datosIndividual" value="Datos Individual">
                                         Consumos de Datos Individual
                                     </label>
                                 </div>
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="datosGeneral">
                                         <input class="option" type="radio" data-type="datosgeneral" name="optionsRadios" id="datosGeneral" value="Datos General">
                                         Consumos de Datos General
                                     </label>
                                 </div>
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="smsIndividual">
                                         <input class="option" type="radio" data-type="smsIndividual" name="optionsRadios" id="smsIndividual" value="SMS Individual">
                                         Consumos de SMS Individual
                                     </label>
                                 </div>
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="smsGeneral">
                                         <input class="option" type="radio" data-type="smsGeneral" name="optionsRadios" id="smsGeneral" value="SMS General">
                                         Consumos de SMS General
                                     </label>
                                 </div>
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="minIndividual">
                                         <input class="option" type="radio" data-type="minIndividual" name="optionsRadios" id="minIndividual" value="Minutos Individual">
                                         Consumos de Minutos Individual
                                     </label>
                                 </div>
                                 <div class="radio col-md-2">
-                                    <label for="">
+                                    <label for="minGeneral">
                                         <input class="option" type="radio" data-type="minGeneral" name="optionsRadios" id="minGeneral" value="Minutos General">
                                         Consumos de Minutos General
                                     </label>
@@ -259,7 +259,7 @@
                 if (type == 'individual') {
                     $('.table-individual').removeClass('d-none');
                         data.forEach(function(element){
-                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.consumos+"</td></tr>"
+                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
                     });
                 }
                 $('#cuerpo-table').html(contenido);
@@ -282,7 +282,7 @@
                 if (type == 'general') {
                     $('.table-general').removeClass('d-none');
                         data.forEach(function(element){
-                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+element.consumos+"</td></tr>"
+                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
                     });
                 }
                 $('#cuerpo-table-general').html(contenido);

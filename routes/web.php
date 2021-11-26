@@ -216,6 +216,7 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
+Route::get('/batch-activations','AltanController@activationsBatch');
 //rerports money
 Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
 Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');
