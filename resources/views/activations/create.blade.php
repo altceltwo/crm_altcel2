@@ -1135,7 +1135,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-4 mt-xs mb-md">
+                                <div class="col-md-6 mt-xs mb-md">
                                     <label for="interests">Producto de Interés</label>
                                     <select id="interests" name="interests" class="form-control form-control-sm" required="">
                                         <option selected value="Ninguno">Ninguno...</option>
@@ -1163,6 +1163,42 @@
         </div>
     </div>
 </div>
+<!-- Modal de Personas Morales -->
+<div class="modal fade" id="personaMoralModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moralPersonModalLabel">Personas Morales</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="display:flex; justify-content:center; margin-left: auto !important;">
+                <form class="form-horizontal form-bordered" action="{{route('clients.store')}}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="row">
+
+                                <div class="col-md-12 mt-xs mb-md">
+                                    <label for="moralPersons">Personas Morales</label>
+                                    <select id="moralPersons" name="moralPersons" class="form-control form-control-sm" required="">
+                                        <option selected value="Ninguno">Ninguno...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{asset('octopus/assets/vendor/pnotify/pnotify.custom.js')}}"></script>
 <script>
     var altcel;
@@ -1943,10 +1979,37 @@
             $('#ine_code_child').val('');
             $('#email_child').val('');
 
+            let client = $('#clients_options_altan').val();
+            let optionsPM = '<option value="0">Ninguno...</option>'
+            $.ajax({
+                url: "{{route('searchMoralPerson')}}",
+                data: {id:client},
+                success: function(response){
+                    console.log(response)
+                    // response = JSON.parse(response);
+                    response.forEach(function(e){
+                        optionsPM+="<option data-name='"+e.name+"' data-rfc='"+e.rfc+"' data-address='"+e.address+"' data-cellphone='"+e.cellphone+"'>"+e.name+" - "+e.rfc+" - "+e.cellphone+"</option>"
+                    });
+                    $('#moralPersons').html(optionsPM);
+                    $('#personaMoralModal').modal('show');
+                }
+            })
         }else{
             $('.hidden-type-person-mifi').removeClass('d-none');
             
         }
+    });
+
+    $('#moralPersons').change(function(){
+        let name = $('#moralPersons option:selected').attr('data-name');
+        let rfc = $('#moralPersons option:selected').attr('data-rfc');
+        let address = $('#moralPersons option:selected').attr('data-address');
+        let cellphone = $('#moralPersons option:selected').attr('data-cellphone');
+
+        $('#name_child').val(name);
+        $('#rfc_child').val(rfc);
+        $('#address_child').val(address);
+        $('#cellphone_child').val(cellphone);
     });
 
     $('#send_instalation').click(function(){
