@@ -1,7 +1,7 @@
 @extends('layouts.octopus')
 @section('content')
 <header class="page-header">
-    <h2>Operaciones Especiales</h2>
+    <h2>reportes de Consumos</h2>
     <div class="right-wrapper pull-right">
         <ol class="breadcrumbs">
             <li>

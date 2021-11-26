@@ -19,6 +19,8 @@ class ReferenceController extends Controller
             $x = app('App\Http\Controllers\OpenPayController')->store($request);
         }else if($channel == 2){
             $x = $this->ConektaPayment->createOrder($request);
+        }else if($channel == 3){
+            $x = app('App\Http\Controllers\OpenPayController')->cardPayment($request);
         }
         return $x;
     }

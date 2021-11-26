@@ -120,6 +120,13 @@
                         <input type="hidden" class="form-control form-control-sm" id="client_id" value="{{$data_client['client_id']}}">
                         <input type="hidden" class="form-control form-control-sm" id="user_id" value="{{$data_client['employe_id']}}">
                         <input type="hidden" class="form-control form-control-sm" id="pay_id" value="{{$data_client['pay_id']}}">
+                        
+                        <div class="dropdown  col-md-12" id="pay">
+                            <div class="panel">
+                                <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                <pre class="chroma" id="url_pay"></pre>
+                            </div>
+                        </div>
                         <div class="form-actions col-md-12">
                             @if($datos['referencestype'] == 1)
                             <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" id="pay_generate"><span class="spinner-border spinner-border-sm d-none" id="spinner-pay_generate" role="status" aria-hidden="true"></span><i class="fas fa-file-invoice-dollar"></i> Generar</button>
@@ -133,12 +140,13 @@
                             <button type="button" class="mb-xs mt-xs mr-xs btn btn-success d-none" id="referenceWhatsapp"><i class="fa fa-mobile-phone"></i> Whatsapp</button>
                             <button type="button" class="mb-xs mt-xs mr-xs btn btn-success d-none" id="referenceWhatsapp2"><i class="fa fa-mobile-phone"></i> Whatsapp</button>
                         </div>
+                        
                     </div>              
 
                 </form>
             </div>
         </section>
-
+        
     </div>
 </div>
 <!-- Modal de mapa -->
@@ -235,7 +243,24 @@
     </div>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script> -->
 
+<script src="clipboard.min.js"></script>
 <script>
+    $('#pay').addClass('d-none');
+    var cellphone = $('#cellphone').val();
+
+    function copyToClickBoard(){
+        var content = document.getElementById('url_pay').innerHTML;
+
+        navigator.clipboard.writeText(content)
+            .then(() => {
+                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
+            // console.log("Text copied to clipboard...")
+        })
+            .catch(err => {
+            console.log('Algo salio mal', err);
+        })
+ 
+    }
 
 var dataPay, referenceWhatsapp = '';
 // var x = '';
@@ -267,7 +292,8 @@ var dataPay, referenceWhatsapp = '';
                 concepto: concepto, type: type, channel: channel, rate_id: rate_id, user_id: user_id,
                 client_id: client_id, pay_id: pay_id, quantity: 1
             };
-            
+            // console.log(data);
+            // return false;
             if(channel == 0){
                 Swal.fire({
                     icon: 'error',
@@ -287,15 +313,19 @@ var dataPay, referenceWhatsapp = '';
                 method: "POST",
                 data: data,
                 success: function(response){
-                    if(channel == 1){
-                        referenceWhatsapp = response.reference;
-                        pdfPaynet(response.reference,cel_destiny_reference,name,lastname);
-                    }else if(channel == 2){
-                        referenceWhatsapp = response.charges.data[0].payment_method.reference;
-                        showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
-                    }
-                $('#spinner-'+channelID).addClass('d-none');
-                $(this).attr('disabled',false);
+                        if(channel == 1){
+                            referenceWhatsapp = response.reference;
+                            pdfPaynet(response.reference,cel_destiny_reference,name,lastname);
+                        }else if(channel == 2){
+                            referenceWhatsapp = response.charges.data[0].payment_method.reference;
+                            showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                        }else {
+                            $('#pay').removeClass('d-none');
+
+                            $('#url_pay').html(response);
+                        }
+                        $('#spinner-'+channelID).addClass('d-none');
+                        $(this).attr('disabled',false);
                     }
             })
     });
