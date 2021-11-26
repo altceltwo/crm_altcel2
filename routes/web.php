@@ -149,7 +149,7 @@ Route::get('/set-payment-status','ActivationController@setPaymentStatus')->name(
 Route::get('/update-price-device', 'DeviceController@updatePriceDevice')->name('updatePriceDevice.get');
 
 // Card Payments
-Route::get('/card-payment','OpenPayController@cardPayment');
+Route::post('/card-payment','OpenPayController@cardPayment')->name('cardPayment');
 Route::post('/send-card-payment','OpenPayController@cardPaymentSend');
 
 // Done by Charles
