@@ -122,10 +122,8 @@
                         <input type="hidden" class="form-control form-control-sm" id="pay_id" value="{{$data_client['pay_id']}}">
                         
                         <div class="dropdown  col-md-12" id="pay">
-                            <div class="bd-clipboard">
-                                <button class="btn-clipboard btn-success" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fas fa-comment-alt">WhatsApp</i></button>
-                            </div>
                             <div class="panel">
+                                <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
                                 <pre class="chroma" id="url_pay"></pre>
                             </div>
                         </div>
@@ -255,7 +253,7 @@
 
         navigator.clipboard.writeText(content)
             .then(() => {
-                location.href='https://api.whatsapp.com/send?phone='+cellphone;
+                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
             // console.log("Text copied to clipboard...")
         })
             .catch(err => {
@@ -315,19 +313,19 @@ var dataPay, referenceWhatsapp = '';
                 method: "POST",
                 data: data,
                 success: function(response){
-                    if(channel == 1){
-                        referenceWhatsapp = response.reference;
-                        pdfPaynet(response.reference,cel_destiny_reference,name,lastname);
-                    }else if(channel == 2){
-                        referenceWhatsapp = response.charges.data[0].payment_method.reference;
-                        showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
-                    }else {
-                        $('#pay').removeClass('d-none');
+                        if(channel == 1){
+                            referenceWhatsapp = response.reference;
+                            pdfPaynet(response.reference,cel_destiny_reference,name,lastname);
+                        }else if(channel == 2){
+                            referenceWhatsapp = response.charges.data[0].payment_method.reference;
+                            showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                        }else {
+                            $('#pay').removeClass('d-none');
 
-                        $('#url_pay').html(response);
-                    }
-                $('#spinner-'+channelID).addClass('d-none');
-                $(this).attr('disabled',false);
+                            $('#url_pay').html(response);
+                        }
+                        $('#spinner-'+channelID).addClass('d-none');
+                        $(this).attr('disabled',false);
                     }
             })
     });
