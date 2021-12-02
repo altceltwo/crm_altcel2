@@ -13,7 +13,6 @@ class ReferenceController extends Controller
     }
 
     public function createReference(Request $request){
-    //    return $request;
         $channel = $request->input('channel');
         if($channel == 1){
             $x = app('App\Http\Controllers\OpenPayController')->store($request);

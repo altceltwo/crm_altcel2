@@ -367,12 +367,21 @@
                                     <div class="col-md-4">
                                         <label for="my-product">Métodos de Pago</label>
                                         <select id="channel" class="form-control form-control-sm">
+
                                             <option selected value="0">Choose...</option>
                                             @foreach($channels as $channel)
                                             <option value="{{$channel->id}}">{{$channel->name}}</option>
                                             @endforeach
                                         </select>
                                     </div>
+                                    <!-- div link reference to whatsApp -->
+                                    <div class="dropdown  col-md-12 " id="pay-whats-change">
+                                        <div class="panel">
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <pre class="chroma "id="url_pay-change"></pre>
+                                        </div>
+                                    </div>
+
                                     <input type="hidden" id="user_id" value="{{Auth::user()->id}}">
                                     <input type="hidden" id="client_id">
                                     <input type="hidden" id="number_id">
@@ -522,6 +531,14 @@
                                             <option value="{{$channel->id}}">{{$channel->name}}</option>
                                             @endforeach
                                         </select>
+                                    </div>
+
+                                     <!-- div link reference to whatsApp -->
+                                     <div class="dropdown  col-md-12 " id="pay-whats-purchases">
+                                        <div class="panel">
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <pre class="chroma " id="url_pay-purchases"></pre>
+                                        </div>
                                     </div>
                                     <input type="hidden" id="user_idPurchase" value="{{Auth::user()->id}}">
                                     <input type="hidden" id="client_idPurchase">
@@ -1051,6 +1068,42 @@
         }
     });
 
+    //send reference whatsApp
+    $('#pay-whats-change').addClass('d-none');
+    $('#pay-whats-purchases').addClass('d-none');
+    var cellphone = $('#cellphone').val();
+
+    function copyToClickBoard(){
+        var content = document.getElementById('url_pay-change').innerHTML;
+
+        navigator.clipboard.writeText(content)
+            .then(() => {
+                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
+            // console.log("Text copied to clipboard...")
+        })
+            .catch(err => {
+            console.log('Algo salio mal', err);
+        })
+ 
+    }
+
+    function copyToClickBoard(){
+        var content = document.getElementById('url_pay-purchases').innerHTML;
+
+        navigator.clipboard.writeText(content)
+            .then(() => {
+                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
+            // console.log("Text copied to clipboard...")
+        })
+            .catch(err => {
+            console.log('Algo salio mal', err);
+        })
+ 
+    }
+
+var dataPay, referenceWhatsapp = '';
+
+//options
     $('#consultUFSpecial').click(function(){
         let msisdn = $('#msisdn_consultUF').val();
         let url = "{{route('consultUFSpecial.get',['msisdn' => 'temp'])}}"
@@ -1218,6 +1271,7 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
 		}
 	});
 
+//cambio product
 	$w5finish.on('click', function( ev ) {
 		ev.preventDefault();
         let msisdn = $('#w5-msisdn').val();
@@ -1340,6 +1394,11 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
                         }else if(channel == 2){
                             // referenceWhatsapp = response.charges.data[0].payment_method.reference;
                             showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                        }else if(channel == 3){
+
+                            $('#pay-whats-change').removeClass('d-none');
+
+                            $('#url_pay-change').html(response);
                         }
                     }else{
                         if(response.http_code == 1){
@@ -1591,6 +1650,7 @@ $('input[name="purchaseProductRadio"]').click(function(){
 		}
 	});
 
+//compra
 	$w6finish.on('click', function( ev ) {
 		ev.preventDefault();
         let msisdn = $('#w6-msisdn').val();
@@ -1702,6 +1762,10 @@ $('input[name="purchaseProductRadio"]').click(function(){
                             }else if(channel == 2){
                                 // referenceWhatsapp = response.charges.data[0].payment_method.reference;
                                 showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                            }else if(channel == 3){
+                                $('#pay-whats-purchases').removeClass('d-none');
+
+                                $('#url_pay-purchases').html(response);
                             }
                         }
                         
