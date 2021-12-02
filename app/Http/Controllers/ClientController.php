@@ -9,6 +9,7 @@ use App\Reference;
 use App\Pay;
 use App\Ethernetpay;
 use App\Client;
+use App\Clientsson;
 use App\Instalation;
 use App\Activation;
 use App\Number;
@@ -1360,5 +1361,13 @@ class ClientController extends Controller
         }elseif ($type == 'purchases') {
             return Excel::download(new ReportsPaymentsPurchases($data), 'Reportes_Pagos_'.$type.'_'.$dateStart.'-'.$dateEnd.'.xlsx');
         }
+    }
+
+    public function searchMoralPerson(Request $request){
+        $id = $request->get('id');
+        $id = $id[0];
+
+        $x = DB::table('clientssons')->where('user_id',$id)->select('clientssons.*')->get();
+        return $x;
     }
 }

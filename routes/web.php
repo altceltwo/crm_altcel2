@@ -221,3 +221,7 @@ Route::get('/batch-activations','AltanController@activationsBatch');
 Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
 Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');
 Route::get('consultMoney', 'ClientController@consultMoney')->name('consultMoney');
+
+
+Route::get('/search-moral-person','ClientController@searchMoralPerson')->name('searchMoralPerson');
+Route::post('/webhook-altan-redes','NotificationController@getData');
