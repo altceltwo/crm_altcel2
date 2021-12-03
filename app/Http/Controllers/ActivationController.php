@@ -24,6 +24,7 @@ use App\Ethernetpay;
 use App\Instalation;
 use App\Simexternal;
 use App\Mail\SendAccess;
+use App\Numberstemporarie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -1357,5 +1358,16 @@ class ActivationController extends Controller
         $data['fecha'] = date('Y-M-d H:i:s');
 
         return view('activations.deliveryFormat',$data);
+    }
+
+    public function bulkActivations(){
+        $data['numbers'] = Number::all()->where('status','available');
+        $data['temporaries'] = DB::table('numberstemporaries')
+                                  ->join('rates','rates.id','=','numberstemporaries.rate_id')
+                                  ->select('numberstemporaries.ICC','numberstemporaries.MSISDN','numberstemporaries.Producto','numberstemporaries.Coordinates',
+                                  'rates.name AS Rate')
+                                  ->get();
+        $data['clients'] = User::all();
+        return view('activations.createBatch',$data);
     }
 }

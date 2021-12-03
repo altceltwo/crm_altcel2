@@ -243,22 +243,18 @@
     </div>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script> -->
 
-<script src="clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 <script>
     $('#pay').addClass('d-none');
     var cellphone = $('#cellphone').val();
 
     function copyToClickBoard(){
         var content = document.getElementById('url_pay').innerHTML;
+        var local = '127.0.0.1';
 
-        navigator.clipboard.writeText(content)
-            .then(() => {
-                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
+
+        location.href='https://api.whatsapp.com/send?phone=52'+cellphone+'&text='+content;
             // console.log("Text copied to clipboard...")
-        })
-            .catch(err => {
-            console.log('Algo salio mal', err);
-        })
  
     }
 

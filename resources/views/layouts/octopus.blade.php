@@ -410,6 +410,9 @@
                                             <li>
                                                 <a href="{{route('reportMoney')}}">Reportes de Dinero</a>
                                             </li>
+                                            <li>
+                                                <a href="{{route('bulkActivations')}}">Activaciones Batch</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">

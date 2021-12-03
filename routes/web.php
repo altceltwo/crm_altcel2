@@ -109,6 +109,7 @@ Route::post('/locked', 'AltanController@locked')->name('locked');
 Route::get('/status', 'AltanController@statusImei')->name('status');
 Route::get('/consultUFSpecial/{msisdn}','ClientController@getInfoUF')->name('consultUFSpecial.get')->middleware('auth');
 Route::post('/bondingSIM','AltanController@bondingSIM')->name('bonding')->middleware('auth');
+// Route::get('/get-rates-')
 
 // Rates Routes
 Route::post('/get-rates', 'RateController@getRates')->name('get-rates.post');
@@ -216,7 +217,9 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
+Route::get('/bulk-activations','ActivationController@bulkActivations')->name('bulkActivations');
 Route::get('/batch-activations','AltanController@activationsBatch');
+Route::get('/add-delete-number-bulk','NumberController@addDeleteNumberBulk')->name('addDeleteNumberBulk');
 //rerports money
 Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
 Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');

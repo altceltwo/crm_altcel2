@@ -698,4 +698,41 @@ class AltanController extends Controller
                 }
             }
     }
+
+    public function activationsBatch(){
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+        if(isset($accessTokenResponse['status'])){
+            if($accessTokenResponse['status'] == 'approved'){
+
+                $accessToken = $accessTokenResponse['accessToken'];
+                $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/activations';
+                
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'multipart/form-data'
+                ])->post($url_production,[
+                    'archivos' => file_get_contents('storage/uploads/batch.csv')
+                ]);
+
+                if(isset($response['transaction'])){
+                    $fp = fopen ('storage/uploads/batch.csv','r');
+
+                    while ($data = fgetcsv ($fp, 1000, ",")) {
+                        $num = count ($data);
+                        $msisdn = $data[0];
+                        $offerID = $data[1];
+                        $coordinates = $data[2];
+                        $scheduleDate = $data[3];
+                        echo $msisdn.' - '.$offerID.' - '.$coordinates.' - '.$scheduleDate;
+                        echo "<br>";
+                    }
+                }else{
+                    return 'BAD';
+                }
+
+            }else{
+                return "no aprobado";
+            }
+        }
+    }
 }

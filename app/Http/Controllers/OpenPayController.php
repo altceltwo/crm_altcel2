@@ -248,12 +248,12 @@ class OpenPayController extends Controller
 
         //credenciales openpay
         // create instance OpenPay sandbox
-        $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
+        // $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
         // create instance OpenPay production
-        // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
+        $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
         
-        Openpay::setProductionMode(false);
-        // Openpay::setProductionMode(true);
+        // Openpay::setProductionMode(false);
+        Openpay::setProductionMode(true);
 
         $customer = array(
             'name' => $user_name,
@@ -323,10 +323,10 @@ class OpenPayController extends Controller
             'url_card_payment' => $url
         ];
 
-        // Reference::insert($dataReference);
-        // if($referencestype == 1){
-        //     Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
-        // }
+        Reference::insert($dataReference);
+        if($referencestype == 1){
+            Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
+        }
 
         return $url;
     }
