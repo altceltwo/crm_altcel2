@@ -336,11 +336,6 @@ class OpenPayController extends Controller
                 'client_id' => $client_id,
                 'url_card_payment' => $url
             ];
-
-        Reference::insert($dataReference);
-        if($referencestype == 1){
-            Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
-        }
             Reference::insert($dataReference);
             if($referencestype == 1){
                 Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);

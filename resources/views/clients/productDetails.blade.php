@@ -336,6 +336,13 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                        <!-- div link reference to whatsApp -->
+                                     <div class="dropdown  col-md-12 " id="pay-whats-purchases">
+                                        <div class="panel">
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <pre class="chroma " id="url_pay-purchases"></pre>
+                                        </div>
+                                    </div>
                                         <input type="hidden" id="user_idPurchase" value="{{Auth::user()->id}}">
                                         <input type="hidden" id="client_idPurchase">
                                         <input type="hidden" id="number_idPurchase">
@@ -525,6 +532,13 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                        <!-- div link reference to whatsApp -->
+                                    <div class="dropdown  col-md-12 " id="pay-whats-change">
+                                        <div class="panel">
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <pre class="chroma "id="url_pay-change"></pre>
+                                        </div>
+                                    </div>
                                         <input type="hidden" id="user_id" value="{{Auth::user()->id}}">
                                         <input type="hidden" id="client_id">
                                         <input type="hidden" id="number_id">
@@ -766,6 +780,23 @@
 </script>
 <script>
     var token = $('meta[name="csrf-token"]').attr('content'); 
+
+    //send reference whatsApp
+    $('#pay-whats-change').addClass('d-none');
+    $('#pay-whats-purchases').addClass('d-none');
+
+    function copyToClickBoard(){
+        let content = document.getElementById('url_pay-change').innerHTML;
+        let cellphone = $('#cellphone').val();
+        window.open('https://api.whatsapp.com/send?phone=52'+cellphone+'&text=Hola, este es el link para completar tu pago en lí­nea por tu cambio de plan Altcel: '+content, '_blank');
+    }
+
+    function copyToClickBoardTwo(){
+        let content = document.getElementById('url_pay-purchases').innerHTML;
+        let cellphone = $('#cellphonePurchase').val();
+        window.open('https://api.whatsapp.com/send?phone=52'+cellphone+'&text=Hola, este es el link para completar tu pago en lí­nea por tu compra de GBs Altcel: '+content, '_blank');
+    }
+
 
     $('#traffic_out').click(function(){
         let status = $(this).attr('data-status');
@@ -1095,6 +1126,11 @@
                                 }else if(channel == 2){
                                     // referenceWhatsapp = response.charges.data[0].payment_method.reference;
                                     showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                                }else if(channel == 3){
+                                    console.log(response)
+                                    $('#pay-whats-purchases').removeClass('d-none');
+
+                                    $('#url_pay-purchases').html(response);
                                 }
                             }
                             
@@ -1358,6 +1394,11 @@
                             }else if(channel == 2){
                                 // referenceWhatsapp = response.charges.data[0].payment_method.reference;
                                 showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                            }else if(channel == 3){
+
+                                $('#pay-whats-change').removeClass('d-none');
+
+                                $('#url_pay-change').html(response);
                             }
                         }else{
                             if(response.http_code == 1){
