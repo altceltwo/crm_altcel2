@@ -49,12 +49,12 @@ class OpenPayController extends Controller
         }
         try {
             // create instance OpenPay sandbox
-            $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
+            // $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
             // create instance OpenPay production
-            // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
+            $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
             
-            Openpay::setProductionMode(false);
-            // Openpay::setProductionMode(true);
+            // Openpay::setProductionMode(false);
+            Openpay::setProductionMode(true);
             
             // create object customer
             $customer = array(
@@ -228,6 +228,7 @@ class OpenPayController extends Controller
     }
 
     public function cardPayment(Request $request){
+        
         $current_role = auth()->user()->role_id;
         $employe_id = $current_role == 3 ? 'null' : auth()->user()->id;
         $user_name = $request->get('name');
@@ -235,9 +236,6 @@ class OpenPayController extends Controller
         $user_phone = $request->get('cel_destiny_reference');
         $user_email = $request->get('email');
         $channel = $request->get('channel');
-        $rate_id = $request->get('rate_id');
-        $offer_id = $request->get('offer_id');
-        $number_id = $request->get('number_id');
         $concepto = $request->get('concepto');
         $rate_price = $request->get('amount');
         $client_id = $request->get('client_id');
@@ -254,81 +252,163 @@ class OpenPayController extends Controller
         
         // Openpay::setProductionMode(false);
         Openpay::setProductionMode(true);
+        if ($referencestype == 1 || $referencestype == 4 || $referencestype == 5) {
+            $number_id = $request->get('number_id');
+            $offer_id = $request->get('offer_id');
+            $rate_id = $request->get('rate_id');
+        }elseif ($referencetype == 2) {
+            $pack_id = $request->input('pack_id');
+        }
 
-        $customer = array(
-            'name' => $user_name,
-            'last_name' => $user_lastname,
-            'phone_number'=> $user_phone,
-            'email'=> $user_email
-        );
+        try {
+          // create instance OpenPay sandbox
+            $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
+            // create instance OpenPay production
+            // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
+            
+            Openpay::setProductionMode(false);
+            // Openpay::setProductionMode(true);
 
-        $chargeRequest = array(
-            "method" => "card",
-            "amount" => $rate_price,
-            "description" => $concepto,
-            "customer" => $customer,
-            "send_email" => true,
-            "confirm" => false,
-            "redirect_url" => 'https://altcel2.com/successfully-operation'
-        );
+            $customer = array(
+                'name' => $user_name,
+                'last_name' => $user_lastname,
+                'phone_number'=> $user_phone,
+                'email'=> $user_email
+            );
 
-        $charge = $openpay->charges->create($chargeRequest);
+            $chargeRequest = array(
+                "method" => "card",
+                "amount" => $rate_price,
+                "description" => $concepto,
+                "customer" => $customer,
+                "send_email" => true,
+                "confirm" => false,
+                "redirect_url" => 'https://altcel2.com/successfully-operation'
+            );
 
-       
-        $reference_id = $charge->id;
-        $authorization = $charge->authorization;
-        $transaction_type = $charge->transaction_type;
-        $status = 'in_progress';
-        $creation_date = $charge->creation_date;
-        $description = $charge->description;
-        $error_message = $charge->error_message;
-        $order_id = $charge->order_id;
-        $payment_method = $charge->method;
-        $amount = $charge->amount;
-        $currency = $charge->currency;
-        $name = $charge->customer->name;
-        $lastname = $charge->customer->last_name;
-        $email = $charge->customer->email;
-        $url = $charge->payment_method->url;
+            $charge = $openpay->charges->create($chargeRequest);
 
-        $creation_date = substr($creation_date,0,19);
-        $creation_date = str_replace("T", "", $creation_date);
-        $creation_date = str_replace("-", "", $creation_date);
-        $creation_date = str_replace(":", "", $creation_date);
+        
+            $reference_id = $charge->id;
+            $authorization = $charge->authorization;
+            $transaction_type = $charge->transaction_type;
+            $status = 'in_progress';
+            $creation_date = $charge->creation_date;
+            $description = $charge->description;
+            $error_message = $charge->error_message;
+            $order_id = $charge->order_id;
+            $payment_method = $charge->method;
+            $amount = $charge->amount;
+            $currency = $charge->currency;
+            $name = $charge->customer->name;
+            $lastname = $charge->customer->last_name;
+            $email = $charge->customer->email;
+            $url = $charge->payment_method->url;
 
-        $dataReference = [
-            'reference_id' => $reference_id,
-            'reference' => $reference_id,
-            'authorizacion' => $authorization,
-            'transaction_type' => $transaction_type,
-            'status' => $status,
-            'creation_date' => $creation_date,
-            'description' => $description,
-            'error_message' => $error_message,
-            'order_id' => $order_id,
-            'payment_method' => $payment_method,
-            'amount' => $amount,
-            'currency' => $currency,
-            'name' => $name,
-            'lastname' => $lastname,
-            'email' => $email,
-            'channel_id' => $channel,
-            'referencestype_id' => $referencestype,
-            'number_id' => $number_id,
-            'offer_id' => $offer_id,
-            'rate_id' => $rate_id,
-            'user_id' => $user_id,
-            'pack_id' => $pack_id,
-            'client_id' => $client_id,
-            'url_card_payment' => $url
-        ];
+            $creation_date = substr($creation_date,0,19);
+            $creation_date = str_replace("T", "", $creation_date);
+            $creation_date = str_replace("-", "", $creation_date);
+            $creation_date = str_replace(":", "", $creation_date);
+
+            $dataReference = [
+                'reference_id' => $reference_id,
+                'reference' => $reference_id,
+                'authorizacion' => $authorization,
+                'transaction_type' => $transaction_type,
+                'status' => $status,
+                'creation_date' => $creation_date,
+                'description' => $description,
+                'error_message' => $error_message,
+                'order_id' => $order_id,
+                'payment_method' => $payment_method,
+                'amount' => $amount,
+                'currency' => $currency,
+                'name' => $name,
+                'lastname' => $lastname,
+                'email' => $email,
+                'channel_id' => $channel,
+                'referencestype_id' => $referencestype,
+                'number_id' => $number_id,
+                'offer_id' => $offer_id,
+                'rate_id' => $rate_id,
+                'user_id' => $user_id,
+                'pack_id' => $pack_id,
+                'client_id' => $client_id,
+                'url_card_payment' => $url
+            ];
 
         Reference::insert($dataReference);
         if($referencestype == 1){
             Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
         }
+            Reference::insert($dataReference);
+            if($referencestype == 1){
+                Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
+            }else if($referencestype == 4 || $referencestype == 5){
 
-        return $url;
+            }
+            return $url;
+        } catch (OpenpayApiTransactionError $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        } catch (OpenpayApiRequestError $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        } catch (OpenpayApiConnectionError $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        } catch (OpenpayApiAuthError $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        } catch (OpenpayApiError $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => [
+                    'category' => $e->getCategory(),
+                    'error_code' => $e->getErrorCode(),
+                    'description' => $e->getMessage(),
+                    'http_code' => $e->getHttpCode(),
+                    'request_id' => $e->getRequestId()
+                ]
+            ]);
+        }
     }
 
     public function cardPaymentSend(Request $request){
