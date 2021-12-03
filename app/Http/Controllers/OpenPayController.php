@@ -49,12 +49,12 @@ class OpenPayController extends Controller
         }
         try {
             // create instance OpenPay sandbox
-            // $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
+            $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
             // create instance OpenPay production
-            $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
+            // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
             
-            // Openpay::setProductionMode(false);
-            Openpay::setProductionMode(true);
+            Openpay::setProductionMode(false);
+            // Openpay::setProductionMode(true);
             
             // create object customer
             $customer = array(
@@ -246,12 +246,13 @@ class OpenPayController extends Controller
 
         //credenciales openpay
         // create instance OpenPay sandbox
-        // $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
+        $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
         // create instance OpenPay production
-        $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
+        // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
         
-        // Openpay::setProductionMode(false);
-        Openpay::setProductionMode(true);
+        Openpay::setProductionMode(false);
+        // Openpay::setProductionMode(true);
+        
         if ($referencestype == 1 || $referencestype == 4 || $referencestype == 5) {
             $number_id = $request->get('number_id');
             $offer_id = $request->get('offer_id');
@@ -261,13 +262,6 @@ class OpenPayController extends Controller
         }
 
         try {
-          // create instance OpenPay sandbox
-            $openpay = Openpay::getInstance('mvtmmoafnxul8oizkhju', 'sk_e69bbf5d1e30448688b24670bcef1743');
-            // create instance OpenPay production
-            // $openpay = Openpay::getInstance('m3one5bybxspoqsygqhz', 'sk_1829d6a2ec22413baffb405b1495b51b');
-            
-            Openpay::setProductionMode(false);
-            // Openpay::setProductionMode(true);
 
             $customer = array(
                 'name' => $user_name,
@@ -340,13 +334,9 @@ class OpenPayController extends Controller
         Reference::insert($dataReference);
         if($referencestype == 1){
             Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
-        }
-            Reference::insert($dataReference);
-            if($referencestype == 1){
-                Pay::where('id',$pay_id)->update(['reference_id' => $reference_id]);
-            }else if($referencestype == 4 || $referencestype == 5){
+        }else if($referencestype == 4 || $referencestype == 5){
 
-            }
+        }
             return $url;
         } catch (OpenpayApiTransactionError $e) {
             return response()->json([
@@ -433,7 +423,7 @@ class OpenPayController extends Controller
                 'customer' => $customer,
                 'send_email' => false,
                 'confirm' => false,
-                'redirect_url' => 'https://200.106.172.56/home');
+                'redirect_url' => 'http://187.217.216.244//home');
 
             $charge = $openpay->charges->create($chargeRequest);
             return response()->json(['method'=>$charge->method, 'url'=>$charge->payment_method->url, 'type'=>$charge->payment_method->type]);

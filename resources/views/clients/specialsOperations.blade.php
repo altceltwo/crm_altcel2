@@ -536,7 +536,7 @@
                                      <!-- div link reference to whatsApp -->
                                      <div class="dropdown  col-md-12 " id="pay-whats-purchases">
                                         <div class="panel">
-                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoardTwo()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
                                             <pre class="chroma " id="url_pay-purchases"></pre>
                                         </div>
                                     </div>
@@ -1071,34 +1071,18 @@
     //send reference whatsApp
     $('#pay-whats-change').addClass('d-none');
     $('#pay-whats-purchases').addClass('d-none');
-    var cellphone = $('#cellphone').val();
+    
 
     function copyToClickBoard(){
-        var content = document.getElementById('url_pay-change').innerHTML;
-
-        navigator.clipboard.writeText(content)
-            .then(() => {
-                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
-            // console.log("Text copied to clipboard...")
-        })
-            .catch(err => {
-            console.log('Algo salio mal', err);
-        })
- 
+        let content = document.getElementById('url_pay-change').innerHTML;
+        let cellphone = $('#cellphone').val();
+        window.open('https://api.whatsapp.com/send?phone=52'+cellphone+'&text=Hola, este es el link para completar tu pago en línea por tu cambio de plan Altcel: '+content, '_blank');
     }
 
-    function copyToClickBoard(){
-        var content = document.getElementById('url_pay-purchases').innerHTML;
-
-        navigator.clipboard.writeText(content)
-            .then(() => {
-                location.href='https://api.whatsapp.com/send?phone=52'+cellphone;
-            // console.log("Text copied to clipboard...")
-        })
-            .catch(err => {
-            console.log('Algo salio mal', err);
-        })
- 
+    function copyToClickBoardTwo(){
+        let content = document.getElementById('url_pay-purchases').innerHTML;
+        let cellphone = $('#cellphonePurchase').val();
+        window.open('https://api.whatsapp.com/send?phone=52'+cellphone+'&text=Hola, este es el link para completar tu pago en línea por tu compra de GBs Altcel: '+content, '_blank');
     }
 
 var dataPay, referenceWhatsapp = '';
