@@ -339,7 +339,7 @@
                                         <!-- div link reference to whatsApp -->
                                      <div class="dropdown  col-md-12 " id="pay-whats-purchases">
                                         <div class="panel">
-                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoard()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
+                                            <button class="btn-link" aling="left" type="button" onclick="copyToClickBoardTwo()" class="btn-clipboard"><i class="fa fa-comments">WhatsApp</i></button>
                                             <pre class="chroma " id="url_pay-purchases"></pre>
                                         </div>
                                     </div>
