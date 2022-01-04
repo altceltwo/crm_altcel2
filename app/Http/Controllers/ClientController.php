@@ -39,9 +39,8 @@ class ClientController extends Controller
                               'clients.cellphone AS cellphone','numbers.MSISDN AS MSISDN',
                               'numbers.producto AS service','devices.no_serie_imei AS imei',
                               'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device','numbers.icc_id AS icc',
-                              'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan')
+                              'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan','activations.expire_date AS date_expire')
                               ->get();
-
         $data['clientsTwo'] = DB::table('users')
                                  ->join('instalations','instalations.client_id','=','users.id')
                                  ->join('packs','packs.id','=','instalations.pack_id')
@@ -79,7 +78,7 @@ class ClientController extends Controller
                           ->leftJoin('clients','clients.user_id','=','users.id')
                           ->where('activations.client_id','!=',null)
                           ->orWhere('instalations.client_id','!=',null)
-                          ->select('users.*','clients.cellphone AS client_phone','clients.rfc AS RFC','clients.address AS client_address','activations.expire_date AS date_expire')
+                          ->select('users.*','clients.cellphone AS client_phone','clients.rfc AS RFC','clients.address AS client_address')
                           ->distinct()
                           ->get();
         // return $data['clients'];
