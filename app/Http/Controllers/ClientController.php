@@ -79,7 +79,7 @@ class ClientController extends Controller
                           ->leftJoin('clients','clients.user_id','=','users.id')
                           ->where('activations.client_id','!=',null)
                           ->orWhere('instalations.client_id','!=',null)
-                          ->select('users.*','clients.cellphone AS client_phone','clients.rfc AS RFC','clients.address AS client_address')
+                          ->select('users.*','clients.cellphone AS client_phone','clients.rfc AS RFC','clients.address AS client_address','activations.expire_date AS date_expire')
                           ->distinct()
                           ->get();
         // return $data['clients'];
