@@ -43,7 +43,6 @@ class ClientController extends Controller
                               'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan','activations.expire_date AS date_expire',
                               'activations.serial_number AS serial_number','activations.id AS id_act')
                               ->get();
-
         $data['clientsTwo'] = DB::table('users')
                                  ->join('instalations','instalations.client_id','=','users.id')
                                  ->join('packs','packs.id','=','instalations.pack_id')

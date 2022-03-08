@@ -77,6 +77,7 @@
                     <th>CPE</th>
                     <th>Expira</th>
                     <th>Fecha</th>
+                    <th>Fecha de Expiración</th>
                 </tr>
             </thead>
             <tbody>
@@ -131,6 +132,7 @@
                     <td>${{ number_format($client->amount_device,2) }}</td>
                     <td>{{ $client->date_expire }}</td>
                     <td>{{ $client->date_activation }}</td>
+                    <td>{{$client->date_expire}}</td>
                 </tr>
             @endforeach
             @foreach( $clientsTwo as $clientTwo )
@@ -148,6 +150,7 @@
                     <td>${{ number_format($clientTwo->amount_install,2) }}</td>
                     <td>N/A</td>
                     <td>{{ $clientTwo->date_instalation }}</td>
+                    <td>N/A</td>
                 </tr>
             @endforeach
            
