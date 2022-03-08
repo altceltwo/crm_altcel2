@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Http;
-use App\Petition;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use DB;
+use Http;
+use App\Rate;
 use App\User;
+use App\Offer;
 use App\Client;
+use App\Device;
+use App\Number;
+use App\Petition;
 use App\Activation;
 use App\Mail\SendPetition;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 
 class PetitionController extends Controller
@@ -34,6 +38,11 @@ class PetitionController extends Controller
             $comment = $x->comment;
             $product = $x->product;
             $client_id = $x->client_id;
+            $type = 'local';
+            
+            if($x->number_id != null){
+                $type = 'external';
+            }
 
             $client = User::where('id', $client_id)->select('name', 'lastname')->get();
 
@@ -50,8 +59,31 @@ class PetitionController extends Controller
                 'rate_activation' => $x->rate_name,
                 'payment_way' => $x->payment_way,
                 'plazo' => $x->plazo,
+                'type' => $type
             ));
 
+        }
+
+        $otherpetitions = DB::table('otherpetitions')
+                             ->join('numbers','numbers.id','=','otherpetitions.number_id')
+                             ->join('activations','activations.numbers_id','=','numbers.id')
+                             ->join('users','users.id','=','activations.client_id')
+                             ->where('otherpetitions.status','pendiente')
+                             ->select('otherpetitions.*','numbers.MSISDN AS msisdn','users.name AS client_name','users.lastname AS client_lastname','users.email AS client_email')
+                             ->get();
+
+        $data['otherpetitions'] = [];
+        foreach ($otherpetitions as $otherpetition) {
+            $user = User::find($otherpetition->who_did_id);
+            array_push($data['otherpetitions'],array(
+                'id' => $otherpetition->id,
+                'msisdn' => $otherpetition->msisdn,
+                'type' => $otherpetition->type,
+                'status' => $otherpetition->status,
+                'comment' => $otherpetition->comment,
+                'client' => $otherpetition->client_name.' '.$otherpetition->client_lastname.' '.$otherpetition->client_email,
+                'dealer' => $user->name.' '.$user->lastname.' '.$user->email
+            ));
         }
         // return $data;
         return view('petitions.solicitudOperaciones', $data);
@@ -301,6 +333,38 @@ class PetitionController extends Controller
         return $data;
     }
 
+    public function activateDealerPetition(Petition $petition){
+        $data['sender'] = User::where('id',$petition->sender)->first();
+        $data['client'] = User::where('id',$petition->client_id)->first();
+        $data['dataClient'] = Client::where('user_id',$petition->client_id)->first();
+        $data['rate'] = Rate::where('id',$petition->rate_activation)->first();
+        $data['offer'] = Offer::where('id',$data['rate']->alta_offer_id)->first();
+        $data['number'] = Number::where('id',$petition->number_id)->first();
+        $data['device'] = Device::where('id',$petition->device_id)->first();
+        // $data['rates'] = Rate::all()->where('id','!=',$petition->rate_activation);
+        $data['rates'] = DB::table('rates')
+                            ->join('offers','offers.id','=','rates.alta_offer_id')
+                            ->where('rates.id','!=',$petition->rate_activation)
+                            ->where('offers.product',$petition->product)
+                            ->select('rates.*')
+                            ->get();
+        $data['petition'] = $petition;
+
+        return view('petitions.petitionDealerShow',$data);
+    }
+
+    public function changeRatePetition(Request $request){
+        $petition_id = $request->post('petition_id');
+        $rate_id = $request->post('rate_id');
+        $x = Petition::where('id',$petition_id)->update(['rate_activation'=>$rate_id,'rate_secondary'=>$rate_id]);
+
+        if($x){
+            return 1;
+        }else{
+            return 0;
+        }
+    }
+
     public function collectMoney(Request $request){
         $collectedCPE = $request->post('collectedCPE');
         $collectedRate = $request->post('collectedRate');
@@ -418,7 +482,7 @@ class PetitionController extends Controller
         $product = $request->get('product');
         $email_remitente = $request->get('email_remitente');
 
-        $email = ['emmanuel.cruz@altcel2.com', 'joel_maza@altcel.com', 'stephanni_hernandez@altcel.com', 'mirza_chacon@altcel.com', 'mario_molina@altcel.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com'];
+        $email = ['laura_coutino@altcel.com', 'joel_maza@altcel.com', 'sandra_corzo@altcel.com', 'keila_vazquez@altcel.com', 'mario_molina@altcel.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com','carlos_vazquez@altcel.com'];
         
         if ($status == 'solicitud') {
             $data= [
@@ -432,9 +496,11 @@ class PetitionController extends Controller
                 "correo"=>$correo,
                 "product"=>$product,
                 "email"=>$email,
-                "body"=>$email[0]." y ".$email[1].", tienen una nueva solicitud de",
+                "body"=>$email[1].", ".$email[0]." y ".$email[7].", tienen una nueva solicitud de",
             ];
-            Mail::to($email[0])->cc($email[1])->send(new SendPetition($data));
+            Mail::to($email[0])->send(new SendPetition($data));
+            Mail::to($email[1])->send(new SendPetition($data));
+            Mail::to($email[7])->send(new SendPetition($data));
             return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }elseif ($status == 'activado') {
             $data= [
@@ -474,6 +540,27 @@ class PetitionController extends Controller
             Mail::to($email[1])->send(new SendPetition($data));
             Mail::to($email[5])->send(new SendPetition($data));
             Mail::to($email[6])->send(new SendPetition($data));
+            Mail::to($email[7])->send(new SendPetition($data));
+            return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
+        }elseif($status == 'other'){
+            $subject = $request->get('subject');
+            $description = $request->get('description');
+            $data= [
+                "subject"=>$subject,
+                "name" => $name,
+                "lastname" => $lastname,
+                "comment"=>$comment,
+                "remitente"=>$remitente,
+                "email_remitente"=>$email_remitente,
+                "status"=>$status,
+                "correo"=>$correo,
+                "product"=>' ',
+                "email"=>$email,
+                "body"=>$email[1].", ".$email[0]." y ".$email[7].", ".$description,
+            ];
+            Mail::to($email[0])->send(new SendPetition($data));
+            Mail::to($email[1])->send(new SendPetition($data));
+            Mail::to($email[7])->send(new SendPetition($data));
             return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }
     }

@@ -67,6 +67,7 @@
                     <th>Nombre</th>
                     <th>Contacto</th>
                     <th>MSISDN</th>
+                    <th>No. Serie</th>
                     <th>IMEI</th>
                     <th>ICC</th>
                     <th>Plan/Paquete</th>
@@ -74,20 +75,21 @@
                     <th>Status</th>
                     <th>Plan</th>
                     <th>CPE</th>
+                    <th>Expira</th>
                     <th>Fecha</th>
                 </tr>
             </thead>
             <tbody>
-            <!-- {{$clients}} -->
             @php
                 $amount_total = 0;
                 $amount_pendiente = 0;
             @endphp
             @foreach( $clients as $client )
-                <tr class="{{$client->service}}">
+                <tr class="{{$client->service}} altan" style="cursor: pointer;" data-id-dn="{{$client->id_dn}}" data-id-act="{{$client->id_act}}" data-service="{{trim($client->service)}}">
                     <td>{{ $name = strtoupper($client->name.' '.$client->lastname) }}</td>
                     <td>{{ $client->cellphone }}</td>
                     <td>{{ $client->MSISDN }}</td>
+                    <td>{{ $client->serial_number }}</td>
                     <td>{{ substr($client->imei,4) }}</td>
                     <td>{{$client->icc }}</td>
                     <td>{{ $rate = strtoupper($client->rate_name) }}</td>
@@ -127,6 +129,7 @@
                     @endif
                     <td>${{ number_format($client->amount_rate,2) }}</td>
                     <td>${{ number_format($client->amount_device,2) }}</td>
+                    <td>{{ $client->date_expire }}</td>
                     <td>{{ $client->date_activation }}</td>
                 </tr>
             @endforeach
@@ -135,6 +138,7 @@
                     <td>{{ $name = strtoupper($clientTwo->name.' '.$clientTwo->lastname) }}</td>
                     <td>{{ $clientTwo->cellphone }}</td>
                     <td>{{ $clientTwo->number }}</td>
+                    <td>{{ $clientTwo->serial_number }}</td>
                     <td>N/A</td>
                     <td>N/A</td>
                     <td>{{ $rate = strtoupper($clientTwo->pack_name) }}</td>
@@ -142,10 +146,25 @@
                     <td>N/A</td>
                     <td>${{ number_format($clientTwo->amount_pack,2) }}</td>
                     <td>${{ number_format($clientTwo->amount_install,2) }}</td>
+                    <td>N/A</td>
                     <td>{{ $clientTwo->date_instalation }}</td>
                 </tr>
             @endforeach
            
     </div>
 </section>
+<script>
+    $('.altan').click(function(){
+        let id_dn = $(this).data('id-dn');
+        let id_act = $(this).data('id-act');
+        let service = $(this).data('service');
+        let url = "{{route('showProductDetails',['id_dn'=>'temp','id_act'=>'temp1','service'=>'temp2'])}}";
+        url = url.replace('temp',id_dn);
+        url = url.replace('temp1',id_act);
+        url = url.replace('temp2',service);
+
+        location.href = url;
+    });
+</script>
+
 @endsection

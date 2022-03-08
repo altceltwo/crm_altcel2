@@ -84,14 +84,14 @@
 
                 @if($ref == 'N/A')
                     
-                    <a href="{{url('/generateReference/'.$mypay->id.'/'.$mypay->number_product.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs"><i class="fa fa-money"></i></a>
+                    <a href="{{url('/generateReference/'.$mypay->id.'/'.$mypay->number_product.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @else
-                    <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}"><i class="fa fa-eye"></i></button>
+                    <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Referencia generada"><i class="fa fa-eye"></i></button>
                 @endif
                     @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 5)
-                        <button type="button" class="btn btn-success btn-sm mt-xs register-pay-manual" payID="{{$mypay->id}}" service="{{$mypay->number_product}}"><i class="fa  fa-hand-o-right"></i></button>
+                        <button type="button" class="btn btn-success btn-sm mt-xs register-pay-manual" payID="{{$mypay->id}}" service="{{$mypay->number_product}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Registrar pago manual"><i class="fa  fa-hand-o-right"></i></button>
                     @endif
-                    <a href="{{url('/show-product-details/'.$mypay->number_id.'/'.$mypay->activation_id.'/'.$mypay->number_product)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a>
+                    <a href="{{url('/show-product-details/'.$mypay->number_id.'/'.$mypay->activation_id.'/'.$mypay->number_product)}}" class="btn btn-info btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Información del servicio"><i class="fa fa-info-circle"></i></a>
                 </td>
             </tr>
             @endforeach
@@ -138,14 +138,14 @@
 
                 @if($ref == 'N/A')
                     
-                    <a href="{{url('/generateReference/'.$my2pay->id.'/'.$my2pay->service_name.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs"><i class="fa fa-money"></i></a>
+                    <a href="{{url('/generateReference/'.$my2pay->id.'/'.$my2pay->service_name.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @else
-                    <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}"><i class="fa fa-eye"></i></button>
+                    <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Referencia generada"><i class="fa fa-eye"></i></button>
                 @endif
                     @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 5)
-                        <button type="button" class="btn btn-success btn-sm mt-xs register-pay-manual" payID="{{$my2pay->id}}" service="{{$my2pay->service_name}}"><i class="fa  fa-hand-o-right"></i></button>
+                        <button type="button" class="btn btn-success btn-sm mt-xs register-pay-manual" payID="{{$my2pay->id}}" service="{{$my2pay->service_name}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Registrar pago manual"><i class="fa  fa-hand-o-right"></i></button>
                     @endif
-                    <a href="{{url('/show-product-details/null/'.$my2pay->instalation_id.'/'.$my2pay->service_name)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a>
+                    <a href="{{url('/show-product-details/null/'.$my2pay->instalation_id.'/'.$my2pay->service_name)}}" class="btn btn-info btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Información del servicio"><i class="fa fa-info-circle"></i></a>
                 </td>
             </tr>
             @endforeach
@@ -249,8 +249,14 @@
                 <td>{{ $serial_number = $activation->serial_number != null ? $activation->serial_number : 'N/A'}}</td>
                 <td>{{ $activation->pack_name }}</td>
                 <td>
-                    <button type="button" class=" mt-xs mr-xs btn btn-warning btn-sm update-number" data-id="{{ $activation->id }}" data-type="activation" data-toggle="modal" ><i class="fa fa-edit"></i></button>
-                    <a href="{{url('/show-product-details/'.$activation->numbers_id.'/'.$activation->id.'/'.$activation->service)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a>
+                    @if($activation->deleted_at == null)
+                    <button type="button" class="mr-xs btn btn-warning btn-sm update-number" data-id="{{ $activation->id }}" data-type="activation"  data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar No. Serie"><i class="fa fa-edit" ></i></button>
+                    <button type="button" class="mr-xs btn btn-warning btn-sm update-owner" data-id="{{ $activation->id }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cambiar propietario"><i class="fa fa-exchange" ></i></button>
+                    <a href="{{url('/show-product-details/'.$activation->numbers_id.'/'.$activation->id.'/'.$activation->service)}}" class="mr-xs btn btn-info btn-sm " data-toggle="tooltip" data-placement="left" title="" data-original-title="Información del servicio"><i class="fa fa-info-circle"></i></a>
+                    <button class="mr-xs btn btn-danger btn-sm delete-activation" data-id="{{ $activation->id }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cancelar servicio"><i class="fa fa-level-down"></i></button>
+                    @else
+                    <span class="badge label label-danger">Sin Opciones. SIM dada de BAJA DEFINITIVA.</span>
+                    @endif
                 </td>
             </tr>
             @endforeach
@@ -262,7 +268,7 @@
                 <td>{{ $serial_number = $instalation->serial_number != null ? $instalation->serial_number : 'N/A' }}</td>
                 <td>{{ $instalation->pack_name }}</td>
                 <td>
-                    <button type="button" class=" mt-xs mr-xs btn btn-warning btn-sm update-number" data-id="{{ $instalation->id }}" data-type="instalation" data-toggle="modal" ><i class="fa fa-edit"></i></button>
+                    <button type="button" class=" mt-xs mr-xs btn btn-warning btn-sm update-number" data-id="{{ $instalation->id }}" data-type="instalation" data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar No. Serie" ><i class="fa fa-edit"></i></button>
                     <a href="{{url('/show-product-details/null/'.$instalation->id.'/'.$instalation->service)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a>
                 </td>
             </tr>
@@ -365,6 +371,85 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="save_number">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cancelación de Activación -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Actualización de Datos en el Servicio</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="display:flex; justify-content:center; margin-left: auto !important;">
+                <div class="col-md-12">
+                    <div class="col-md-6">
+                        <label for="amount_cancelation" class="form-label">Monto:</label>
+                        <input class="form-control" name="amount_cancelation" id="amount_cancelation" value="0.00">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cancelation_type">Tipo de Cancelación</label>
+                        <select id="cancelation_type" class="form-control form-control-sm">
+                            <option selected value="0">Elegir...</option>
+                            <option value="restore">Devolución y Baja Definitiva</option>
+                            <option value="destroy">Solo Baja Definitiva</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="reason-delete" class="form-label">Razón:</label>
+                        <textarea class="form-control" name="reason-delete" id="reason-delete" cols="30" rows="5"></textarea>
+                    </div>
+                </div>
+                <input type="hidden" class="form-control" id="activation-delete-id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="delete-activation">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cambio de Propietario -->
+<div class="modal fade" id="changeOwner" tabindex="-1" aria-labelledby="changeOwnerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cambio de Propietario del Servicio</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="display:flex; justify-content:center; margin-left: auto !important;">
+                <div class="col-md-12">
+                    <div class="col-md-12">
+                        <div class="col-md-12 mb-lg" id="msisdn-select">
+                            <label>Clientes</label>
+                            <select data-plugin-selectTwo class="form-control populate" id="client" onchange="getData()">
+                                <optgroup label="Clientes disponibles">
+                                <option value="0">Elige...</option>
+                                @foreach($clients as $client)
+                            <option value="{{$client->id}}">
+                                {{$client->name.' '.$client->lastname.' '.$client->email}}
+                            </option>
+                            @endforeach
+                                </optgroup>
+                                
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" class="form-control" id="client_new_id">
+                <input type="hidden" class="form-control" id="activation_new_id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="change-owner-btn">Guardar</button>
             </div>
         </div>
     </div>
@@ -615,5 +700,154 @@
             }
         });  
     });
+
+    $('.delete-activation').click(function(){
+        let activation_id = $(this).data('id');
+        $('#activation-delete-id').val(activation_id);
+        $('#deactivateModal').modal('show');
+    });
+
+    $('.update-owner').click(function(){
+        let activation_id = $(this).data('id');
+        $('#activation_new_id').val(activation_id);
+        $('#changeOwner').modal('show');
+    });
+
+    $('#delete-activation').click(function(){
+        let activation_id = $('#activation-delete-id').val();
+        let amount = $('#amount_cancelation').val();
+        let reason = $('#reason-delete').val();
+        let type = $('#cancelation_type').val();
+
+        if(type == 0){
+            Swal.fire({
+                icon: 'error',
+                title: 'Woops!!',
+                text: "Por favor elija un tipo de cancelación.",
+                showConfirmButton: false,
+                timer: 2000
+            });
+            document.getElementById('reason-delete').focus();
+            return false;
+        }
+
+        if(reason.length == 0 || /^\s+$/.test(reason)){
+            Swal.fire({
+                icon: 'error',
+                title: 'Woops!!',
+                text: "Por favor ingrese la razón la que se realiza la cancelación.",
+                showConfirmButton: false,
+                timer: 2000
+            });
+            document.getElementById('reason-delete').focus();
+            return false;
+        }
+
+        Swal.fire({
+            title: '¿Está seguro de dar de baja la activación?',
+            text: 'Esto ocasionará la baja definitiva de la SIM. ESTO NO SE PUEDE REVERTIR.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-success mr-md',
+                cancelButton: 'btn btn-danger '
+            },
+            buttonsStyling: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{route('deleteActivation')}}",
+                    data: {activation_id:activation_id,amount:amount,reason:reason,type:type},
+                    beforeSend: function(){
+                        Swal.fire({
+                            title: 'Realizando BAJA DEFINITIVA...',
+                            html: 'Espera un poco, un poquito más...',
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success: function(response){
+                        if(response.http_code == 1){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Well done!!',
+                                text: response.message
+                            });
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Woops!!',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                        }
+                    }
+                });
+            } else if (
+                /* Read more about handling dismissals below */
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Operación cancelada',
+                    showConfirmButton: false,
+                    timer: 1000
+                });
+            }
+        });
+    });
+
+    $('#change-owner-btn').click(function(){
+        let client = $('#client_new_id').val();
+        let activation = $('#activation_new_id').val();
+        let url = "/clients-details/"+client+"#datatable-default3";
+
+        if(client == 0){
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!!',
+                text: "Por favor elija un cliente al cual se asignará el servicio.",
+                showConfirmButton: false,
+                timer: 2000
+            });
+            return false;
+        }
+
+        $.ajax({
+            url: "{{route('changeOwner')}}",
+            data: {activation:activation, client:client},
+            beforeSend: function(){
+                Swal.fire({
+                    title: 'Realizando cambio...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
+            success: function(response){
+                
+                if(response.http_code = 1){
+                    location.href = url;
+                }else{
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!!',
+                        text: "Al parecer algo salió mal, intente de nuevo o contacte a Desarrollo."
+                    });
+                }
+                
+            }
+        });
+
+    });
+
+    function getData(){
+        let client_id = $('#client').val();
+        $('#client_new_id').val(client_id);
+    }
 </script>
 @endsection

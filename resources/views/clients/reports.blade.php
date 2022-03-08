@@ -84,6 +84,12 @@
                                         Consumos de Minutos General
                                     </label>
                                 </div>
+                                <div class="radio col-md-2">
+                                    <label for="datosAnual">
+                                        <input class="option" type="radio" data-type="datosAnual" name="optionsRadios" id="datosAnual" value="Datos Mensual">
+                                        Consumos de Datos Mensuales
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -162,9 +168,9 @@
                                     <span class="input-group-addon">
                                         <i class="fa fa-calendar"></i>
                                     </span>
-                                    <input autocomplete="off" type="text" class="form-control" id="start_date" name="start_date">
+                                    <input autocomplete="off" type="text" class="form-control" id="start_dateG" name="start_dateG">
                                     <span class="input-group-addon">a</span>
-                                    <input autocomplete="off" type="text" class="form-control" id="end_date" name="end_date">
+                                    <input autocomplete="off" type="text" class="form-control" id="end_dateG" name="end_dateG">
                                 </div>
                             </div>
                             <input type="hidden" id="type-general" name="type">
@@ -240,6 +246,13 @@
             $('#general').removeClass('d-none');
             $('.table-general').addClass('d-none');
             $('.table-individual').addClass('d-none');
+        }else if(valor == 'Datos Mensual'){
+            $('#textGeneral').html(valor)
+            $('#type-general').val(type);
+            $('#individual').addClass('d-none');
+            $('#general').removeClass('d-none');
+            $('.table-general').addClass('d-none');
+            $('.table-individual').addClass('d-none');
         }
     })
 
@@ -253,13 +266,30 @@
             url: "{{route('consumos')}}",
             method:'GET',
             data: {type:type, msisdn:msisdn, date_start:date_start, date_end:date_end},
+            beforeSend: function(){
+                Swal.fire({
+                    title: 'Extrayendo data...',
+                    html: 'Espera un poco, un poquito más...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
             success:function(response){
-                let type = response[0];
+                Swal.close();
+                let typeS = response[0];
                 let data = response[1];
-                if (type == 'individual') {
+                if (typeS == 'individual') {
                     $('.table-individual').removeClass('d-none');
                         data.forEach(function(element){
-                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
+                            if(type == 'smsIndividual' || type == 'smsGeneral'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.consumos+" SMS</td></tr>"
+                            }else if(type == 'datosIndividual' || type == 'datosgeneral'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
+                            }else if(type == 'minIndividual' || type == 'minGeneral'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+parseFloat(element.consumos)/60+" Min</td></tr>"
+                            }
+                            
                     });
                 }
                 $('#cuerpo-table').html(contenido);
@@ -270,19 +300,39 @@
     $('#btnGeneral').click(function(){
         let contenido = '';
         let type = $('#type-general').val();
-        let date_start = $('#start_date').val();
-        let date_end = $('#end_date').val();
+        let date_start = $('#start_dateG').val();
+        let date_end = $('#end_dateG').val();
+        console.log(type);
+        console.log(date_start);
+        console.log(date_end);
         $.ajax({
             url: "{{route('consumos')}}",
             method: 'GET',
             data:{type:type, date_start:date_start, date_end:date_end},
+            beforeSend: function(){
+                Swal.fire({
+                    title: 'Extrayendo data...',
+                    html: 'Espera un poco, un poquito más...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
             success:function(response){
-                let type = response[0];
+                Swal.close();
+                let typeS = response[0];
                 let data = response[1];
-                if (type == 'general') {
+                if (typeS == 'general') {
                     $('.table-general').removeClass('d-none');
                         data.forEach(function(element){
-                            contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
+                            
+                            if(type == 'smsIndividual' || type == 'smsGeneral'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+element.consumos+" SMS</td></tr>"
+                            }else if(type == 'datosIndividual' || type == 'datosgeneral' || 'datosAnual'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+parseFloat(element.consumos).toFixed(4)+" MB</td></tr>"
+                            }else if(type == 'minIndividual' || type == 'minGeneral'){
+                                contenido+="<tr><td>"+element.START_DATE+"</td><td>"+element.PRI_IDENTITY+"</td><td>"+parseFloat(element.consumos)/60+" Min</td></tr>"
+                            }
                     });
                 }
                 $('#cuerpo-table-general').html(contenido);

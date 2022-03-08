@@ -215,7 +215,7 @@
                     <tr>
                         <td class="field" colspan="6"><center>{{$who_attended_name}}</center></td>
                         <td class="field" colspan="6"><center>MARIO RAFAEL MOLINA CANCINO</center></td>
-                        <td class="field" colspan="6"><center>MIRZA KHALID CHACÓN DE LA CRUZ</center></td>
+                        <td class="field" colspan="6"><center>KEILA CRYSTAL VÁZQUEZ MICELI</center></td>
                     </tr>
                     <tr>
                         <td class="field_empty" colspan="18"></td>
@@ -285,7 +285,7 @@
                         <td class="field" colspan="6"><center>FIRMA</center></td>
                     </tr>
                     <tr>
-                        <td class="field" colspan="6"><center>KEILA KRYSTAL VÁZQUEZ MICELI</center></td>
+                        <td class="field" colspan="6"><center>KEILA CRYSTAL VÁZQUEZ MICELI</center></td>
                         <td class="field" colspan="6"><center>{{ucwords($sender_name)}}</center></td>
                         <td class="field" colspan="6"><center>{{$client_name}}</center></td>
                     </tr>

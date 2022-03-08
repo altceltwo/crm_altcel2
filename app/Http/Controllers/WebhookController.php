@@ -4,17 +4,21 @@ namespace App\Http\Controllers;
 
 
 use DB;
-use DateTime;
-use App\Reference;
-use App\Recharge;
-use App\Ethernetpay;
 use App\Pay;
 use App\Pack;
 use App\Rate;
-use App\Instalation;
-use App\Activation;
 use App\User;
+use DateTime;
+use App\Offer;
+use App\Number;
+use App\Recharge;
+use App\Reference;
+use App\Activation;
+use App\Ethernetpay;
+use App\Instalation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NotificationDealerSurplus;
 
 class WebhookController extends Controller
 {
@@ -420,8 +424,59 @@ class WebhookController extends Controller
             $payment_amountReceived = $payment_data->amount_received;
             $payment_amountReceived = $payment_amountReceived == null ? 0 : $payment_amountReceived;
             $monto_recibido = $payment_amountReceived+$monto;
+            $activation_id = $payment_data->activation_id;
+            $dataActivation = Activation::where('id',$activation_id)->first();
+            $recharges = $dataActivation->recharges;
+            $offer_id = $dataActivation->offer_id;
+            $rate_id = $dataActivation->rate_id;
+            $number_id = $dataActivation->numbers_id;
 
-            
+            if($role == 8){
+                if($recharges == 5){
+                    $recharges = 0;
+                }else if($recharges < 5){
+                    $recharges+=1;
+                    if($recharges == 5){
+                        $offer = Offer::where('id',$offer_id)->first();
+                        $offerIDAltan = $offer->offerID;
+                        $offers = DB::table('offers')->where('offerID_excedente',$offerIDAltan)->orderBy('offerID_excedente','asc')->select('offers.*')->get();
+                        $offerIDAltanSurplus = $offers[0]->offerID;
+                        $price = $offers[0]->price_sale;
+                        $dataNumber = Number::where('id',$number_id)->first();
+                        $msisdn = $dataNumber->MSISDN;
+                        $service = $dataNumber->producto;
+                        $service = trim($service);
+                        $response = app('App\Http\Controllers\AltanController')->productPurchaseBonusDealer($msisdn,$offerIDAltanSurplus,$user_id,$price,$offer_id,$rate_id);
+                        
+                        if($response['http_code'] == 1){
+                            $dataClient = DB::table('activations')
+                                             ->join('users','users.id','=','activations.client_id')
+                                             ->where('activations.id',$activation_id)
+                                             ->select('users.name','users.lastname')
+                                             ->get();
+                            $client_name = $dataClient[0]->name.' '.$dataClient[0]->lastname;
+
+                            $data = [
+                                'offerSurplus' => $offers[0]->name,
+                                'client_name' => $client_name,
+                                'service' => $service,
+                                'msisdn' => $msisdn,
+                                'subject' => 'BONIFICACIÓN POR QUINTA MENSUALIDAD'
+
+                            ];
+
+                            Mail::to('jonathan_gutierrez@altcel.com')->send(new NotificationDealerSurplus($data));
+                            Mail::to('leopoldo_martinez@altcel.com')->send(new NotificationDealerSurplus($data));
+                            Mail::to('joel_maza@altcel.com')->send(new NotificationDealerSurplus($data));
+                            Mail::to('cintya_delarosa@altcel.com')->send(new NotificationDealerSurplus($data));
+                            Mail::to('carlos_ruiz@altcel.com')->send(new NotificationDealerSurplus($data));
+                        }
+                        $recharges = 0;
+                        
+                    }
+                }
+                Activation::where('id',$activation_id)->update(['recharges'=>$recharges]);
+            }
 
             $x = Pay::where('id',$payID)->update([
                 'status' => $estadoPay,

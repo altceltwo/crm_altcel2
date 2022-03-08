@@ -325,7 +325,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label for="lastname">Concepto: </label>
-                                            <input type="email" class="form-control form-control-sm" id="conceptoPurchase" placeholder="Concepto" value="Compra de GB's Altcel.">
+                                            <input type="email" class="form-control form-control-sm" id="conceptoPurchase" placeholder="Concepto" value="Compra de GBs Altcel.">
                                         </div>
                                         <div class="col-md-4">
                                             <label for="channelPurchase">Métodos de Pago</label>
@@ -741,7 +741,7 @@
 <script src="{{asset('octopus/assets/vendor/liquid-meter/liquid.meter.js')}}"></script>
 <script src="{{asset('octopus/assets/vendor/snap-svg/snap.svg.js')}}"></script>
 
-<script src="{{asset('octopus/assets/vendor/bootstrap/js/bootstrap.js')}}"></script>
+<!-- <script src="{{asset('octopus/assets/vendor/bootstrap/js/bootstrap.js')}}"></script> -->
 <script src="{{asset('octopus/assets/vendor/jquery-validation/jquery.validate.js')}}"></script>
 <script src="{{asset('octopus/assets/vendor/bootstrap-wizard/jquery.bootstrap.wizard.js')}}"></script>
 <script src="{{asset('octopus/assets/vendor/pnotify/pnotify.custom.js')}}"></script>
@@ -1038,7 +1038,7 @@
             let referencestype = $('#referencestype_idPurchase').val();
             let comment = $('#commentPurchase').val();
             let reason = '', status = '';
-            let pay_id = '';
+            let pay_id = 0;
             
             // console.log(msisdn+' - '+offerID);
 
@@ -1130,7 +1130,7 @@
                                     console.log(response)
                                     $('#pay-whats-purchases').removeClass('d-none');
 
-                                    $('#url_pay-purchases').html(response);
+                                    $('#url_pay-purchases').html(response.url);
                                 }
                             }
                             
@@ -1299,7 +1299,7 @@
             let referencestype = $('#referencestype_id').val();
             let comment = $('#commentChangeProduct').val();
             let reason = '', status = '';
-            let pay_id = null;
+            let pay_id = 0;
 
             if(scheduleDateFirst.length == 0 || /^\s+$/.test(scheduleDateFirst)){
                 scheduleDate = '';
@@ -1398,7 +1398,7 @@
 
                                 $('#pay-whats-change').removeClass('d-none');
 
-                                $('#url_pay-change').html(response);
+                                $('#url_pay-change').html(response.url);
                             }
                         }else{
                             if(response.http_code == 1){

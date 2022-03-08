@@ -41,7 +41,13 @@
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/fullcalendar/fullcalendar.print.css')}}" media="print" />
 
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/select2/select2.css')}}" />
-	<link rel="stylesheet" href="{{asset('octopus/assets/vendor/jquery-datatables-bs3/assets/css/datatables.css')}}" />
+
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    
+    @else
+    <link rel="stylesheet" href="{{asset('octopus/assets/vendor/jquery-datatables-bs3/assets/css/datatables.css')}}" />
+    @endif
+	
     <!-- Theme CSS -->
     <link rel="stylesheet" href="{{asset('octopus/assets/stylesheets/theme.css')}}" />
 
@@ -55,8 +61,16 @@
     <!-- Head Libs -->
     <script src="{{asset('octopus/assets/vendor/modernizr/modernizr.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script>
+
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css">
+    @else
+    
+    @endif
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    
     <!-- <script src="{{ asset('js/app.js') }}" defer></script> -->
 
     <style>
@@ -227,12 +241,15 @@
         border-radius: 4px;
         background: #ffffff;
     }
+
+
     </style>
 </head>
 
 <body>
-    <section class="body">
-
+        
+    <section class="body backgroundBlack">
+    
         <!-- start: header -->
         <header class="header">
             <div class="logo-container">
@@ -244,6 +261,12 @@
                     <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
                 </div>
             </div>
+            
+            @php
+                $alertNotifications = \DB::table('notifications')->where('status','pendiente')->orWhere('seen',0)->select('notifications.*')->orderBy('date_notification','desc')->get();
+            @endphp
+            
+            
 
             <!-- start: search & user box -->
             <div class="header-right">
@@ -256,50 +279,40 @@
                     <li>
                         <a href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
                             <i class="fa fa-bell"></i>
-                            <span class="badge">3</span>
+                            <span class="badge">{{ sizeof($alertNotifications) }}</span>
                         </a>
 
                         <div class="dropdown-menu notification-menu">
                             <div class="notification-title">
-                                <span class="pull-right label label-default">3</span>
-                                Alerts
+                                <span class="pull-right label label-default">{{ sizeof($alertNotifications) }}</span>
+                                Notificaciones
                             </div>
 
                             <div class="content">
                                 <ul>
+                                    @foreach($alertNotifications as $alertNotification)
                                     <li>
-                                        <a href="#" class="clearfix">
+                                        <a href="{{route('notification.show',['notification'=>$alertNotification->id])}}" class="clearfix">
                                             <div class="image">
-                                                <i class="fa fa-thumbs-down bg-danger"></i>
+                                                @if($alertNotification->eventType == 'EVENT_UNITS')
+                                                    <i class="fa fa-exchange bg-success"></i>
+                                                @elseif($alertNotification->eventType == 'SUSPEND_MOVILITY' || $alertNotification->eventType == 'SUSPEND_IMEI')
+                                                    <i class="fa fa-exclamation-triangle bg-warning"></i>
+                                                    @elseif($alertNotification->eventType == 'ACTIVATION')
+                                                    <i class="fa fa-check-circle bg-success"></i>
+                                                @endif
                                             </div>
-                                            <span class="title">Server is Down!</span>
-                                            <span class="message">Just now</span>
+                                            <span class="title">{{$alertNotification->identifier}}</span>
+                                            <span class="message">{{$alertNotification->eventType}}</span>
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="#" class="clearfix">
-                                            <div class="image">
-                                                <i class="fa fa-lock bg-warning"></i>
-                                            </div>
-                                            <span class="title">User Locked</span>
-                                            <span class="message">15 minutes ago</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="clearfix">
-                                            <div class="image">
-                                                <i class="fa fa-signal bg-success"></i>
-                                            </div>
-                                            <span class="title">Connection Restaured</span>
-                                            <span class="message">10/10/2014</span>
-                                        </a>
-                                    </li>
+                                    @endforeach
                                 </ul>
 
                                 <hr />
 
                                 <div class="text-right">
-                                    <a href="#" class="view-more">View All</a>
+                                    <a href="{{route('notification.index')}}" class="view-more">View All</a>
                                 </div>
                             </div>
                         </div>
@@ -412,6 +425,9 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('bulkActivations')}}">Activaciones Batch</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('companies')}}">Empresas</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -597,7 +613,7 @@
                                                 <a href="{{route('clients-pay-all.get')}}">Ver</a>
                                             </li>
                                             <li>
-                                                <a href="{{route('activations.index')}}">Resumen</a>
+                                                <a href="{{route('clients.index')}}">Resumen</a>
                                             </li>
                                             <li>
                                                 <a href="{{route('prospects.index')}}">Prospectos</a>
@@ -651,6 +667,12 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('prospects.index')}}">Prospectos</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('reports')}}">Reportes de Consumos</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('reportMoney')}}">Reportes de Dinero</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -989,21 +1011,22 @@
             </aside>
             <!-- end: sidebar -->
 
-            <section role="main" class="content-body">
+            <section role="main" class="content-body"> 
                 
-
                 <!-- start: page -->
                 
-
                 @yield('content')
 
                 <!-- end: page -->
             </section>
         </div>
-
+        
+                
+               
     </section>
     <!-- Vendor -->
-    <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script>
+    
+    <!-- <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script> -->
     <script src="{{asset('octopus/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/bootstrap/js/bootstrap.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/nanoscroller/nanoscroller.js')}}"></script>
@@ -1020,9 +1043,13 @@
     
     <!-- Librerías DataTable -->
     <script src="{{asset('octopus/assets/vendor/select2/select2.js')}}"></script>
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    
+    @else
     <script src="{{asset('octopus/assets/vendor/jquery-datatables/media/js/jquery.dataTables.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery-datatables/extras/TableTools/js/dataTables.tableTools.min.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery-datatables-bs3/assets/js/datatables.js')}}"></script>
+    @endif
 
     <!-- Librerías Callendar -->
     <script src="{{asset('octopus/assets/vendor/jquery-ui/js/jquery-ui-1.10.4.custom.js')}}"></script>
@@ -1039,9 +1066,11 @@
     <!-- Theme Initialization Files -->
     <script src="{{asset('octopus/assets/javascripts/theme.init.js')}}"></script>
     <!-- Examples -->
-    <script src="{{asset('octopus/assets/javascripts/tables/examples.datatables.default.js')}}"></script>
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
     
-
+    @else
+    <script src="{{asset('octopus/assets/javascripts/tables/examples.datatables.default.js')}}"></script>
+    @endif
 </body>
 
 </html>

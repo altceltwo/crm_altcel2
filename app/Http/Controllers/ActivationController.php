@@ -23,6 +23,7 @@ use App\GuzzleHttp;
 use App\Ethernetpay;
 use App\Instalation;
 use App\Simexternal;
+use App\Deactivation;
 use App\Mail\SendAccess;
 use App\Numberstemporarie;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class ActivationController extends Controller
 {
@@ -920,41 +922,126 @@ class ActivationController extends Controller
         }
     }
 
-    public function executeActivation(Activation $activation){
-        $id = $activation->id;
-        $numberData = Number::where('id',$activation->numbers_id)->first();
-        $offerData = Offer::where('id',$activation->offer_id)->first();
+    public function executeActivation(Petition $petition){
+        $id = $petition->id;
+        $number_id = $petition->number_id;
+        $device_id = $petition->device_id;
+        $date_to_activate = $petition->date_to_activate;
+        $client_id = $petition->client_id;
+        $rate_activation = $petition->rate_activation;
+        $serial_number = $petition->serial_number;
+        $mac_address = $petition->mac_address;
+
+        $numberData = Number::where('id',$number_id)->first();
         $msisdn = $numberData->MSISDN;
         $product = $numberData->producto;
         $product = trim($product);
-        $offer_id = $offerData->offerID;
-        $date_activation = $activation->date_activation;
-        $today = date('Y-m-d');
 
-        if($date_activation == $today){
+        $rateData = Rate::where('id',$petition->rate_activation)->first();
+        $offer_id = $rateData->alta_offer_id;
+        $offerData = Offer::where('id',$offer_id)->first();
+        $offerID = $offerData->offerID;
+
+        $today = date('Y-m-d');
+        if($date_to_activate == $today){
             $scheduleDate = '';
         }else{
-            $date_activation = str_replace('-','',$date_activation);
-            $scheduleDate = $date_activation;
+            $date_to_activate = str_replace('-','',$date_to_activate);
+            $scheduleDate = $date_to_activate;
         }
 
         if($product == 'HBB'){
-            $lat_hbb = $activation->lat_hbb;
-            $lng_hbb = $activation->lng_hbb;
+            $lat_hbb = $petition->lat_hbb;
+            $lng_hbb = $petition->lng_hbb;
         }else{
             $lat_hbb = '';
             $lng_hbb = '';
         }
 
-
-        
         $accessToken = app('App\Http\Controllers\AltanController')->accessTokenRequestPost();
         if($accessToken['status'] == 'approved'){
             $accessToken = $accessToken['accessToken'];
-            $activationAltan = app('App\Http\Controllers\AltanController')->activationRequestPost($accessToken,$msisdn,$offer_id,$lat_hbb,$lng_hbb,$product,$scheduleDate);
+            $activationAltan = app('App\Http\Controllers\AltanController')->activationRequestPost($accessToken,$msisdn,$offerID,$lat_hbb,$lng_hbb,$product,$scheduleDate);
             // return $activationAltan;
             if(isset($activationAltan['msisdn'])){
-                Activation::where('id',$id)->update(['status'=>'activated']);
+                // Activation::where('id',$id)->update(['status'=>'activated']);
+                $user_id = auth()->user()->id;
+
+                $clientData = User::where('id',$client_id)->first();
+                $dataClient = Client::where('user_id',$client_id)->first();
+
+                $clientSonExists = Clientsson::where('email',$clientData->email)->exists();
+
+                if(!$clientSonExists){
+                    Clientsson::insert([
+                        'name' => $clientData->name,
+                        'lastname' => $clientData->lastname,
+                        'rfc' => $dataClient->rfc,
+                        'date_born' => $dataClient->date_born,
+                        'address' => $dataClient->address,
+                        'email' => $clientData->email,
+                        'ine_code' => $dataClient->ine_code,
+                        'cellphone' => $dataClient->cellphone,
+                        'type_person' => $dataClient->type_person,
+                        'user_id' => $client_id
+                    ]);
+                }
+
+                $clientSon = Clientsson::where('email',$clientData->email)->first();
+
+                $dataActivation = [
+                    'client_id' => $client_id,
+                    'numbers_id' => $number_id,
+                    'devices_id' => $device_id,
+                    'serial_number' => $serial_number,
+                    'mac_address' => $mac_address,
+                    'date_activation' => $date_to_activate,
+                    'who_did_id' => $user_id,
+                    'offer_id' => $offer_id,
+                    'rate_id' => $rate_activation,
+                    'amount' => 0,
+                    'amount_rate' => 0,
+                    'amount_device' => 0,
+                    'clientson_id' => $clientSon->id,
+                    'lat_hbb' => $lat_hbb,
+                    'lng_hbb' => $lng_hbb,
+                    'payment_status' => 'pendiente',
+                    'status' => 'activated',
+                    'petition_id' => $id,
+                    'flag_rate' => 1,
+                    'rate_subsequent' => $rate_activation
+                ];
+                Activation::insert($dataActivation);
+                Number::where('id',$number_id)->update(['status'=>'taken']);
+                if($device_id != null){
+                    Device::where('id',$device_id)->update(['status'=>'taken']);
+                }
+
+                $name_remitente = auth()->user()->name;
+                $email_remitente = auth()->user()->email;
+
+                $date = date('Y-m-d H:i:s');
+                DB::table('petitions')->where('id',$id)->update([
+                    'status' => 'activado',
+                    'who_attended' => $user_id,
+                    'date_activated' => $date
+                ]);
+
+                $comment = DB::table('petitions')->where('id', $id)->get('comment');
+                    //correos operaciones
+                $response = Http::withHeaders([
+                    'Conten-Type'=>'application/json'
+                ])->get('http://10.44.0.70/petitions-notifications',[
+                    'name'=> $clientData->name,
+                    'lastname'=>$clientData->lastname,
+                    'correo'=> $clientData->email,
+                    'comment'=>$comment[0]->comment,
+                    'status'=>'activado',
+                    'remitente'=>$name_remitente,
+                    'email_remitente'=>$email_remitente,
+                    'product'=> $product
+                ]);
+
                 return response()->json(['http_code'=>1,'message'=>'Activación exitosa.']);
             }else if(isset($activationAltan['errorCode'])){
                 return response()->json(['http_code'=>0,'message'=>$activationAltan['description']]);
@@ -962,6 +1049,8 @@ class ActivationController extends Controller
         }else{
             return response()->json(['http_code'=>2,'message'=>'No se pudo realizar la activación, consulte a Desarrollo.']);
         }
+        return $petition;
+
     }
     public function datePay(){
         $date_now = date("Y-m-d");
@@ -1361,13 +1450,273 @@ class ActivationController extends Controller
     }
 
     public function bulkActivations(){
-        $data['numbers'] = Number::all()->where('status','available');
-        $data['temporaries'] = DB::table('numberstemporaries')
-                                  ->join('rates','rates.id','=','numberstemporaries.rate_id')
-                                  ->select('numberstemporaries.ICC','numberstemporaries.MSISDN','numberstemporaries.Producto','numberstemporaries.Coordinates',
-                                  'rates.name AS Rate')
-                                  ->get();
         $data['clients'] = User::all();
+        $data['rates'] = DB::table('rates')
+                            ->join('offers','offers.id','=','rates.alta_offer_id')
+                            ->where('rates.status','activo')
+                            ->select('rates.id AS id','rates.name AS name','rates.price_subsequent AS price','offers.offerID AS offerID','offers.id AS offer_id')
+                            ->get();
         return view('activations.createBatch',$data);
+    }
+
+    public function extractCSV(Request $request){
+        if(request()->hasFile('file')){
+            // Extracción de datos del request
+            $offerID = $request->post('offerID');
+            $scheduleDate = $request->post('scheduleDate');
+            $client_id = $request->post('client_id');
+            $clientson_id = $request->post('clientson_id');
+            $offer_id = $request->post('offer_id');
+            $rate_id = $request->post('rate_id');
+            $csv = request()->file('file');
+            // Apertura de archivo cargado con ICC's
+            $fp = fopen ($csv,'r');
+            $dataOffer = Offer::where('id',$offer_id)->first();
+            $producto = $dataOffer->product;
+
+            $response = [];
+            $response['rowsInvalid'] = 0;
+            $response['records'] = [];
+            $length = 'bad';
+            $msisdnBool = 0;
+            $offerBool = 1;
+            $coordinatesBool = 0;
+            $dateBool = 0;
+            $numberLine = 0;
+            $flagValidateFile = 0;
+            $msisdnExistente = '';
+            $dateActivation = "";
+            $count = 0;
+            $arrayCSV = [];
+            $errorDescription= "";
+
+            // Iteración sobre los registros del CSV con ICC's
+            while ($data = fgetcsv ($fp, 1000, ",")) {
+                $numberLine++;
+                $errorDescription= "";
+                // Si la longitud de la fila es igual a 1, verificamos el datos existente en el índice 0
+                if(sizeof($data) == 1){
+                    $length = 'good';
+                    // Validación de la existencia del ICC y extracción del MSISDN
+                    $msisdnExists = Number::where('icc_id',$data[0])->exists();
+                    if($msisdnExists){
+                        $msisdnExistenteData = Number::where('icc_id',$data[0])->first();
+                        $msisdnExistente = $msisdnExistenteData->MSISDN;
+                        $msisdnStatus = $msisdnExistenteData->status;
+                        $msisdnProducto = $msisdnExistenteData->producto;
+                        $msisdnProducto = trim($msisdnProducto);
+                        $msisdnBool = 1;
+
+                        if($msisdnStatus == 'taken'){
+                            $msisdnExists = false;
+                            $errorDescription = "El MSISDN ya ha sido tomado.";
+                            $msisdnBool = 0;
+                        }
+
+                        if($msisdnProducto != $producto){
+                            $msisdnExists = false;
+                            $errorDescription.= " La oferta elegida no es de tipo ".$msisdnProducto.".";
+                            $msisdnBool = 0;
+                        }
+                    }else{
+                        $msisdnExistente = $data[0];
+                        $msisdnBool = 0;
+                    }
+
+                    // Validación de que la fecha de activación sea válida
+                    $dateActivation = $scheduleDate;
+                    $dateActivation = str_replace("/","",$dateActivation);
+                    $dateActivation = str_replace("-","",$dateActivation);
+                    $yearActivation = substr($dateActivation,0,4);
+                    $monthActivation = substr($dateActivation,4,2);
+                    $dayActivation = substr($dateActivation,6,2);
+                    $dateValid = checkdate($monthActivation, $dayActivation, $yearActivation);
+                    if($dateValid){
+                        $dateBool = 1;
+                    }else{
+                        $dateBool = 0;
+                        $errorDescription.= " La fecha de activación no es válida.";
+                    }
+
+                    // Sí el MSISDN no existe o si la fecha de activación no es válida, se guardará el registro como erróneo, de lo contrario se añadirá a un array para ser guardado en el archivo para Altán
+                    if(!$msisdnExists || !$dateValid){
+                        $flagValidateFile+=1;
+                    }else{
+                        $arrayCSV[$count] = array($msisdnExistente,$offerID,"",$dateActivation);
+                        $count++;
+                    }
+                }else{
+                    $length = 'bad';
+                    $msisdnBool = 0;
+                    $offerBool = 0;
+                    $coordinatesBool = 1;
+                    $dateBool = 0;
+                    $flagValidateFile+=1;
+                    $msisdnExistente = $data[0];
+                    $errorDescription = "El tamaño de las filas no es el adecuado, debe ser 1 registro por fila.";
+                }
+
+                // Rellenado de array para mostrar los resultados de los registros extraídos respecto al CSV con ICC's
+                array_push($response['records'],array(
+                    'length' => $length,
+                    'msisdnBool' => $msisdnBool,
+                    'offerBool' => $offerBool,
+                    'coordinatesBool' => $coordinatesBool,
+                    'dateBool' => $dateBool,
+                    'numberLine' => $numberLine,
+                    'msisdn' => $msisdnExistente,
+                    'offerID' => $offerID,
+                    'coordinates' => "",
+                    'scheduleDate' => $dateActivation,
+                    'errorDescription' => $errorDescription
+                ));
+                
+            }
+            // Ruta del archivo a enviar a Altan
+            $ruta = "storage/mibatch.csv";
+            
+            $delimitador = ",";
+            $encapsulador = '"';
+            // Apertura de archivo para su escritura
+            $file_handle = fopen($ruta, 'w');
+            foreach ($arrayCSV as $linea) {
+                fputcsv($file_handle, $linea, $delimitador, $encapsulador);
+            }
+            rewind($file_handle);
+            fclose($file_handle);
+
+            // Cantidad de registros inválidos
+            $response['rowsInvalid'] = $flagValidateFile;
+            
+            // Apertura de archivo CSV generado para Altán para su lectura
+            $fpT = fopen ($ruta,'r');
+            // Si el tamaño del array guardado en el CSV es mayor a 0, se hará la petición Altán
+            if(sizeof($arrayCSV) > 0){
+                $accessToken = app('App\Http\Controllers\AltanController')->accessTokenRequestPost();
+                if($accessToken['status'] == 'approved'){
+                    $accessToken = $accessToken['accessToken'];
+                    $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/activations';
+                
+                    $res = Http::withHeaders([
+                        'Authorization' => 'Bearer '.$accessToken,
+                        'Content-Type' => 'multipart/form-data'
+                    ])->post($url_production,[
+                        'archivos' => file_get_contents($ruta)
+                    ]);
+
+                    $response['REQUEST_RESULT']['status'] = 0;
+                    if(isset($res['transaction'])){
+                        $transaction = $res['transaction'];
+                        $id = $transaction['id'];
+                        $response['REQUEST_RESULT']['status'] = 1;
+                        $response['REQUEST_RESULT']['lines'] = $res['lines'];
+                        $response['REQUEST_RESULT']['effectiveDate'] = $res['effectiveDate'];
+                        $response['REQUEST_RESULT']['transaction_id'] = $id;
+                        $response['recordsDB'] = [];
+                        $who_did_id = auth()->user()->id;
+
+                        // Iteración de los registros guardados en el CSV para su inserción en la DB como activaciones
+                        while ($data = fgetcsv ($fpT, 1000, ",")) {
+                            $msisdn = $data[0];
+                            $dataNumber = Number::where('MSISDN',$msisdn)->first();
+                            $number_id = $dataNumber->id;
+                            $offerID = $data[1];
+                            $scheduleDate = $data[3];
+                            $dataRate = Rate::where('id',$rate_id)->first();
+                            $price = $dataRate->price;
+
+
+                            Activation::insert([
+                                'client_id' => $client_id,
+                                'numbers_id' => $number_id,
+                                'who_did_id' => $who_did_id,
+                                'offer_id' => $offer_id,
+                                'rate_id' => $rate_id,
+                                'amount' => 0.00,
+                                'amount_device' => 0.00,
+                                'amount_rate' => $price,
+                                'date_activation' => $scheduleDate,
+                                'clientson_id' => $clientson_id,
+                                'payment_status' => 'pendiente',
+                                'status' => 'activated',
+                                'flag_rate' => 1,
+                                'rate_subsequent' => $rate_id
+                            ]);
+
+                            Number::where('MSISDN',$msisdn)->update(['status' => 'taken']);
+
+                            array_push($response['recordsDB'],array(
+                                'msisdn' => $msisdn,
+                                'offerID' => $offerID,
+                                'scheduleDate' => $scheduleDate
+                            ));
+                        }
+                    }
+                    
+                    return $response;
+                }
+            }
+
+            return $response;
+        }
+    }
+
+    public function deleteActivation(Request $request){
+        $activation_id = $request->get('activation_id');
+        $type = $request->get('type');
+        $reason = $request->get('reason');
+        $amount = $request->get('amount');
+        $amount = $amount == null || $amount == '' ? 0 : $amount;
+        $dataActivation = Activation::where('id',$activation_id)->first();
+        $device_id = $dataActivation->devices_id;
+        $dataNumber = Number::where('id',$dataActivation->numbers_id)->first();
+        $msisdn = $dataNumber->MSISDN;
+
+        $accessToken = app('App\Http\Controllers\AltanController')->accessTokenRequestPost();
+        if($accessToken['status'] == 'approved'){
+            $accessToken = $accessToken['accessToken'];
+            
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$accessToken,
+                'Content-Type' => 'application/json'
+            ])->post('https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn.'/deactivate',[
+                'scheduleDate' => null
+            ]);
+
+            if(isset($response['order'])){
+                $dataDeactivation = [
+                    'MSISDN' => $response['msisdn'],
+                    'effectiveDate' => $response['effectiveDate'],
+                    'order_id' => $response['order']['id'],
+                    'reason' => $reason,
+                    'activation_id' => $activation_id,
+                    'who_did_id' => auth()->user()->id,
+                    'amount' => $amount
+                ];
+
+                Number::where('id',$dataActivation->numbers_id)->update(['status_altan'=>'deactivated']);
+                
+                if($type == 'restore'){
+                    if($device_id != null){
+                        Device::where('id',$device_id)->update(['status'=>'available']);
+                    }
+                }
+    
+                $x = Deactivation::insert($dataDeactivation);
+                Activation::destroy($activation_id);
+                if($x){
+                    return response()->json(['http_code'=>1,'message'=>'Baja de la SIM '.$msisdn.' hecha con éxito']);
+                }else{
+                    return response()->json(['http_code'=>0,'message'=>'La baja de la SIM '.$msisdn.' se realizó, pero no se guardó el registro en el sistema.']);
+                }
+            }else{
+                return response()->json(['http_code'=>0,'message'=>$response['description']]);
+            }
+            
+
+            
+        }else{
+            return response()->json(['http_code'=>0,'message'=>'Solicitud de Token no aprobada.']);
+        }
     }
 }

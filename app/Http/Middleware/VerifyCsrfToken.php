@@ -30,6 +30,9 @@ class VerifyCsrfToken extends Middleware
         'consultaCortes',
         'updateStatusCortes',
         'payAll',
-        '/webhook-altan-redes'
+        '/webhook-altan-redes',
+        '/extract-csv',
+        '/consume-csv',
+        '/charge-csv-inventory',
     ];
 }

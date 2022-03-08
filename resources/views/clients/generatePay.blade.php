@@ -244,7 +244,7 @@
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script> -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
-{{-- <script src="clipboard.min.js"></script> --}}
+<!-- <script src="clipboard.min.js"></script> -->
 <script>
     $('#pay').addClass('d-none');
     var cellphone = $('#cellphone').val();
@@ -317,9 +317,10 @@ var dataPay, referenceWhatsapp = '';
                             referenceWhatsapp = response.charges.data[0].payment_method.reference;
                             showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
                         }else {
+                            console.log(response);
                             $('#pay').removeClass('d-none');
 
-                            $('#url_pay').html(response);
+                            $('#url_pay').html(response.url);
                         }
                         $('#spinner-'+channelID).addClass('d-none');
                         $(this).attr('disabled',false);
@@ -328,10 +329,6 @@ var dataPay, referenceWhatsapp = '';
     });
 
     $('#pay_generate_2').click(function(){
-        // $.get("https://api.copomex.com/query/info_cp/29000?type=simplified&token=pruebas",function(datos1) {
-        //     x = datos1;
-        //     console.log(datos1);
-        // });
         let channelID = $(this).attr('id');
         $('#spinner-'+channelID).removeClass('d-none');
         $(this).attr('disabled',true);
@@ -355,7 +352,8 @@ var dataPay, referenceWhatsapp = '';
                 _token:token, name: name, lastname: lastname, email: email,
                 cel_destiny_reference: cel_destiny_reference, amount: amount, 
                 concepto: concepto, type: type, channel: channel, pack_id: pack_id, 
-                user_id: user_id, client_id: client_id, pay_id: pay_id, quantity: 1
+                user_id: user_id, client_id: client_id, pay_id: pay_id, quantity: 1,
+                offer_id:0, number_id:0, rate_id:0
             };
 
             if(channel == 0){
@@ -383,6 +381,11 @@ var dataPay, referenceWhatsapp = '';
                     }else if(channel == 2){
                         referenceWhatsapp = response.charges.data[0].payment_method.reference;
                         showOxxoPay(response.amount,response.charges.data[0].payment_method.reference);
+                    }else{
+                        console.log(response);
+                        $('#pay').removeClass('d-none');
+
+                        $('#url_pay').html(response.url);
                     }
                 $('#spinner-'+channelID).addClass('d-none');
                 $(this).attr('disabled',false);

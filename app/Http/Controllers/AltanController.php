@@ -14,29 +14,30 @@ use App\Assignment;
 use App\Reference;
 use App\Pay;
 use App\Historic;
+use App\Otherpetition;
 
 class AltanController extends Controller
 {
     public function accessTokenRequestPost(){
-        $prelaunch = 'TzBpSndNOWlkc1ZvZDdoVThrOHcyQTJuQXhQTDdORWU6bm1GaHlCWjdYbWhtaTRTUw==';
-        // $production = 'ZjRWc3RzQXM4V1c0WFkyQVVtbVBSTE1pRDFGZldFQ0k6YkpHakpCcnBkWGZoajczUg==';
+        // $prelaunch = 'TzBpSndNOWlkc1ZvZDdoVThrOHcyQTJuQXhQTDdORWU6bm1GaHlCWjdYbWhtaTRTUw==';
+        $production = 'ZjRWc3RzQXM4V1c0WFkyQVVtbVBSTE1pRDFGZldFQ0k6YkpHakpCcnBkWGZoajczUg==';
 
         $response = Http::withHeaders([
-            'Authorization' => 'Basic '.$prelaunch
+            'Authorization' => 'Basic '.$production
         ])->post('https://altanredes-prod.apigee.net/v1/oauth/accesstoken?grant-type=client_credentials', [
-            'Authorization' => 'Basic '.$prelaunch,
+            'Authorization' => 'Basic '.$production,
         ]);
         return $response->json();
     }
 
     public function activationRequestPost($accessToken,$MSISDN,$offerID,$lat_hbb,$lng_hbb,$product,$scheduleDate){
         // return $accessToken.' - '.$MSISDN.' - '.$offerID;
-        $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$MSISDN."/activate";
-        // $url_production = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$MSISDN."/activate";
+        // $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$MSISDN."/activate";
+        $url_production = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$MSISDN."/activate";
         if($product == 'HBB'){
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
-            ])->post($url_prelaunch,[
+            ])->post($url_production,[
                 "offeringId" => $offerID,
                 "address" => $lat_hbb.",".$lng_hbb,
                 "startEffectiveDate" => "",
@@ -47,7 +48,7 @@ class AltanController extends Controller
         }else{
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken
-            ])->post($url_prelaunch,[
+            ])->post($url_production,[
                 "offeringId" => $offerID,
                 "startEffectiveDate" => "",
                 "expireEffectiveDate" => "",
@@ -297,12 +298,12 @@ class AltanController extends Controller
                 $date_beforeFiveDays = strtotime('-5 days', strtotime($date_limit));
                 $date_beforeFiveDays = date('Y-m-d', $date_beforeFiveDays);
 
-                $dataPayment = Pay::where('date_pay',$date_beforeFiveDays)->where('activation_id',$activation_id)->exists();
+                $dataPayment = Pay::where('activation_id',$activation_id)->where('status','pendiente')->exists();
 
                 if($dataPayment){
-                    $dataPayment = Pay::where('date_pay',$date_beforeFiveDays)->where('activation_id',$activation_id)->first();
+                    $dataPayment = Pay::where('activation_id',$activation_id)->where('status','pendiente')->first();
                     $payment_id = $dataPayment->id;
-                    Pay::where('id',$payment_id)->update(['status'=>'cambio plan']);
+                    Pay::where('id',$payment_id)->update(['status'=>'cambio plan','type_pay'=>'efectivo','who_did_id'=>$user_id,'amount_received'=>$amount]);
                 }
 
                 if(!$x){
@@ -324,7 +325,7 @@ class AltanController extends Controller
             // return $accessTokenResponse;
         if($accessTokenResponse['status'] == 'approved'){
             $accessToken = $accessTokenResponse['accessToken'];
-            $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+            $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn;
                 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken,
@@ -371,7 +372,7 @@ class AltanController extends Controller
         $number_id = $dataNumber->id;
         // return $request;
         // $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/products/purchase";
-        $url_production = "https://altanredes-prod.apigee.net/cm-sandbox/v1/products/purchase";
+        $url_production = "https://altanredes-prod.apigee.net/cm/v1/products/purchase";
         // return response()->json(['gbs'=>$quantity_gb,'$offerID'=>$offerID,'$MSISDN'=>$MSISDN]);
         $accessTokenResponse = AltanController::accessTokenRequestPost();
 
@@ -414,6 +415,75 @@ class AltanController extends Controller
             return response()->json(['http_code'=>$http_code,'message'=>$message,'order'=>$orderID]);
         }
     }
+
+    public function productPurchaseBonusDealer($msisdn,$offer,$user_id,$price,$offer_id,$rate_id){
+        $date = date('Y-m-d H:i:s');
+        
+        $dataNumber = Number::where('MSISDN',$msisdn)->first();
+        $number_id = $dataNumber->id;
+        $message = '';
+
+        // $url_prelaunch = "https://altanredes-prod.apigee.net/cm-sandbox/v1/products/purchase";
+        $url_production = "https://altanredes-prod.apigee.net/cm/v1/products/purchase";
+        // return response()->json(['gbs'=>$quantity_gb,'$offerID'=>$offerID,'$MSISDN'=>$MSISDN]);
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+
+        if($accessTokenResponse['status'] == 'approved'){
+            $accessToken = $accessTokenResponse['accessToken'];
+
+            $url_productionResume = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn.'/resume';
+                    
+            $responseR = Http::withHeaders([
+                'Authorization' => 'Bearer '.$accessToken
+            ])->post($url_productionResume);
+
+            if(isset($responseR['msisdn'])){
+                Number::where('MSISDN',$msisdn)->update(['traffic_outbound_incoming'=>'activo']);
+                // 
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken
+                ])->post($url_production,[
+                    "msisdn" => $msisdn,
+                    "offerings" => array(
+                        $offer
+                    ),
+                    "startEffectiveDate" => "",
+                    "expireEffectiveDate" => "",
+                    "scheduleDate" => ""
+                ]);
+
+                if(isset($response['msisdn'])){
+                    $message = 'Compra de producto hecha con éxito.';
+                    $http_code = 1;
+                    $orderID = $response['order']['id'];
+
+                    Purchase::insert([
+                        "number_id" => $number_id,
+                        "offer_id" => $offer_id,
+                        "rate_id" => $rate_id,
+                        "who_did_id" => $user_id,
+                        "amount" => $price,
+                        "date" => $date,
+                        "comment" => 'Bonificación por Quinta Mensualidad',
+                        "reason" => 'bonificacion',
+                        "status" => 'completado',
+                        "order_id" => $orderID
+                    ]);
+                }else{
+                    $message = $response['description'];
+                    $http_code = 0;
+                    $orderID = 1;
+                }
+                // 
+            }else{
+                $description = $response['description'];
+                $http_code = 0;
+                $orderID = 1;
+            }
+
+            return $data = ['http_code'=>$http_code,'message'=>$message,'order'=>$orderID];
+        }
+    }
     public function changeLink(Request $request){
         $msisdn = $request['msisdn'];
         $x = DB::table('numbers')
@@ -446,7 +516,7 @@ class AltanController extends Controller
             // return $response;
             //actualizacion de coordenadas
             if ($result != 'Without Coverage') {
-                $url_updateLink = "https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/".$msisdn;
+                $url_updateLink = "https://altanredes-prod.apigee.net/cm/v1/subscribers/".$msisdn;
                     $response = Http::withHeaders([
                         'Authorization' => 'Bearer '.$accessToken
                     ])->patch($url_updateLink,[
@@ -503,6 +573,8 @@ class AltanController extends Controller
         $imei = $request['imei'];
         $status = $request['status'];
         $msisdn = $request['msisdn'];
+        $otherid = $request['otherid'];
+        $user = $request['user'];
 
         if ($status == 'NO') {
             if($accessTokenResponse['status']== 'approved'){
@@ -511,6 +583,9 @@ class AltanController extends Controller
                 $response = Http::withHeaders(['Authorization'=>'Bearer '.$accessToken])->post($urlServices);
                 if (isset($response['imei'])) {
                     Number::where('MSISDN', $msisdn)->update(['status_imei'=>'locked']);
+                    if($otherid != null){
+                        Otherpetition::where('id',$otherid)->update(['status'=>'completado','who_attended'=>$user]);
+                    }
                     return response()->json(['http_code'=> 1, 'message'=>$response['imei']]);
                     // return 'Bloqueo Exitoso';
                 }else{
@@ -525,6 +600,9 @@ class AltanController extends Controller
                 $response = Http::withHeaders(['Authorization'=>'Bearer '.$accessToken])->post($urlServices);
                 if (isset($response['imei'])) {
                     Number::where('MSISDN', $msisdn)->update(['status_imei'=>'unlocked']);
+                    if($otherid != null){
+                        Otherpetition::where('id',$otherid)->update(['status'=>'completado','who_attended'=>$user]);
+                    }
                     return response()->json(['http_code'=> 1, 'message'=>$response['imei']]);
                     // return 'Desbloqueo exitoso';
                 }else{
@@ -542,7 +620,7 @@ class AltanController extends Controller
 
         if ($accessTokenResponse['status']== 'approved') {
             $accessToken = $accessTokenResponse['accessToken'];
-            $urlServices = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+            $urlServices = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn;
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$accessToken,
@@ -594,7 +672,7 @@ class AltanController extends Controller
             if($accessTokenResponse['status'] == 'approved'){
 
                 $accessToken = $accessTokenResponse['accessToken'];
-                $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/'.$msisdn;
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn;
                 
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer '.$accessToken,
@@ -705,7 +783,7 @@ class AltanController extends Controller
             if($accessTokenResponse['status'] == 'approved'){
 
                 $accessToken = $accessTokenResponse['accessToken'];
-                $url_production = 'https://altanredes-prod.apigee.net/cm-sandbox/v1/subscribers/activations';
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/activations';
                 
                 $response = Http::withHeaders([
                     'Authorization' => 'Bearer '.$accessToken,
@@ -732,6 +810,29 @@ class AltanController extends Controller
 
             }else{
                 return "no aprobado";
+            }
+        }
+    }
+
+    public function resumeSuspendMovility($msisdn,$coordinates){
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+        if(isset($accessTokenResponse['status'])){
+            if($accessTokenResponse['status'] == 'approved'){
+
+                $accessToken = $accessTokenResponse['accessToken'];
+                $url_production = 'https://altanredes-prod.apigee.net/cm/v1/subscribers/'.$msisdn.'/resumespm';
+                
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'application/json'
+                ])->post($url_production,[
+                    'address' => $coordinates
+                ]);
+
+                return $response;
+
+            }else{
+                return "ACCESS TOKEN no aprobado";
             }
         }
     }

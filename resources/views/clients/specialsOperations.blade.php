@@ -521,7 +521,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label for="lastname">Concepto: </label>
-                                        <input type="email" class="form-control form-control-sm" id="conceptoPurchase" placeholder="Concepto" value="Compra de GB's Altcel.">
+                                        <input type="email" class="form-control form-control-sm" id="conceptoPurchase" placeholder="Concepto" value="Compra de GBs Altcel.">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="channelPurchase">Métodos de Pago</label>
@@ -1283,7 +1283,7 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
         let referencestype = $('#referencestype_id').val();
         let comment = $('#commentChangeProduct').val();
         let reason = '', status = '';
-        let pay_id = null;
+        let pay_id = 0;
 
         if(scheduleDateFirst.length == 0 || /^\s+$/.test(scheduleDateFirst)){
             scheduleDate = '';
@@ -1382,7 +1382,7 @@ function predeactivateReactivate(type,scheduleDate,textScheduleDate){
 
                             $('#pay-whats-change').removeClass('d-none');
 
-                            $('#url_pay-change').html(response);
+                            $('#url_pay-change').html(response.url);
                         }
                     }else{
                         if(response.http_code == 1){
@@ -1658,7 +1658,7 @@ $('input[name="purchaseProductRadio"]').click(function(){
         let referencestype = $('#referencestype_idPurchase').val();
         let comment = $('#commentPurchase').val();
         let reason = '', status = '';
-        let pay_id = '';
+        let pay_id = 0;
         
         // console.log(msisdn+' - '+offerID);
 
@@ -1749,7 +1749,7 @@ $('input[name="purchaseProductRadio"]').click(function(){
                             }else if(channel == 3){
                                 $('#pay-whats-purchases').removeClass('d-none');
 
-                                $('#url_pay-purchases').html(response);
+                                $('#url_pay-purchases').html(response.url);
                             }
                         }
                         

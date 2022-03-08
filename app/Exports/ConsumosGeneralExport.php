@@ -55,6 +55,8 @@ class ConsumosGeneralExport implements FromCollection, WithHeadings, WithStyles,
             $consumos = DB::select("CALL sftp_altan.consumos_sms_general('".$dateStart."','".$dateEnd."')");
         }elseif ($type == 'minGeneral') {
             $consumos = DB::select("CALL sftp_altan.consumos_voz_general('".$dateStart."','".$dateEnd."')");
+        }elseif($type == 'datosAnual'){
+            $consumos = DB::select("CALL sftp_altan.consumos_datos_monthly('".$dateStart."','".$dateEnd."')");
         }
         
         return collect($consumos);

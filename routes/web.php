@@ -29,6 +29,7 @@ Route::resource('facturacion', 'InvoiceController')->middleware('auth');
 Route::resource('assignment', 'AssignmentController')->middleware('auth');
 Route::resource('dealer', 'DealerController')->middleware('auth');
 Route::resource('promotion', 'PromotionController')->middleware('auth');
+Route::resource('notification', 'NotificationController')->middleware('auth');
 
 // Petitions
 // Route::post('/petition');
@@ -50,10 +51,9 @@ Route::get('/activationsGeneral', 'ActivationController@activationGeneral')->nam
 Route::post('/activationsGeneralApi', 'ActivationController@activationGeneral');
 Route::get('/activationsEthernet', 'ActivationController@activationEthernet')->name('activation-ethernet.post');
 Route::get('/preactivations', 'ActivationController@preactivationsIndex')->name('preactivations.index')->middleware('auth');
-Route::post('/change-rate-preactivate','ActivationController@changeRatePreactivate')->name('changeRatePreactivate')->middleware('auth');
 Route::delete('/rollback-preactivate/{activation}','ActivationController@rollbackPreactivate')->name('rollbackPreactivate')->middleware('auth');
 Route::delete('/rollback-preactivate-api/{activation}','ActivationController@rollbackPreactivate');
-Route::post('/execute-activation/{activation}','ActivationController@executeActivation')->name('executeActivation')->middleware('auth');
+Route::post('/execute-activation/{petition}','ActivationController@executeActivation')->name('executeActivation')->middleware('auth');
 Route::get('/create-delivery-format/{activation}','ActivationController@createDeliveryFormat')->name('formatDelivery')->middleware('auth');
 
 // Administrator Routes
@@ -74,7 +74,7 @@ Route::get('/search/clients', 'ClientController@searchClients')->name('search-cl
 Route::get('/search/client-product', 'ClientController@searchClientProduct')->name('search-client-product.get');
 Route::get('/generateReference/{id}/{type}/{user_id}','ClientController@generateReference')->middleware('auth');
 Route::get('/show-reference','ClientController@showReferenceClient');
-Route::get('/show-product-details/{id_dn}/{id_act}/{service}','ClientController@productDetails');
+Route::get('/show-product-details/{id_dn}/{id_act}/{service}','ClientController@productDetails')->name('showProductDetails');
 Route::get('/add-client-async','ClientController@storeAsync')->name('addClientAsync.get');
 Route::get('/get-number-instalation','ClientController@getNumberInstalation')->name('getNumberInstalation.get');
 Route::get('/set-number-instalation','ClientController@setNumberInstalation')->name('setNumberInstalation.get');
@@ -203,6 +203,8 @@ Route::get('activationOperaciones', 'PetitionController@activationOperaciones')-
 Route::post('collect-money', 'PetitionController@collectMoney')->name('collectMoney');
 Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCollected');
 Route::get('/get-activation-by-petition/{petition}', 'PetitionController@getActivation')->name('getActivation');
+Route::get('/activate-dealer-petition/{petition}','PetitionController@activateDealerPetition')->middleware('auth');
+Route::post('/change-rate-petition','PetitionController@changeRatePetition')->name('changeRatePetition')->middleware('auth');
 
 Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');
 
@@ -217,9 +219,10 @@ Route::get('/consumos', 'ClientController@consumos')->name('consumos');
 
 //reports Activations
 Route::get('/reports-activations', 'ClientController@reportsActivations')->name('reportscAtivations');
-Route::get('/bulk-activations','ActivationController@bulkActivations')->name('bulkActivations');
-Route::get('/batch-activations','AltanController@activationsBatch');
-Route::get('/add-delete-number-bulk','NumberController@addDeleteNumberBulk')->name('addDeleteNumberBulk');
+Route::get('/bulk-activations','ActivationController@bulkActivations')->name('bulkActivations')->middleware('auth');
+Route::post('/extract-csv','ActivationController@extractCSV')->name('extractCSV');
+Route::post('/consume-csv','ActivationController@consumeCSV')->name('consumeCSV');
+Route::get('/find-client-son','ClientController@findClientSon')->name('findClientSon');
 //rerports money
 Route::get('/reports-money', 'ClientController@reportMoney')->name('reportMoney');
 Route::get('/reports-payments', 'ClientController@exportReportMoney')->name('payments');
@@ -228,3 +231,15 @@ Route::get('consultMoney', 'ClientController@consultMoney')->name('consultMoney'
 
 Route::get('/search-moral-person','ClientController@searchMoralPerson')->name('searchMoralPerson');
 Route::post('/webhook-altan-redes','NotificationController@getData');
+
+Route::get('/create-csv','ActivationController@createCSV');
+
+Route::get('/companies','CompanyController@index')->name('companies')->middleware('auth');
+Route::post('/companies-store','CompanyController@store')->name('companies.store');
+Route::post('/charge-csv-inventory','CompanyController@chargeInventory')->name('chargeCSVInventory');
+Route::post('/store-dealer','CompanyController@storeDealer')->name('store.dealer');
+
+Route::get('/dele-activation','ActivationController@deleteActivation')->name('deleteActivation');
+
+Route::get('/notification-solution','NotificationController@notificationSolution')->name('notification.solution');
+Route::get('/change-owner','ClientController@changeOwner')->name('changeOwner');

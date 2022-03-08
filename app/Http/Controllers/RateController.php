@@ -336,8 +336,9 @@ class RateController extends Controller
                              ->join('rates','rates.id','=','activations.rate_id')
                              ->join('offers','offers.id','=','activations.offer_id')
                              ->join('users','users.id','=','activations.client_id')
-                             ->join('clients','user_id','=','users.id')
+                             ->leftJoin('clients','clients.user_id','=','users.id')
                              ->where('numbers.MSISDN',$msisdn)
+                             ->where('numbers.deleted_at','=',null)
                              ->select('numbers.MSISDN','numbers.id AS number_id','numbers.producto',
                              'activations.offer_id','activations.rate_id',
                              'offers.name AS offer_name','rates.name AS rate_name',

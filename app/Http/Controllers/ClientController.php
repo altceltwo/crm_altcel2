@@ -35,11 +35,13 @@ class ClientController extends Controller
                               ->join('rates','rates.id','=','activations.rate_id')
                               ->leftJoin('devices','devices.id','=','activations.devices_id')
                               ->leftJoin('clients','clients.user_id','=','users.id')
+                              ->where('activations.deleted_at','=',null)
                               ->select('users.name AS name','users.lastname AS lastname',
-                              'clients.cellphone AS cellphone','numbers.MSISDN AS MSISDN',
+                              'clients.cellphone AS cellphone','numbers.id AS id_dn','numbers.MSISDN AS MSISDN',
                               'numbers.producto AS service','devices.no_serie_imei AS imei',
                               'rates.name AS rate_name','rates.price_subsequent AS amount_rate','activations.date_activation AS date_activation','activations.amount_device AS amount_device','numbers.icc_id AS icc',
-                              'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan')
+                              'numbers.traffic_outbound AS traffic_outbound','numbers.traffic_outbound_incoming AS traffic_outbound_incoming','numbers.status_altan AS status_altan','activations.expire_date AS date_expire',
+                              'activations.serial_number AS serial_number','activations.id AS id_act')
                               ->get();
 
         $data['clientsTwo'] = DB::table('users')
@@ -49,10 +51,11 @@ class ClientController extends Controller
                                  ->select('users.name AS name','users.lastname AS lastname',
                                  'clients.cellphone AS cellphone','instalations.number AS number',
                                  'packs.name AS pack_name','packs.price AS amount_pack',
-                                 'packs.service_name AS service','instalations.date_instalation','instalations.amount_install AS amount_install')
+                                 'packs.service_name AS service','instalations.date_instalation','instalations.amount_install AS amount_install','instalations.serial_number AS serial_number')
                                  ->get();
 
         return view('clients.index',$data);
+
     }
     public function rechargeGenerateClient() {
         $current_id = auth()->user()->id;
@@ -77,7 +80,9 @@ class ClientController extends Controller
                           ->leftJoin('activations','activations.client_id','=','users.id')
                           ->leftJoin('instalations','instalations.client_id','=','users.id')
                           ->leftJoin('clients','clients.user_id','=','users.id')
+                          ->where('activations.deleted_at','=',null)
                           ->where('activations.client_id','!=',null)
+                          ->where('activations.deleted_at','=',null)
                           ->orWhere('instalations.client_id','!=',null)
                           ->select('users.*','clients.cellphone AS client_phone','clients.rfc AS RFC','clients.address AS client_address')
                           ->distinct()
@@ -90,7 +95,6 @@ class ClientController extends Controller
     }
 
     public function clientDetails($id){
-        // return $_SERVER["HTTP_CLIENT_IP"];
         $clientData = User::where('id',$id)->first();
 
         $data['mypays'] = DB::table('pays')
@@ -142,8 +146,25 @@ class ClientController extends Controller
                                    ->get();
         $data['client_id'] = $id;
         $data['client_name'] = $clientData->name.' '.$clientData->lastname;
+        $data['clients'] = DB::table('users')
+                              ->join('clients','clients.user_id','=','users.id')
+                              ->select('users.*')
+                              ->orderBy('users.name','asc')
+                              ->get();
         // return $data['completemy2pays'];
         return view('clients.clientDetails',$data);
+    }
+
+    public function changeOwner(Request $request){
+        $client = $request->get('client');
+        $activation = $request->get('activation');
+
+        $x = Activation::where('id',$activation)->update(['client_id'=>$client]);
+        if($x){
+            return response()->json(['http_code'=>1]);
+        }else{
+            return response()->json(['http_code'=>0]);
+        }
     }
 
     public function showReferenceClient(Request $request){
@@ -177,7 +198,7 @@ class ClientController extends Controller
     public function generateReference($id,$type,$user_id){
         $current_role = auth()->user()->role_id;
         $employe_id = $current_role == 3 ? 'null' : auth()->user()->id;
-            $user = DB::table('users')
+        $user = DB::table('users')
                    ->join('clients','clients.user_id','=','users.id')
                    ->where('users.id',$user_id)
                    ->select('users.*','clients.cellphone AS client_cellphone')
@@ -362,7 +383,7 @@ class ClientController extends Controller
 
             if($status == 'Active'){
                 $data['consultUF']['status_color'] = 'success';
-            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)'){
+            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)' || $status == 'Barring (B1W) (By NoB28)' || $status == 'Suspend (B2W) (By mobility)'){
                 $data['consultUF']['status_color'] = 'warning';
             }
 
@@ -410,7 +431,7 @@ class ClientController extends Controller
                                    ->select('rates.name AS rate_name')
                                    ->get();
 
-                if($status == 'Suspend (B2W)'){
+                if($status == 'Suspend (B2W)' || $status == 'Suspend (B2W) (By mobility)'){
                     $data['consultUF']['rate'] = $rateData[0]->rate_name.'/Suspendido por falta de pago';    
                 }else if($status == 'Active'){
                     $data['consultUF']['rate'] = $rateData[0]->rate_name;
@@ -1231,6 +1252,11 @@ class ClientController extends Controller
             $consumos = DB::select("CALL sftp_altan.consumos_voz_general('".$dateStart."','".$dateEnd."')");
             $data = [$group, $consumos];
             return $data;
+        }elseif ($type == 'datosAnual') {
+            $group = 'general';
+            $consumos = DB::select("CALL sftp_altan.consumos_datos_monthly('".$dateStart."','".$dateEnd."')");
+            $data = [$group, $consumos];
+            return $data;
         }
 
     }
@@ -1250,8 +1276,8 @@ class ClientController extends Controller
     }
 
     public function exportConsumosGeneral(Request $request){
-        $date_start = $request['start_date'];
-        $date_end = $request['end_date'];
+        $date_start = $request['start_dateG'];
+        $date_end = $request['end_dateG'];
         $año = substr($date_start, -4);
         $mes = substr($date_start, 0,2);
         $dia = substr($date_start, 3, -5);
@@ -1261,8 +1287,8 @@ class ClientController extends Controller
         $diaEnd = substr($date_end, 3, -5);
         $dateEnd = $añoEnd. '_'. $mesEnd.'_'.$diaEnd;
         $data = [
-            'start_date' => $request->get('start_date'),
-            'end_date' => $request->get('end_date'),
+            'start_date' => $request->get('start_dateG'),
+            'end_date' => $request->get('end_dateG'),
             'type' => $request->get('type')
         ];
         // return $data;
@@ -1369,5 +1395,21 @@ class ClientController extends Controller
 
         $x = DB::table('clientssons')->where('user_id',$id)->select('clientssons.*')->get();
         return $x;
+    }
+
+    public function findClientSon(Request $request){
+        $client_id = $request->get('client_id');
+        $data = [];
+        $clientssons = Clientsson::all()->where('user_id',$client_id);
+
+        foreach ($clientssons as $clientsson) {
+            array_push($data,array(
+                'id' => $clientsson->id,
+                'name' => $clientsson->name,
+                'lastname' => $clientsson->lastname,
+            ));
+        }
+        
+        return $data;
     }
 }
