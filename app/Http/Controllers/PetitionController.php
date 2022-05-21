@@ -325,9 +325,9 @@ class PetitionController extends Controller
     public function activationOperaciones(Request $request){
         $id_client = $request['idClient'];
 
-        $data = DB::table('clients')
-                  ->join('users','users.id','=','clients.user_id')
-                  ->where('clients.user_id', $id_client)
+        $data = DB::table('users')
+                  ->leftJoin('clients','users.id','=','clients.user_id')
+                  ->where('users.id', $id_client)
                   ->select('users.name','users.lastname','users.email','clients.address','clients.rfc','clients.ine_code', 'clients.date_born','clients.cellphone')
                   ->get();  
         return $data;

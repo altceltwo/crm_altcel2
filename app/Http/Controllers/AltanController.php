@@ -283,8 +283,9 @@ class AltanController extends Controller
                     "date" => $date,
                     "comment" => $comment,
                     "reason" => $reason,
+                    "order_id" => $orderID,
                     "status" => $status,
-                    "pay_id" => $pay_id,
+                    "pay_id" => $pay_id = $pay_id == 0 ? null : $pay_id,
                     "reference_id" => $reference_id
                 ]);
 
@@ -403,7 +404,8 @@ class AltanController extends Controller
                         "date" => $date,
                         "comment" => $comment,
                         "reason" => $reason,
-                        "status" => $status
+                        "status" => $status,
+                        "order_id" => $orderID
                     ]);
                 }else{
                     $message = $response['description'];
@@ -652,6 +654,7 @@ class AltanController extends Controller
     public function bondingSIM(Request $request){
         $msisdn = $request->post('msisdn');
         $nir = $request->post('nir');
+        $user_id = $request->post('user_id');
         $existsNumber = Number::where('MSISDN',$msisdn)->exists();
 
         if(!$existsNumber){
@@ -680,9 +683,10 @@ class AltanController extends Controller
                 ])->patch($url_production,[
                     'changeSubscriberMSISDN' => array(
                         'nir' => $nir,
-                        'msisdnType' => 1,
+                        'msisdnType' => '1',
                     )
                 ]);
+
 
                 if(isset($response['order'])){
                     $effectiveDate = $response['effectiveDate'];
@@ -696,7 +700,8 @@ class AltanController extends Controller
                         'oldMSISDN' => $oldMsisdn,
                         'date_change' => $effectiveDate,
                         'order_id' => $order_id,
-                        'number_id' => $number_id
+                        'number_id' => $number_id,
+                        'who_did_id' => $user_id
                     ]);
 
                     return response()->json(['http_code'=>1,'message'=>'El MSISDN nuevo es '.$newMsisdn]);
@@ -827,6 +832,37 @@ class AltanController extends Controller
                     'Content-Type' => 'application/json'
                 ])->post($url_production,[
                     'address' => $coordinates
+                ]);
+
+                return $response;
+
+            }else{
+                return "ACCESS TOKEN no aprobado";
+            }
+        }
+    }
+
+    public function importPortInToAltan($msisdnTransitory,$msisdnPorted,$imsi,$approvedDateABD,$dida,$rida,$dcr,$rcr){
+        $accessTokenResponse = AltanController::accessTokenRequestPost();
+        if(isset($accessTokenResponse['status'])){
+            if($accessTokenResponse['status'] == 'approved'){
+
+                $accessToken = $accessTokenResponse['accessToken'];
+                $url_production = 'https://altanredes-prod.apigee.net/ac/v1/msisdns/port-in-c';
+                
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'application/json'
+                ])->post($url_production,[
+                    'msisdnTransitory' => $msisdnTransitory,
+                    'msisdnPorted' => $msisdnPorted,
+                    'imsi' => $imsi,
+                    'approvedDateABD' => $approvedDateABD,
+                    'dida' => $dida,
+                    'rida' => $rida,
+                    'dcr' => $dcr,
+                    'rcr' => $rcr,
+                    'autoScriptReg' => 'Y',
                 ]);
 
                 return $response;

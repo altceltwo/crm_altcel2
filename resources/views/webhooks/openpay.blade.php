@@ -26,7 +26,7 @@ use \Carbon\Carbon;
         <section class="panel">
            
             <div class="panel-body">
-                <form class="form-horizontal form-bordered" action="{{route('webhook-openpay.get')}}">
+                <form class="form-horizontal form-bordered" action="{{route('incomes.get')}}">
 
                     <div class="form-group">
                         <!-- <label class="col-md-3 control-label">Date range</label> -->
@@ -72,94 +72,10 @@ use \Carbon\Carbon;
                 </tr>
             </thead>
             <tbody>
-            @php
-                $ingreso = 0;
-                $comision = 0;
-                $ingreso_total = 0;
-            @endphp
-            <!-- Pagos Manuales -->
-            @foreach($paysCompleted as $payCompleted)
-                <tr>
-                    <td>{{$payCompleted->type_pay}}</td>
-                    <td>{{$payCompleted->folio_pay}}</td>
-                    <td>{{$payCompleted->date_pay}}</td>
-                    <td>{{$payCompleted->updated_at}}</td>
-                    <td>{{$payCompleted->number_product}}</td>
-                    <td>${{number_format($payCompleted->amount,2)}}</td>
-                    <td>${{number_format($payCompleted->amount_received,2)}}</td>
-                    <td>{{'$0.00'}}</td>
-                </tr>
-            @php
-                $ingreso += $payCompleted->amount_received;
-            @endphp
-            @endforeach
             
-            @foreach($paysConectaCompleted as $payConectaCompleted)
-            @php
-                $monto_recibido = $payConectaCompleted->type_pay == 'efectivo/referencia' ? $payConectaCompleted->amount_received - $payConectaCompleted->reference_amount : $payConectaCompleted->amount_received;
-            @endphp
-                <tr>
-                    <td>{{$payConectaCompleted->type_pay}}</td>
-                    <td>{{$payConectaCompleted->folio_pay}}</td>
-                    <td>{{$payConectaCompleted->date_pay}}</td>
-                    <td>{{$payConectaCompleted->updated_at}}</td>
-                    <td>{{$payConectaCompleted->service_name}}</td>
-                    <td>${{number_format($payConectaCompleted->amount,2)}}</td>
-                    <td>${{number_format($monto_recibido,2)}}</td>
-                    <td>{{'$0.00'}}</td>
-                </tr>
-            @php
-                $ingreso += $monto_recibido;
-            @endphp
-            @endforeach
-            <!-- END Pagos Manuales -->
-            
-            <!-- Pagos Referenciados -->
-            @foreach($paysReferencedCompleted as $payReferencedCompleted)
-                <tr>
-                    <td>{{$payReferencedCompleted->channel_name}}</td>
-                    <td>{{$payReferencedCompleted->reference_folio}}</td>
-                    <td>{{$payReferencedCompleted->date_pay}}</td>
-                    <td>{{$payReferencedCompleted->reference_date_complete}}</td>
-                    <td>{{$payReferencedCompleted->number_product}}</td>
-                    <td>${{number_format($payReferencedCompleted->reference_amount,2)}}</td>
-                    <td>${{number_format($payReferencedCompleted->amount_received,2)}}</td>
-                    <td>${{number_format($payReferencedCompleted->reference_fee_amount,2)}}</td>
-                </tr>
-            @php
-                $ingreso += $payReferencedCompleted->amount_received;
-                $comision += $payReferencedCompleted->reference_fee_amount;
-            @endphp
-            @endforeach
-            
-            @foreach($paysReferencedConectaCompleted as $payReferencedConectaCompleted)
-                @php
-                    $monto_recibido = $payReferencedConectaCompleted->type_pay == 'efectivo/referencia' ? $payReferencedConectaCompleted->amount_waited : $payReferencedConectaCompleted->amount_received - $payReferencedConectaCompleted->amount_waited;
-                @endphp
-                <tr>
-                    <td>{{$payReferencedConectaCompleted->channel_name}}</td>
-                    <td>{{$payReferencedConectaCompleted->reference_folio}}</td>
-                    <td>{{$payReferencedConectaCompleted->date_pay}}</td>
-                    <td>{{$payReferencedConectaCompleted->reference_date_complete}}</td>
-                    <td>{{$payReferencedConectaCompleted->service_name}}</td>
-                    <td>${{number_format($payReferencedConectaCompleted->amount_waited,2)}}</td>
-                    <td>${{number_format($payReferencedConectaCompleted->amount_waited,2)}}</td>
-                    <td>${{number_format($payReferencedConectaCompleted->reference_fee_amount,2)}}</td>
-                </tr>
-            @php
-                $ingreso += $monto_recibido;
-                $comision += $payReferencedConectaCompleted->reference_fee_amount;
-            @endphp
-            @endforeach
-            <!-- END Pagos Referenciados -->
-            @php
-                $ingreso_total = $ingreso - $comision;
-            @endphp
             </tbody>
         </table>
-       <h5 class="text-dark text-bold">Ingreso: <span class="text-warning">${{number_format($ingreso,2)}}</span></h5>
-       <h5 class="text-dark text-bold">Comisiónes: <span class="text-warning">${{number_format($comision,2)}}</span></h5>
-       <h5 class="text-dark text-bold">Ingreso Total: <span class="text-success">${{number_format($ingreso_total,2)}}</span></h5>
+      
     </div>
 </section>
 

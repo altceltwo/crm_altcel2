@@ -121,4 +121,41 @@ class CompanyController extends Controller
         User::insert($request);
         return back();
     }
+
+    public function getInventoryCompanies(Request $request){
+        $company_id = $request->get('company_id');
+
+        $inventories = Inventory::all()->where('company_id',$company_id);
+        $response = [];
+        
+        foreach ($inventories as $inventory) {
+            $description = '';
+            $no_identification = '';
+            $dateCreated = $inventory->date_created;
+            $dataUser = User::where('id',$inventory->who_did_id)->first();
+            $who_created = $dataUser->name.' '.$dataUser->lastname. ' - '.$dataUser->email; 
+            $type = '';
+            if($inventory->number_id != null){
+                $dataNumber = Number::where('id',$inventory->number_id)->where('deleted_at',null)->first();
+                $description = "<span class='label label-success' style='font-size: 13px;'>Número: ".$dataNumber->MSISDN." - ".$dataNumber->producto."</span>";
+                $no_identification = "<span class='label label-success' style='font-size: 13px;'>ICC: ".$dataNumber->icc_id."</span>";
+                $type = "<span class='label label-info' style='font-size: 13px;'>SIM</span>";
+            }else if($inventory->device_id != null){
+                $dataDevice = Device::where('id',$inventory->device_id)->first();
+                $description = "<span class='label label-success' style='font-size: 13px;'>".$dataDevice->material." - ".$dataDevice->description."</span>";
+                $no_identification = "<span class='label label-success' style='font-size: 13px;'>IMEI: ".$dataDevice->no_serie_imei."</span>";
+                $type = "<span class='label label-info' style='font-size: 13px;'>DISPOSITIVO</span>";
+            }
+            array_push($response,array(
+                'noIdentification' => $no_identification,
+                'type' => $type,
+                'description' => $description,
+                'dateCreated' => $dateCreated,
+                'uploadBy' => $who_created
+            ));
+            
+        }
+
+        return $response;
+    }
 }

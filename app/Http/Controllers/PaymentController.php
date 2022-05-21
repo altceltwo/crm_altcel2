@@ -319,5 +319,103 @@ class PaymentController extends Controller
         return view('webhooks/excedentes', $x);
     }
 
+    public function incomesQuery(Request $request){
+        if(isset($request['start']) && isset($request['end'])){
+            if($request['start'] != null && $request['end'] != null){
+                $year =  substr($request['start'],6,4);
+                $month = substr($request['start'],0,2);
+                $day = substr($request['start'],3,2);
+                $init_date = $year.'-'.$month.'-'.$day;
+
+                $year =  substr($request['end'],6,4);
+                $month = substr($request['end'],0,2);
+                $day = substr($request['end'],3,2);
+                $final_date = $year.'-'.$month.'-'.$day;
+
+                // return $init_date.' y '.$final_date;
+            }else{
+                
+                $init_date = date('Y-m-d');
+                $final_date = date('Y-m-d');
+            }
+        }else{
+            $init_date = date('Y-m-d');
+            $final_date = date('Y-m-d');
+        }
+        
+
+        $init_date = $init_date.' 00:00:00';
+        $final_date = $final_date.' 23:59:59';
+        $data['date_init'] = $init_date;
+        $data['date_final'] = $final_date;
+
+        $data['monthliesCash'] = DB::table('pays')
+                                    ->join('activations','activations.id','=','pays.activation_id')
+                                    ->join('numbers','numbers.id','=','activations.numbers_id')
+                                    ->whereBetween('pays.updated_at',[$init_date,$final_date])
+                                    ->where('pays.reference_id','=',null)
+                                    ->where('pays.status','=','completado')
+                                    ->select('pays.*','numbers.MSISDN as msisdn','numbers.producto AS service')
+                                    ->get();
+
+        $data['monthliesChannels'] = DB::table('pays')
+                                        ->join('references','references.reference_id','=','pays.reference_id')
+                                        ->join('channels','references.channel_id','=','channels.id')
+                                        ->join('activations','activations.id','=','pays.activation_id')
+                                        ->join('numbers','numbers.id','=','activations.numbers_id')
+                                        ->whereBetween('pays.updated_at',[$init_date,$final_date])
+                                        ->where('pays.status','=','completado')
+                                        ->select('pays.*','numbers.MSISDN as msisdn','numbers.producto AS service',
+                                        'references.event_date_complete AS date_complete','references.fee_amount AS comision',
+                                        'references.amount AS amount_paid','channels.name AS channel','references.reference AS reference')
+                                        ->get();
+
+        $data['monthliesOreda'] = DB::table('ethernetpays')
+                                    ->join('instalations','instalations.id','=','ethernetpays.instalation_id')
+                                    ->whereBetween('ethernetpays.updated_at',[$init_date,$final_date])
+                                    ->where('ethernetpays.reference_id','=',null)
+                                    ->where('ethernetpays.status','=','completado')
+                                    ->select('ethernetpays.*','instalations.number as number')
+                                    ->get();
+
+        $data['monthliesOredaChannels'] = DB::table('ethernetpays')
+                                        ->join('references','references.reference_id','=','ethernetpays.reference_id')
+                                        ->join('channels','references.channel_id','=','channels.id')
+                                        ->join('instalations','instalations.id','=','ethernetpays.instalation_id')
+                                        ->whereBetween('ethernetpays.updated_at',[$init_date,$final_date])
+                                        ->where('ethernetpays.status','=','completado')
+                                        ->select('ethernetpays.*','instalations.number as number',
+                                        'references.event_date_complete AS date_complete','references.fee_amount AS comision',
+                                        'references.amount AS amount_paid','channels.name AS channel','references.reference AS reference')
+                                        ->get();
+
+        $data['changes'] = DB::table('changes')
+                              ->join('numbers','numbers.id','=','changes.number_id')
+                              ->leftJoin('references','references.reference_id','=','changes.reference_id')
+                              ->leftJoin('channels','channels.id','=','references.channel_id')
+                              ->whereBetween('changes.date',[$init_date,$final_date])
+                              ->where(function($query){
+                                $query->where('changes.reason','cobro')->orWhere('changes.reason','referenciado');
+                            })->select('changes.*','numbers.MSISDN AS msisdn','numbers.producto AS service','channels.name AS channel','references.fee_amount AS comision','references.reference AS reference')
+                              ->get();
+
+        $data['surplusChannels'] = DB::table('references')
+                                      ->join('channels','channels.id','=','references.channel_id')
+                                      ->join('numbers','numbers.id','=','references.number_id')
+                                      ->whereBetween('references.updated_at',[$init_date,$final_date])
+                                      ->where('references.referencestype_id',5)
+                                      ->select('references.*','channels.name AS channel','numbers.MSISDN AS msisdn','numbers.producto AS service')
+                                      ->get();
+
+        $data['surpluses'] = DB::table('purchases')
+                                ->join('numbers','numbers.id','=','purchases.number_id')
+                                ->whereBetween('purchases.date',[$init_date,$final_date])
+                                ->where('purchases.reason','cobro')
+                                ->select('purchases.*','numbers.MSISDN AS msisdn','numbers.producto AS service')
+                                ->get();
+        // return $data;
+        // return $data['paysReferencedCompleted'];
+        return view('webhooks.incomesReport',$data);
+    }
 
 }

@@ -68,9 +68,9 @@
                         <div class="form-group col-md-6" id="content-rate">
                             <label for="exampleFormControlSelect1">Planes: </label>
                             <select class="form-control form-control-sm" id="rate" >
-                                <option selected value="{{$datos['rate_id']}}" data-offer-id="{{$datos['offer_id']}}">{{$datos['rate_name']}}</option>
+                                <option selected value="{{$datos['rate_id']}}" data-offer-id="{{$datos['offer_id']}}" data-price="{{$datos['rate_price']}}">{{$datos['rate_name'].' - $'.number_format($datos['rate_price'],2)}}</option>
                                 @foreach($rates as $rate)
-                                <option value="{{$rate->id}}" data-offer-id="{{$rate->offer_id}}" >{{$rate->name}}</option>
+                                <option value="{{$rate->id}}" data-offer-id="{{$rate->offer_id}}" data-price="{{$rate->price_subsequent}}">{{ $rate->name.' - $'.number_format($rate->price_subsequent,2) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -425,6 +425,12 @@ var dataPay, referenceWhatsapp = '';
         let lastname = $('#lastname').val();
         let cel_destiny_reference = $('#cellphone').val();
         window.open('https://api.whatsapp.com/send?phone=52'+cel_destiny_reference+'&text=Hola, '+name+' '+lastname+', te compartimos tu referencia de pago de Altcel, tu número de referencia es: '+referenceWhatsapp, '_blank');
+    });
+
+    $('#rate').change(function(){
+        // let price = $(this,' option:selected').data('price');
+        let price = $('#'+this.id+' option:selected').attr('data-price');
+        $('#amount').val(parseFloat(price).toFixed(2));
     });
 </script>
 @endsection

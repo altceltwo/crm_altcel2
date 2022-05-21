@@ -214,7 +214,7 @@
                     </tr>
                     <tr>
                         <td class="field" colspan="6"><center>{{$who_attended_name}}</center></td>
-                        <td class="field" colspan="6"><center>MARIO RAFAEL MOLINA CANCINO</center></td>
+                        <td class="field" colspan="6"><center>SANDRA CORZO NAFATE</center></td>
                         <td class="field" colspan="6"><center>KEILA CRYSTAL VÁZQUEZ MICELI</center></td>
                     </tr>
                     <tr>

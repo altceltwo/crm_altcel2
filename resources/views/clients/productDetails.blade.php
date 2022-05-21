@@ -127,7 +127,7 @@
                             </div>
                             
                         </div>
-                        @elseif($service == 'MOV')
+                    @elseif($service == 'MOV')
 						<h4 class="h4 m-none text-dark text-bold">Plan contratado: {{$consultUF['rate']}}</h4>
                         <div class="panel-body">
                             @foreach($consultUF['freeUnits']['nacionales']  as $units)
@@ -183,6 +183,146 @@
             <a href="#" class="btn btn-default">Submit Invoice</a>
             <a href="pages-invoice-print.html" target="_blank" class="btn btn-primary ml-sm"><i class="fa fa-print"></i> Print</a>
         </div> -->
+
+        <div class="col-md-12 mt-md">
+            <div class="tabs">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#monthlies" data-toggle="tab">Mensualidades</a>
+                    </li>
+                    <li>
+                        <a href="#purchases" data-toggle="tab">Excedentes</a>
+                    </li>
+                    <li>
+                        <a href="#changes" data-toggle="tab">Cambios de Plan</a>
+                    </li>
+                    <li>
+                        <a href="#history" data-toggle="tab">Historial de Número</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="monthlies" class="tab-pane active">
+                        <p>Pagadas</p>
+                        <table class="table table-bordered table-striped mb-none" id="datatable-default">
+                            <thead style="cursor: pointer;">
+                                <tr>
+                                <th scope="col">Fecha de Pago</th>
+                                <th scope="col">Fecha Límite de Pago</th>
+                                <th scope="col">Monto</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">No. Referencia</th>
+                                <th scope="col">Pagado el</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach( $monthlies as $monthly )
+                            <tr style="cursor: pointer;">
+                                <td>{{ $monthly->date_pay }}</td>
+                                <td>{{ $monthly->date_pay_limit }}</td>
+                                <td>${{ number_format($monthly->amount,2) }}</td>
+                                <td>{{ $monthly->type }}</td>
+                                <td>{{ $reference = $monthly->reference == null ? 'N/A' : $monthly->reference }}</td>
+                                <td>{{ $monthly->date_paid }}</td>
+                            </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="purchases" class="tab-pane">
+                        <p>Pagados</p>
+                        <table class="table table-bordered table-striped mb-none" id="datatable-default2">
+                            <thead style="cursor: pointer;">
+                                <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Oferta</th>
+                                <th scope="col">Monto</th>
+                                <th scope="col">Razón/Referencia</th>
+                                <th scope="col">Comentario</th>
+                                <th scope="col">Realizado por</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach( $purchases as $purchase )
+                            <tr style="cursor: pointer;">
+                                <td>{{ $purchase->date }}</td>
+                                <td>{{ $purchase->name }}</td>
+                                <td>${{ number_format($purchase->amount,2) }}</td>
+                                <td>{{ $purchase->reason }}</td>
+                                <td>{{ $purchase->comment }}</td>
+                                <td>{{ $purchase->user_name.' '.$purchase->user_lastname }}</td>
+                            </tr>
+                            @endforeach
+
+                            @foreach( $referencePurchases as $referencePurchase )
+                            <tr style="cursor: pointer;">
+                                <td>{{ $date = $referencePurchase->date == null ? $referencePurchase->date_complete : $referencePurchase->date }}</td>
+                                <td>{{ $referencePurchase->name }}</td>
+                                <td>${{ number_format($referencePurchase->amount,2) }}</td>
+                                <td>{{ $referencePurchase->channel.' - '.$referencePurchase->reference }}</td>
+                                <td>N/A</td>
+                                <td>{{ $referencePurchase->user_name.' '.$referencePurchase->user_lastname }}</td>
+                            </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="changes" class="tab-pane">
+                        <p>Pagados</p>
+                        <table class="table table-bordered table-striped mb-none" id="datatable-default3">
+                            <thead style="cursor: pointer;">
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Plan</th>
+                                    <th scope="col">Oferta</th>
+                                    <th scope="col">Monto</th>
+                                    <th scope="col">Referencia</th>
+                                    <th scope="col">Razón</th>
+                                    <th scope="col">Comentario</th>
+                                    <th scope="col">Realizado por</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach( $changes as $change )
+                            <tr style="cursor: pointer;">
+                                <td>{{ $change->date }}</td>
+                                <td>{{ $change->rate }}</td>
+                                <td>{{ $change->offer }}</td>
+                                <td>${{ number_format($change->amount,2) }}</td>
+                                <td>{{ $reference = $change->reference == null ? 'N/A' : $change->channel.' - '.$change->reference }}</td>
+                                <td>{{ $change->reason }}</td>
+                                <td>{{ $comment = $change->comment == null ? 'N/A' : $change->comment }}</td>
+                                <td>{{ $user = $change->user_name == null ? 'N/A' : $change->user_name.' '.$change->user_lastname }}</td>
+                            </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="history" class="tab-pane">
+                        <p>Números Anteriores</p>
+                        <table class="table table-bordered table-striped mb-none" id="datatable-default4">
+                            <thead style="cursor: pointer;">
+                                <tr>
+                                    <th scope="col">MSISDN Anterior</th>
+                                    <th scope="col">Fecha de Operación</th>
+                                    <th scope="col">Order ID</th>
+                                    <th scope="col">Realizado por</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach( $historics as $historic )
+                            <tr style="cursor: pointer;">
+                                <td>{{ $historic->oldMSISDN }}</td>
+                                <td>{{ $historic->date_change }}</td>
+                                <td>{{ $historic->order_id }}</td>
+                                <td>{{ $historic->user_name.' '.$historic->user_lastname }}</td>
+                            </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -268,7 +408,7 @@
                                 <div id="w6-purchase-mood" class="tab-pane">
                                     <div class="col md-12">
                                         <div class="row">
-                                            @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                            @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6 || Auth::user()->id == 323)
                                             <div class="radio col-md-2">
                                                 <label>
                                                     <input type="radio" name="purchaseProductRadio" value="purchaseProductFree">
@@ -290,7 +430,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                    @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6 || Auth::user()->id == 323)
                                     <div class="col-md-12 mt-md">
                                         <label class="col-md-12 " for="commentPurchase">Comentario</label>
                                         <div class="col-md-6">
@@ -458,7 +598,7 @@
 
                                     <div class="col md-12">
                                         <div class="row">
-                                            @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                            @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6 || Auth::user()->id == 323)
                                             <div class="radio col-md-2">
                                                 <label>
                                                     <input type="radio" name="optionsRadiosC" id="internalRadio" value="internalChange" checked>
@@ -486,7 +626,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                                    @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6 || Auth::user()->id == 323)
                                     <div class="col-md-12 mt-md">
                                         <label class="col-md-12 " for="commentChangeProduct">Comentario</label>
                                         <div class="col-md-6">
@@ -1231,7 +1371,7 @@
                 $('#client_idPurchase').val(dataMSISDN.id_user);
             
                 packsSurplus.forEach(function(element){
-                    options+="<option value='"+element.offerID+"' data-rate-price='"+element.price_sale+"' data-rate-id='"+dataMSISDN.rate_id+"' data-offer-id='"+element.id+"'>"+element.name+"</option>"
+                    options+="<option value='"+element.offerID+"' data-rate-price='"+element.price_sale+"' data-rate-id='"+dataMSISDN.rate_id+"' data-offer-id='"+element.id+"'>"+element.name+" - $"+parseFloat(element.price_sale).toFixed(2)+"</option>"
                 })
                 $('#ratesPurchaseProduct').html(options);
             }
@@ -1386,7 +1526,17 @@
                     url: route,
                     method: "POST",
                     data: data,
+                    beforeSend: function(){
+                        Swal.fire({
+                            title: 'Estamos trabajando en tu petición...',
+                            html: 'Espera un poco, un poquito más...',
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
                     success: function(response){
+                        Swal.close();
                         if(type == 'internalExternalPaymentChange'){
                             if(channel == 1){
                                 // referenceWhatsapp = response.reference;
@@ -1531,7 +1681,7 @@
                 $('#originalRate').val(response.dataMSISDN.rate_id);
                 $('#originalOffer').val(response.dataMSISDN.offer_id);
                 offersAndRates.forEach(function(element){
-                    options+="<option value='"+element.rate_id+"' data-rate-id='"+response.dataMSISDN.rate_id+"' data-rate-price='"+element.rate_price+"' data-offerID='"+element.offerID+"' data-offer-id='"+element.offer_id+"' >"+element.rate_name+"</option>"
+                    options+="<option value='"+element.rate_id+"' data-rate-id='"+response.dataMSISDN.rate_id+"' data-rate-price='"+element.rate_price+"' data-offerID='"+element.offerID+"' data-offer-id='"+element.offer_id+"' >"+element.rate_name+" - $"+parseFloat(element.rate_price).toFixed(2)+"</option>"
                 })
                 $('#ratesChangeProduct').html(options);
             }

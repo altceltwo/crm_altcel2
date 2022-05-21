@@ -29,13 +29,17 @@
             </header>
             <div class="panel-body">
                 <div class="col-md-11 row">
-                    <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" data-toggle="modal" data-target="#modalAddCompany"><i class="fa fa-plus-circle"></i> <i class="fa fa-institution"></i></button>
-                    <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" data-toggle="modal" data-target="#modalAddDealer"><i class="fa fa-plus-circle"></i> <i class="fa fa-user"></i></button>
-                </div>  
+                    <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" id="addCompany" data-toggle="tooltip" data-placement="top" title data-original-title="Añadir representante"><i class="fa fa-plus-circle"></i> <i class="fa fa-institution"></i></button>
+                    @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
+                    <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" id="addDealer" data-toggle="tooltip" data-placement="top" title data-original-title="Añadir distribuidor"><i class="fa fa-plus-circle"></i> <i class="fa fa-user"></i></button>
+                    @endif
+                    <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" id="dealerInventory" data-toggle="tooltip" data-placement="top" title data-original-title="Visualizar inventarios"><i class="fa fa-eye"></i> <i class="fa fa-list"></i></button>
+                </div>
+                @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
                 <form class="form-horizontal form-bordered" >
                 @csrf
                 <div class="col-md-4" style="margin-top: 1rem;">
-                    <label for="company">Promotor: </label>
+                    <label for="company">Distribuidor: </label>
                     <select class="form-control form-control-sm" id="company" name="company" >
                         <option value="0" selected>Elegir...</option>
                        @foreach($companies as $company)
@@ -84,12 +88,14 @@
                     <button type="button" class="mb-xs mt-xs mr-xs btn btn-success" id="add" >Cargar</button>
                 </div>              
                 </form>
+                @endif
             </div>
         </section>
 
     </div>
 </div>
 
+@if(Auth::user()->role_id == 1 || Auth::user()->role_id == 6)
 <section class="panel">
     <header class="panel-heading">
         <div class="panel-actions">
@@ -114,6 +120,7 @@
         </table>
     </div>
 </section>
+@endif
 
 <div class="modal fade" id="modalAddCompany" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -194,7 +201,7 @@
                     @csrf
                     <div class="form-group" >
                         <label for="company">Compañía: </label>
-                        <select class="form-control form-control-sm" id="company" name="company_id" >
+                        <select class="form-control form-control-sm" name="company_id" >
                             <option value="0" selected>Elegir...</option>
                         @foreach($companies as $company)
                             <option value="{{$company->id}}">{{$company->name}}</option>
@@ -237,7 +244,69 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalAddDealerInventory" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-block modal-block-full">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title text-dark"></h4>
+            </div>
+            <div class="modal-body mb-sm">
+                <div class="col-md-12">
+                    <div class="form-group col-md-6 mb-sm" >
+                        <label for="company">Distribuidor: </label>
+                        <select class="form-control form-control-sm" id="company_inventory" name="company_id_inventory" >
+                            <option value="0" selected>Elegir...</option>
+                        @foreach($companies as $company)
+                            <option value="{{$company->id}}">{{$company->name}}</option>
+                        @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <table class="table table-bordered table-striped mb-none" id="datatable-inventory">
+                        <thead >
+                            <tr>
+                                <th scope="col">No. Identificación</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Descripción</th>
+                                <th scope="col">Fecha de Creación</th>
+                                <th scope="col">Subido por</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
 <script>
+    $('#addCompany').click(function(){
+        $('#modalAddCompany').modal('show');
+    });
+
+    $('#addDealer').click(function(){
+        $('#modalAddDealer').modal('show');
+    });
+
+    $('#dealerInventory').click(function(){
+        $('#modalAddDealerInventory').modal('show');
+    });
+
     $('#add').click(function(){
         let company = $('#company').val();
         let myCSV = $('#fileToCharge').val();
@@ -357,6 +426,56 @@
                 $(function() {
                     datatableInit();
                 });
+            }
+        });
+    });
+
+    $('#company_inventory').change(function(){
+        let company = $(this).val();
+        
+        $.ajax({
+            url: "{{route('getInventoryCompanies')}}",
+            data: {company_id:company},
+            beforeSend: function(){
+                Swal.fire({
+                    title: 'Extrayendo información...',
+                    html: 'Espera un poco, un poquito más...',
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            },
+            success: function(response){
+                var datatableInit = function() {
+                    var $table = $('#datatable-inventory');
+
+                    $table.DataTable({
+                        dom: 'Bfrtip',
+                        buttons: [{
+                            extend: 'excel',
+                            header: true,
+                            title: 'Inventory',
+                            exportOptions : {
+                                columns: [ 0,1,2,3,4],
+                            }
+                        }],
+                        destroy: true,
+                        data: response,
+                        columns: [
+                            {title: "No. Identificación",data:"noIdentification"},
+                            {title: "Tipo",data:"type"},
+                            {title: "Descripción",data:"description"},
+                            {title: "Fecha de Creación",data:"dateCreated"},
+                            {title: "Subido por",data:"uploadBy"}
+                        ],
+                    });
+
+                };
+
+                $(function() {
+                    datatableInit();
+                });
+                Swal.close();
             }
         });
     });

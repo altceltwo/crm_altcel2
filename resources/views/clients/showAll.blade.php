@@ -33,7 +33,6 @@
                 <th scope="col">Contacto</th>
                 <th scope="col">RFC</th>
                 <th scope="col">Dirección</th>
-                <th scope="col">Fecha de Expiración</th>
                 <th scope="col">Opciones</th>
                 </tr>
             </thead>
@@ -45,7 +44,6 @@
                 <td>{{ $client->client_phone }}</td>
                 <td>{{ $client->RFC }}</td>
                 <td>{{ $address = strtoupper($client->client_address) }}</td>
-                <td>{{$client->date_expire }}</td>
                 <td>
                     <button class="btn btn-warning btn-sm mb-xs update-data-client" data-id="{{$client->id}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar datos del cliente"><i class="fa fa-edit" ></i></button>
                     <a href="{{url('/clients-details/'.$client->id)}}" class="btn btn-info btn-sm mb-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Información del cliente"><i class="fa fa-info-circle"></i></a>

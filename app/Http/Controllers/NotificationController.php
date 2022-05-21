@@ -98,6 +98,11 @@ class NotificationController extends Controller
                     'status' => 'completado'
                 ]);
             }
+        }else if($eventType == 'noneEvent'){
+            Notification::where('id',$id)->update([
+                'seen' => true,
+                'status' => 'completado'
+            ]);
         }
 
 

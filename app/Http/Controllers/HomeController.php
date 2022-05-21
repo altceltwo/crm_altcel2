@@ -10,6 +10,9 @@ use App\Ethernetpay;
 use App\Rate;
 use App\Activation;
 use App\Instalation;
+use App\Change;
+use App\Purchase;
+use App\Reference;
 
 class HomeController extends Controller
 {
@@ -84,7 +87,7 @@ class HomeController extends Controller
             $month = $date->format('M');
             $year = $date->format('Y');
             $date = $date->format('Y-m-d');
-            $date_limit = strtotime('+4 days', strtotime($date));
+            $date_limit = strtotime($date_now);
             $dayTwo = date('d', $date_limit);
 
             // Fechas del día en curso en regresión a un mes
@@ -94,13 +97,20 @@ class HomeController extends Controller
 
             $statement = Pay::all();
             $statement2 = Ethernetpay::all();
+            $changes = Change::all();
+            $purchases = Purchase::all();
+            $references = Reference::all();
 
             $pendingPayments = $statement->where('status','pendiente');
             $pendingPayments2 = $statement2->where('status','pendiente');
-            $overduePayments = $statement->where('status','vencido')->where('date_pay',$date);
+            $overduePayments = $statement->where('status','pendiente')->where('date_pay',$date);
             $overduePayments2 = $statement2->where('status','vencido')->where('date_pay',$date);
-            $completePayments = $statement->where('status','completado')->where('date_pay',$date);
-            $completePayments2 = $statement2->where('status','completado')->where('date_pay',$date);
+            $completePayments = $statement->where('status','completado')->whereBetween('updated_at',[$date.' 00:00:00',$date_now.' 23:59:59']);
+            $changesAll = $changes->where('reason','!=','bonificacion')->whereBetween('date',[$date.' 00:00:00',$date_now.' 23:59:59']);
+            $purchasesAll = $purchases->where('reason','!=','bonificacion')->whereBetween('date',[$date.' 00:00:00',$date_now.' 23:59:59']);
+            $referencesPurchasesAll = $references->where('status','!=','pending_payment')->where('status','!=','in_progress')->where('referencestype_id',5)->whereBetween('updated_at',[$date.' 00:00:00',$date_now.' 23:59:59']);
+            
+            $completePayments2 = $statement2->where('status','completado')->whereBetween('updated_at',[$date,$date_now]);
 
             $newClients = DB::table('users')
                                      ->leftJoin('activations','activations.client_id','=','users.id')
@@ -119,7 +129,7 @@ class HomeController extends Controller
 
             $data['pendings'] =  sizeof($pendingPayments)+sizeof($pendingPayments2);
             $data['overdues'] =  sizeof($overduePayments)+sizeof($overduePayments2);
-            $data['completes'] =  sizeof($completePayments)+sizeof($completePayments2);
+            $data['completes'] =  sizeof($completePayments)+sizeof($completePayments2)+sizeof($changesAll)+sizeof($purchasesAll)+sizeof($referencesPurchasesAll);
             $data['newClients'] = sizeof($newClients);
             $data['ratesActives'] = sizeof($ratesActives);
             $data['sales'] = $sales;

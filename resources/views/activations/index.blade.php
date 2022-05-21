@@ -120,13 +120,13 @@
                 </tr>
                 
             @endforeach
-            @foreach( $clients2 as $client )
+            <!-- @foreach( $clients2 as $client )
                 <tr class="get-data-payment {{$client->pack_service}}" style="cursor: pointer;"  data-id="{{$client->id}}" data-type="activation">
                     <td>{{ $name = strtoupper($client->name.' '.$client->lastname) }}</td>
                     <td>{{ $client->MSISDN }}</td>
                     <td>{{ $rate = strtoupper($client->name_rate) }}</td>
                     <td>{{ $service = strtoupper($client->pack_service) }}</td>
-                    <!-- Información de TARIFA -->
+                    
                     <td>${{ number_format($client->amount_rate,2) }}
                     @php
                         $span_text = $client->received_amount_rate < $client->amount_rate ? 'PENDIENTE' : 'OK';
@@ -137,7 +137,7 @@
                     @endphp
                     <span class="label label-{{$span_class}} col-md-12" >{{ $span_text }} {!! $span_icon !!}</span>
                     </td>
-                    <!-- Información de CPE -->
+                    
                     <td>${{ number_format($client->amount_device,2) }}
                     @php
                         $span_text = $client->received_amount_device < $client->amount_device ? 'PENDIENTE' : 'OK';
@@ -155,7 +155,7 @@
                     
                 </tr>
                 
-            @endforeach
+            @endforeach -->
             <!-- END Activaciones con y sin pagos mensuales -->
 
             <!-- Instalaciones con y sin pagos mensuales -->
@@ -199,13 +199,13 @@
                     
                 </tr>
             @endforeach
-            @foreach( $instalations2 as $instalation )
+            <!-- @foreach( $instalations2 as $instalation )
                 <tr class="get-data-payment Conecta" style="color: white !important; cursor: pointer;" data-id="{{$instalation->id}}" data-type="instalation">
                     <td>{{ $name = strtoupper($instalation->client_name.' '.$instalation->client_lastname) }}</td>
                     <td>N/A</td>
                     <td>{{ $pack = strtoupper($instalation->pack_name) }}</td>
                     <td>{{ $service = strtoupper($instalation->pack_service) }}</td>
-                    <!-- Información de TARIFA -->
+                    
                     <td>${{ number_format($instalation->amount,2) }}
                     @php
                         $span_text = $instalation->received_amount < $instalation->amount ? 'PENDIENTE' : 'OK';
@@ -216,7 +216,7 @@
                     @endphp
                     <span class="label label-{{$span_class}} col-md-12" >{{ $span_text }} {!! $span_icon !!}</span>
                     </td>
-                    <!-- Información de CPE -->
+                    
                     <td>${{ number_format($instalation->amount_install,2) }}
                     @php
                         $span_text = $instalation->received_amount_install < $instalation->amount_install ? 'PENDIENTE' : 'OK';
@@ -233,7 +233,7 @@
                     <td>{{ $instalation->date_instalation }}</td>
                     
                 </tr>
-            @endforeach
+            @endforeach -->
             @foreach( $TELMEXinstalations as $TELMEXinstalation )
                 <tr class="get-data-payment Telmex" style="color: white !important; cursor: pointer;" data-id="{{$TELMEXinstalation->id}}" data-type="instalation">
                     <td>{{ $name = strtoupper($TELMEXinstalation->client_name.' '.$TELMEXinstalation->client_lastname) }}</td>
@@ -273,13 +273,13 @@
                     <td>{{ $TELMEXinstalation->payment_date }}</td>            
                 </tr>
             @endforeach
-            @foreach( $TELMEXinstalations2 as $TELMEXinstalation )
+            <!-- @foreach( $TELMEXinstalations2 as $TELMEXinstalation )
                 <tr class="get-data-payment Telmex" style="color: white !important; cursor: pointer;" data-id="{{$TELMEXinstalation->id}}" data-type="instalation">
                     <td>{{ $name = strtoupper($TELMEXinstalation->client_name.' '.$TELMEXinstalation->client_lastname) }}</td>
                     <td>{{ $number = $TELMEXinstalation->number != null ? $TELMEXinstalation->number : 'N/A' }}</td>
                     <td>{{ $pack = strtoupper($TELMEXinstalation->pack_name) }}</td>
                     <td>{{ $service = strtoupper($TELMEXinstalation->pack_service) }}</td>
-                    <!-- Información de TARIFA -->
+                    
                     <td>${{ number_format($TELMEXinstalation->amount,2) }}
                     @php
                         $span_text = $TELMEXinstalation->received_amount < $TELMEXinstalation->amount ? 'PENDIENTE' : 'OK';
@@ -290,7 +290,7 @@
                     @endphp
                     <span class="label label-{{$span_class}} col-md-12" >{{ $span_text }} {!! $span_icon !!}</span>
                     </td>
-                    <!-- Información de CPE -->
+                    
                     <td>${{ number_format($TELMEXinstalation->amount_install,2) }}
                     @php
                         $span_text = $TELMEXinstalation->received_amount_install < $TELMEXinstalation->amount_install ? 'PENDIENTE' : 'OK';
@@ -306,7 +306,7 @@
                     </td>
                     <td>{{ $TELMEXinstalation->date_instalation }}</td>            
                 </tr>
-            @endforeach
+            @endforeach -->
             <!-- END Instalaciones con y sin pagos mensuales -->
             </tbody>
         </table>

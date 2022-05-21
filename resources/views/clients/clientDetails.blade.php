@@ -81,10 +81,10 @@
                 @php
                     $ref = $mypay->reference_id == null ? 'N/A' : $mypay->reference_id
                 @endphp
-
+                    
+                <a href="{{url('/generateReference/'.$mypay->id.'/'.$mypay->number_product.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @if($ref == 'N/A')
                     
-                    <a href="{{url('/generateReference/'.$mypay->id.'/'.$mypay->number_product.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @else
                     <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Referencia generada"><i class="fa fa-eye"></i></button>
                 @endif
@@ -136,9 +136,9 @@
                     $ref = $my2pay->reference_id == null ? 'N/A' : $my2pay->reference_id
                 @endphp
 
+                    <a href="{{url('/generateReference/'.$my2pay->id.'/'.$my2pay->service_name.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @if($ref == 'N/A')
                     
-                    <a href="{{url('/generateReference/'.$my2pay->id.'/'.$my2pay->service_name.'/'.$client_id)}}" class="btn btn-success btn-sm mt-xs" data-toggle="tooltip" data-placement="left" title="" data-original-title="Generar pago de mensualidad"><i class="fa fa-money"></i></a>
                 @else
                     <button type="button" onclick="ref(this.id)" class="btn btn-warning btn-sm ref-generated mt-xs" id="{{ $ref }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Referencia generada"><i class="fa fa-eye"></i></button>
                 @endif
@@ -235,6 +235,7 @@
                 <th scope="col">Fecha</th>
                 <th scope="col">Servicio</th>
                 <th scope="col">Número</th>
+                <th scope="col">ICC</th>
                 <th scope="col">Número de Serie</th>
                 <th scope="col">Paquete</th>
                 <th scope="col">Opciones</th>
@@ -246,12 +247,13 @@
                 <td>{{ $activation->date_activation }}</td>
                 <td>{{ $activation->service }}</td>
                 <td>{{ $activation->DN }}</td>
+                <td>{{ $activation->icc }}</td>
                 <td>{{ $serial_number = $activation->serial_number != null ? $activation->serial_number : 'N/A'}}</td>
                 <td>{{ $activation->pack_name }}</td>
                 <td>
                     @if($activation->deleted_at == null)
                     <button type="button" class="mr-xs btn btn-warning btn-sm update-number" data-id="{{ $activation->id }}" data-type="activation"  data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar No. Serie"><i class="fa fa-edit" ></i></button>
-                    <button type="button" class="mr-xs btn btn-warning btn-sm update-owner" data-id="{{ $activation->id }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cambiar propietario"><i class="fa fa-exchange" ></i></button>
+                    <button type="button" class="mr-xs btn btn-warning btn-sm update-owner" data-id="{{ $activation->id }}" data-type="activation" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cambiar propietario"><i class="fa fa-exchange" ></i></button>
                     <a href="{{url('/show-product-details/'.$activation->numbers_id.'/'.$activation->id.'/'.$activation->service)}}" class="mr-xs btn btn-info btn-sm " data-toggle="tooltip" data-placement="left" title="" data-original-title="Información del servicio"><i class="fa fa-info-circle"></i></a>
                     <button class="mr-xs btn btn-danger btn-sm delete-activation" data-id="{{ $activation->id }}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cancelar servicio"><i class="fa fa-level-down"></i></button>
                     @else
@@ -265,11 +267,13 @@
                 <td>{{ $instalation->date_instalation }}</td>
                 <td>{{ $instalation->service }}</td>
                 <td>{{ $number = $instalation->number != null ? $instalation->number : 'N/A' }}</td>
+                <td>N/A</td>
                 <td>{{ $serial_number = $instalation->serial_number != null ? $instalation->serial_number : 'N/A' }}</td>
                 <td>{{ $instalation->pack_name }}</td>
                 <td>
                     <button type="button" class=" mt-xs mr-xs btn btn-warning btn-sm update-number" data-id="{{ $instalation->id }}" data-type="instalation" data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar No. Serie" ><i class="fa fa-edit"></i></button>
-                    <a href="{{url('/show-product-details/null/'.$instalation->id.'/'.$instalation->service)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a>
+                    <button type="button" class="mr-xs btn btn-warning btn-sm update-owner" data-id="{{ $instalation->id }}" data-type="instalation" data-toggle="tooltip" data-placement="left" title="" data-original-title="Cambiar propietario"><i class="fa fa-exchange" ></i></button>
+                    <!-- <a href="{{url('/show-product-details/null/'.$instalation->id.'/'.$instalation->service)}}" class="btn btn-info btn-sm mt-xs"><i class="fa fa-info-circle"></i></a> -->
                 </td>
             </tr>
             @endforeach
@@ -446,6 +450,7 @@
                 </div>
                 <input type="hidden" class="form-control" id="client_new_id">
                 <input type="hidden" class="form-control" id="activation_new_id">
+                <input type="hidden" class="form-control" id="type_service">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -625,7 +630,9 @@
             monto: monto,
             typePay: typePay,
             folioPay: folioPay,
-            estadoPay: estadoPay};
+            estadoPay: estadoPay,
+            user_id: "{{ Auth::user()->id}}"
+        };
 
         Swal.fire({
             title: 'Registrando pago...',
@@ -645,12 +652,46 @@
                                 icon: 'success',
                                 title: '¡Guardado!',
                                 text: 'Éxito'
-                            })
+                            });
+                            if(service != 'Telmex'){
+                                $.ajax({
+                                    url:"{{route('unbarring.get')}}",
+                                    method: "GET",
+                                    data: {payID:payID},
+                                    beforeSend: function(){
+                                        Swal.fire({
+                                            title: 'Pago guardado con éxito',
+                                            html: 'El servicio se está reanudando...',
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                            }
+                                        });
+                                    },
+                                    success:function(response){
+                                        
+                                        if(response == 1){
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'El servicio ha sido reanudado.',
+                                                showConfirmButton: false,
+                                            });
+                                            setTimeout(function(){ location.reload(); }, 2500);
+                                        }else{
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Hubo un problema al reanudar el servicio.',
+                                                text: 'Bad Request'
+                                            });
+                                        }
+                                        
+                                    }
+                                });
+                            }
                         }else if(data == 0){
                             Swal.close();
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Hubo un pedo',
+                                title: 'Ocurrió un error, intente de nuevo o contacte a Desarrollo.',
                                 text: 'Bad Request'
                             })
                         }
@@ -708,8 +749,10 @@
     });
 
     $('.update-owner').click(function(){
-        let activation_id = $(this).data('id');
-        $('#activation_new_id').val(activation_id);
+        let id = $(this).data('id');
+        let type = $(this).data('type');
+        $('#activation_new_id').val(id);
+        $('#type_service').val(type);
         $('#changeOwner').modal('show');
     });
 
@@ -804,6 +847,7 @@
     $('#change-owner-btn').click(function(){
         let client = $('#client_new_id').val();
         let activation = $('#activation_new_id').val();
+        let type = $('#type_service').val();
         let url = "/clients-details/"+client+"#datatable-default3";
 
         if(client == 0){
@@ -819,7 +863,7 @@
 
         $.ajax({
             url: "{{route('changeOwner')}}",
-            data: {activation:activation, client:client},
+            data: {activation:activation, type:type, client:client},
             beforeSend: function(){
                 Swal.fire({
                     title: 'Realizando cambio...',

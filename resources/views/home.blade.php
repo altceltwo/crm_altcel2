@@ -97,7 +97,7 @@
                                 <div class="summary-footer">
                                 <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
                                 @if(Auth::user()->id != 1)
-                                <a href="{{route('webhook-openpay.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                <a href="{{route('incomes.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
                                 @endif
                                 </div>
                             </div>
@@ -116,7 +116,7 @@
                             </div>
                             <div class="widget-summary-col">
                                 <div class="summary">
-                                    <h4 class="title">Clientes Nuevos</h4>
+                                    <h4 class="title">Prospectos</h4>
                                     <div class="info">
                                         <strong class="amount">{{$newClients}}</strong><br>
                                         <span class="text-primary">Sin servicio adquirido</span>
@@ -266,7 +266,7 @@
                                 </div>
                                 <div class="summary-footer">
                                 <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
-                                <a href="{{route('webhook-openpay.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                <a href="{{route('incomes.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
                                 </div>
                             </div>
                         </div>

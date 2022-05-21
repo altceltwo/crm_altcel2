@@ -30,6 +30,7 @@ Route::resource('assignment', 'AssignmentController')->middleware('auth');
 Route::resource('dealer', 'DealerController')->middleware('auth');
 Route::resource('promotion', 'PromotionController')->middleware('auth');
 Route::resource('notification', 'NotificationController')->middleware('auth');
+Route::resource('portabilities', 'PortabilityController')->middleware('auth');
 
 // Petitions
 // Route::post('/petition');
@@ -42,7 +43,7 @@ Route::post('/charge', 'OpenPayController@store');
 Route::post('/create-reference-openpay','ReferenceController@createReference')->name('create-reference.post');
 Route::post('/create-reference-api','ReferenceController@createReference');
 Route::post('/webhook-openpay','WebhookController@notificationOpenPay');
-Route::get('/webhook-openpay','WebhookController@openpayPays')->name('webhook-openpay.get')->middleware('auth');
+Route::get('/incomes','PaymentController@incomesQuery')->name('incomes.get')->middleware('auth');
 Route::get('/webhook-pendings','PaymentController@paymentsPendings')->name('webhook-payments-pending.get')->middleware('auth');
 Route::get('/webhook-overdue','PaymentController@paymentsOverdue')->name('webhook-payments-overdue.get')->middleware('auth');
 
@@ -198,7 +199,7 @@ Route::post('payAll','AdminController@payAll')->name('payAll');
 Route::get('solicitudes', 'PetitionController@index')->name('solicitudes')->middleware('auth');
 Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth');
 Route::get('completadasFinanzas','PetitionController@recibidosFinance')->name('recibidos')->middleware('auth');
-Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth')->middleware('auth');
+Route::get('completadas','PetitionController@show')->name('completadas')->middleware('auth');
 Route::get('activationOperaciones', 'PetitionController@activationOperaciones')->name('activation.get');
 Route::post('collect-money', 'PetitionController@collectMoney')->name('collectMoney');
 Route::post('save-collected', 'PetitionController@saveCollected')->name('saveCollected');
@@ -243,3 +244,9 @@ Route::get('/dele-activation','ActivationController@deleteActivation')->name('de
 
 Route::get('/notification-solution','NotificationController@notificationSolution')->name('notification.solution');
 Route::get('/change-owner','ClientController@changeOwner')->name('changeOwner');
+Route::get('/get-inventory-company','CompanyController@getInventoryCompanies')->name('getInventoryCompanies');
+
+Route::get('/unbarring','ClientController@unbarring')->name('unbarring.get')->middleware('auth');
+
+Route::post('/do-activation','PortabilityController@doActivationPort')->name('doActivationPort')->middleware('auth');
+Route::post('/import-all-ports','PortabilityController@importAllPorts')->name('importAllPorts')->middleware('auth');

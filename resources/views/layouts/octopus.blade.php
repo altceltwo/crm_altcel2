@@ -42,7 +42,7 @@
 
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/select2/select2.css')}}" />
 
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
     
     @else
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/jquery-datatables-bs3/assets/css/datatables.css')}}" />
@@ -62,7 +62,7 @@
     <script src="{{asset('octopus/assets/vendor/modernizr/modernizr.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script>
 
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css">
     @else
@@ -263,7 +263,14 @@
             </div>
             
             @php
-                $alertNotifications = \DB::table('notifications')->where('status','pendiente')->orWhere('seen',0)->select('notifications.*')->orderBy('date_notification','desc')->get();
+                $alertNotifications = \DB::table('notifications')->where(function($query){
+                    $query->where('status','pendiente')->where('seen',0);
+                })
+                ->where(function($query){
+                    $query->where('eventType','=','Band28B')->orWhere('eventType','=','Band28U')->orWhere('eventType','=','RESUME_MOVILITY')->orWhere('eventType','=','SUSPEND_MOVILITY')
+                    ->orWhere('eventType','=','PRIMER_USO')->orWhere('eventType','=','ACTIVATION');
+                })
+                ->select('notifications.*')->orderBy('date_notification','desc')->get();
             @endphp
             
             
@@ -276,35 +283,44 @@
                 <span class="separator"></span>
                 <!-- Notificaciones -->
                 <ul class="notifications">
-                    <li>
+                    <li id="notificationsDiv">
                         <a href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
                             <i class="fa fa-bell"></i>
-                            <span class="badge">{{ sizeof($alertNotifications) }}</span>
+                            <span class="badge" id="badgeNotifications">{{ sizeof($alertNotifications) }}</span>
                         </a>
 
                         <div class="dropdown-menu notification-menu">
                             <div class="notification-title">
-                                <span class="pull-right label label-default">{{ sizeof($alertNotifications) }}</span>
+                                <span class="pull-right label label-default" id="spanNotifications">{{ sizeof($alertNotifications) }}</span>
                                 Notificaciones
                             </div>
+                            <input type="hidden" id="quantityNotifications" value="{{ sizeof($alertNotifications) }}">
 
-                            <div class="content">
-                                <ul>
+                            <div class="content" >
+                                <ul style="height: 25rem;overflow: scroll;">
                                     @foreach($alertNotifications as $alertNotification)
-                                    <li>
-                                        <a href="{{route('notification.show',['notification'=>$alertNotification->id])}}" class="clearfix">
-                                            <div class="image">
-                                                @if($alertNotification->eventType == 'EVENT_UNITS')
-                                                    <i class="fa fa-exchange bg-success"></i>
-                                                @elseif($alertNotification->eventType == 'SUSPEND_MOVILITY' || $alertNotification->eventType == 'SUSPEND_IMEI')
-                                                    <i class="fa fa-exclamation-triangle bg-warning"></i>
-                                                    @elseif($alertNotification->eventType == 'ACTIVATION')
-                                                    <i class="fa fa-check-circle bg-success"></i>
-                                                @endif
+                                    <li id="notification{{$alertNotification->id}}">
+                                        <div class="image">
+                                            @if($alertNotification->eventType == 'EVENT_UNITS')
+                                                <i class="fa fa-exchange bg-success"></i>
+                                            @elseif($alertNotification->eventType == 'SUSPEND_MOVILITY' || $alertNotification->eventType == 'SUSPEND_IMEI')
+                                                <i class="fa fa-exclamation-triangle bg-warning"></i>
+                                            @elseif($alertNotification->eventType == 'RESUME_MOVILITY')
+                                                <i class="fa fa-check-circle bg-success"></i>
+                                            @endif
+                                        </div>
+                                        <span class="title">{{$alertNotification->identifier}}</span>
+                                        <span class="message">{{$alertNotification->eventType}}</span>
+                                        <div class="col-md-12 row">
+                                            <div class="col-md-6">
+                                                <span class="badge label label-danger descartar" data-event="{{$alertNotification->id}}"  style="cursor: pointer; font-size: 0.9rem;">Descartar</span>
                                             </div>
-                                            <span class="title">{{$alertNotification->identifier}}</span>
-                                            <span class="message">{{$alertNotification->eventType}}</span>
-                                        </a>
+                                            <div class="col-md-6">
+                                                <a href="{{route('notification.show',['notification'=>$alertNotification->id])}}" class="clearfix">
+                                                    <span class="badge label label-success ver" style="cursor: pointer; font-size: 0.9rem;">Ver</span>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </li>
                                     @endforeach
                                 </ul>
@@ -441,7 +457,7 @@
                                                 <a href="{{route('activations.index')}}">Resumen</a>
                                             </li>
                                             <li>
-                                                <a href="{{route('webhook-openpay.get')}}">Completados</a>
+                                                <a href="{{route('incomes.get')}}">Completados</a>
                                             </li>
                                             <li>
                                                 <a href="{{route('webhook-payments-pending.get')}}">Pendientes</a>
@@ -558,6 +574,17 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Portabilidades</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{url('/portabilities')}}">Todas</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 @elseif(Auth::user()->role_id == 6)
                                     <li class="nav-parent">
                                         <a>
@@ -599,6 +626,17 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Portabilidades</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{url('/portabilities')}}">Todas</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 @elseif(Auth::user()->role_id == 2)
                                     <li class="nav-parent">
                                         <a>
@@ -621,6 +659,9 @@
                                             <li>
                                                 <a href="{{route('operations.specials')}}">Operaciones Especiales</a>
                                             </li>
+                                            <li>
+                                                <a href="{{route('reports')}}">Reportes de Consumos</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">
@@ -630,7 +671,7 @@
                                         </a>
                                         <ul class="nav nav-children">
                                             <li>
-                                                <a href="{{route('webhook-openpay.get')}}">Pagos</a>
+                                                <a href="{{route('incomes.get')}}">Pagos</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -673,6 +714,9 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('reportMoney')}}">Reportes de Dinero</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('companies')}}">Empresas</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -753,7 +797,7 @@
                                                 <a href="{{route('activations.index')}}">Resumen</a>
                                             </li>
                                             <li>
-                                                <a href="{{route('webhook-openpay.get')}}">Completados</a>
+                                                <a href="{{route('incomes.get')}}">Completados</a>
                                             </li>
                                             <li>
                                                 <a href="{{route('webhook-payments-pending.get')}}">Pendientes</a>
@@ -771,9 +815,9 @@
                                             <span>Clientes</span>
                                         </a>
                                         <ul class="nav nav-children">
-                                            <li>
+                                            <!-- <li>
                                                 <a href="{{route('activations.index')}}">Resumen</a>
-                                            </li>
+                                            </li> -->
                                             <li>
                                                 <a href="{{route('clients-pay-all.get')}}">Ver</a>
                                             </li>
@@ -844,7 +888,7 @@
                                                 <a href="{{route('activations.index')}}">Resumen</a>
                                             </li>
                                             <li>
-                                                <a href="{{route('webhook-openpay.get')}}">Completados</a>
+                                                <a href="{{route('incomes.get')}}">Completados</a>
                                             </li>
                                             <li>
                                                 <a href="{{route('webhook-payments-pending.get')}}">Pendientes</a>
@@ -868,122 +912,6 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('recibidos')}}">Completadas</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    
-                                @elseif(Auth::user()->role_id == 6)
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-users" aria-hidden="true"></i>
-                                            <span>Clientes</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('clients-pay-all.get')}}">Ver</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('activations.index')}}">Resumen</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('prospects.index')}}">Prospectos</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('operations.specials')}}">Operaciones Especiales</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('preactivations.index')}}">Preactivaciones</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                                            <span>Activaciones</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('activations.create')}}">Nuevo</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('activations.index')}}">Ver</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-book" aria-hidden="true"></i>
-                                            <span>Administración</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('show-users.get')}}">Usuarios</a>
-                                            </li>
-                                            <li class="nav-parent">
-                                                <a>Productos</a>
-                                                <ul class="nav nav-children">
-                                                    <li class="nav-parent">
-                                                        <a>Ofertas Altán</a>
-                                                        <ul class="nav nav-children">
-                                                            <li>
-                                                                <a href="{{route('offers.index')}}">Ver</a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="{{route('offers.create')}}">Crear</a>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li class="nav-parent">
-                                                        <a>Planes Altán</a>
-                                                        <ul class="nav nav-children">
-                                                            <li>
-                                                                <a href="{{route('rates.index')}}">Ver</a>
-                                                            </li>
-                                                            <li>
-                                                                <a href="{{route('rates.create')}}">Crear</a>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                    <li>
-                                                        <a href="{{route('ethernet-admin.get')}}">Internet</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('politicRate.create')}}">Políticas</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('devices.index')}}">Dispositivos</a>
-                                            </li>
-					                        <li class="nav-parent">
-                                                <a>Facturación</a>
-                                                <ul class="nav nav-children">
-                                                    <li>
-                                                        <a href="{{route('facturacion.index')}}">Facturar</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li class="nav-parent">
-                                                <a>Promotores</a>
-                                                <ul class="nav nav-children">
-                                                    <li>
-                                                        <a href="{{route('promoters.get')}}">Ver</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-parent">
-                                        <a>
-                                            <i class="fa fa-calendar" aria-hidden="true"></i>
-                                            <span>Agenda</span>
-                                        </a>
-                                        <ul class="nav nav-children">
-                                            <li>
-                                                <a href="{{route('schedules.create')}}">Alta</a>
-                                            </li>
-                                            <li>
-                                                <a href="{{route('schedules.index')}}">Administración</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -1066,11 +994,39 @@
     <!-- Theme Initialization Files -->
     <script src="{{asset('octopus/assets/javascripts/theme.init.js')}}"></script>
     <!-- Examples -->
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
     
     @else
     <script src="{{asset('octopus/assets/javascripts/tables/examples.datatables.default.js')}}"></script>
     @endif
 </body>
+
+<script>
+    $('.descartar').click(function(){
+        let id = $(this).data('event');
+        let eventType = 'noneEvent';
+        let url = "{{route('notification.update',['notification'=>'temp'])}}";
+        let token = $('meta[name="csrf-token"]').attr('content');
+        url = url.replace('temp',id);
+        let quantityNotifications = $('#quantityNotifications').val();
+        quantityNotifications = parseFloat(quantityNotifications);
+        setTimeout(function(){$('#notificationsDiv').addClass('open');}, 1);
+        
+        $.ajax({
+            url: url,
+            method: 'PUT',
+            data: {_token:token, id:id, eventType:eventType},
+            success: function(response){
+                if(response.message == 'OK'){
+                    $("#notification"+id).remove();
+                    quantityNotifications-=1;
+                    $('#quantityNotifications').val(quantityNotifications);
+                    $('#badgeNotifications').html(quantityNotifications);
+                    $('#spanNotifications').html(quantityNotifications);
+                }
+            }
+        });
+    });
+</script>
 
 </html>

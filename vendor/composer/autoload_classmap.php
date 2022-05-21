@@ -92,6 +92,7 @@ return array(
     'App\\Pay' => $baseDir . '/app/Pay.php',
     'App\\Petition' => $baseDir . '/app/Petition.php',
     'App\\Politic' => $baseDir . '/app/Politic.php',
+    'App\\Portability' => $baseDir . '/app/Portability.php',
     'App\\Promotion' => $baseDir . '/app/Promotion.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\Providers\\AuthServiceProvider' => $baseDir . '/app/Providers/AuthServiceProvider.php',

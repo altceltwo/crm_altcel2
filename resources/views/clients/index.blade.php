@@ -28,6 +28,7 @@
                                 <option value="MIFI">MIFI</option>
                                 <option value="HBB">HBB</option>
                                 <option value="MOV">MOV</option>
+                                <option value="TELMEX">TELMEX</option>
                             </select>
                         </div>
                             

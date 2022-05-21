@@ -680,6 +680,7 @@ class ActivationController extends Controller
                               ->join('pays','pays.activation_id','=','activations.id')
                               ->join('rates', 'rates.id', '=', 'activations.rate_id')
                               ->join('clients','activations.client_id','=','user_id')
+                              ->where('pays.status','pendiente')
                               ->select('activations.*', 'users.name','users.lastname',
                               'numbers.MSISDN','numbers.producto AS pack_service', 
                               'devices.description AS device_desc', 'users.name as promotor',
@@ -737,6 +738,7 @@ class ActivationController extends Controller
                                    ->join('clients','clients.user_id','=','users.id')
                                    ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
                                    ->where('service_name','Telmex')
+                                   ->where('ethernetpays.status','pendiente')
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'users.name AS client_name','users.lastname AS client_lastname',
                                    'clients.cellphone AS client_cellphone','ethernetpays.amount_received AS payment_amount',
@@ -764,6 +766,7 @@ class ActivationController extends Controller
                               ->leftJoin('pays','pays.activation_id','=','activations.id')
                               ->join('rates', 'rates.id', '=', 'activations.rate_id')
                               ->join('clients','activations.client_id','=','user_id')
+                              ->where('pays.status','pendiente')
                               ->whereBetween('pays.date_pay',[$date_init,$date_final])
                               ->select('activations.*', 'users.name','users.lastname',
                               'numbers.MSISDN','numbers.producto AS pack_service', 
@@ -825,6 +828,7 @@ class ActivationController extends Controller
                                    ->join('clients','clients.user_id','=','users.id')
                                    ->leftJoin('ethernetpays','ethernetpays.instalation_id','=','instalations.id')
                                    ->where('service_name','Telmex')
+                                   ->where('ethernetpays.status','pendiente')
                                    ->whereBetween('ethernetpays.date_pay',[$date_init,$date_final])
                                    ->select('instalations.*','packs.name AS pack_name','packs.service_name AS pack_service',
                                    'users.name AS client_name','users.lastname AS client_lastname',

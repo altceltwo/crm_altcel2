@@ -2084,6 +2084,7 @@ $("#locked, #unlocked").click(function(){
 $('#changeMSISDN').click(function(){
     let msisdn = $('#msisdn_to_change').val();
     let nir = $('#nir').val();
+    let user_id = "{{Auth::user()->id}}";
     let token = $('meta[name="csrf-token"]').attr('content');
 
     if((msisdn.length > 0 && msisdn.length < 10) || (msisdn.length >10)){
@@ -2107,11 +2108,11 @@ $('#changeMSISDN').click(function(){
         return false;
     }
 
-    if((nir.length > 0 && nir.length < 3) || (nir.length >3)){
+    if(nir.length != 2 && nir.length != 3){
         Swal.fire({
             icon: 'error',
             title: 'Por favor introduzca un NIR válido.',
-            text: 'La longitud requerida es de 3 dígitos.',
+            text: 'La longitud requerida es de 2-3 dígitos.',
             showConfirmButton: false,
             timer: 2000
         })
@@ -2151,7 +2152,7 @@ $('#changeMSISDN').click(function(){
                     $.ajax({
                         url: "{{route('bonding')}}",
                         method: 'POST',
-                        data: {_token: token, msisdn:msisdn, nir:nir, type:'change'},
+                        data: {_token: token, msisdn:msisdn, nir:nir, type:'change', user_id:user_id},
                         beforeSend: function(){
                             Swal.fire({
                                 title: 'Estamos trabajando en ello.',

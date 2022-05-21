@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use DB;
+use Http;
 use App\Offer;
 use App\Channel;
 use App\User;
@@ -135,7 +136,7 @@ class ClientController extends Controller
                                   ->join('numbers','numbers.id','=','activations.numbers_id')
                                   ->join('rates','rates.id','=','activations.rate_id')
                                   ->where('activations.client_id',$id)
-                                  ->select('activations.*','numbers.MSISDN AS DN','numbers.producto AS service','rates.name AS pack_name')
+                                  ->select('activations.*','numbers.MSISDN AS DN','numbers.producto AS service','rates.name AS pack_name','numbers.icc_id AS icc')
                                   ->get();
         
         $data['instalations'] = DB::table('instalations')
@@ -157,8 +158,14 @@ class ClientController extends Controller
     public function changeOwner(Request $request){
         $client = $request->get('client');
         $activation = $request->get('activation');
+        $type = $request->get('type');
 
-        $x = Activation::where('id',$activation)->update(['client_id'=>$client]);
+        if($type == 'activation'){
+            $x = Activation::where('id',$activation)->update(['client_id'=>$client]);
+        }else if($type == 'instalation'){
+            $x = Instalation::where('id',$activation)->update(['client_id'=>$client]);
+        }
+        
         if($x){
             return response()->json(['http_code'=>1]);
         }else{
@@ -582,6 +589,52 @@ class ClientController extends Controller
             }
 
             // return $data['consultUF']['freeUnits'];
+
+            $data['monthlies'] = DB::table('pays')
+                           ->join('activations','activations.id','=','pays.activation_id')
+                           ->leftJoin('references','references.reference_id','=','pays.reference_id')
+                           ->where('activations.numbers_id',$number_id)
+                           ->where('pays.status','completado')
+                           ->select('pays.date_pay','pays.date_pay_limit','pays.amount_received AS amount','pays.type_pay AS type','references.reference AS reference','pays.updated_at AS date_paid')
+                           ->get();
+            
+            $data['purchases'] = DB::table('purchases')
+                            ->join('offers','offers.id','=','purchases.offer_id')
+                            ->join('users','users.id','=','purchases.who_did_id')
+                            ->where('purchases.number_id',$number_id)
+                            ->select('purchases.date','purchases.reason','purchases.amount','purchases.comment','offers.name','users.name AS user_name','users.lastname AS user_lastname')
+                            ->get();
+
+            $data['referencePurchases'] = DB::table('references')
+                                             ->join('channels','channels.id','=','references.channel_id')
+                                             ->join('offers','offers.id','=','references.offer_id')
+                                             ->leftJoin('users','users.id','=','references.user_id')
+                                             ->where('references.number_id',$number_id)
+                                             ->where('references.referencestype_id',5)
+                                             ->where(function($query){
+                                                 $query->where('references.status','paid')->orWhere('references.status','completed');
+                                             })
+                                             ->select('references.updated_at AS date','offers.name','references.amount','references.reference','users.name AS user_name','users.lastname AS user_lastname','channels.name AS channel','references.event_date_complete AS date_complete')
+                                             ->get();
+
+            $data['changes'] = DB::table('changes')
+                                  ->join('offers','offers.id','=','changes.offer_id')
+                                  ->join('rates','rates.id','=','changes.rate_id')
+                                  ->leftJoin('users','users.id','=','changes.who_did_id')
+                                  ->leftJoin('references','references.reference_id','=','changes.reference_id')
+                                  ->leftJoin('channels','channels.id','=','references.channel_id')
+                                  ->where('changes.status','completado')
+                                  ->where('changes.number_id',$number_id)
+                                  ->select('changes.date','rates.name AS rate','offers.name AS offer','changes.amount','references.reference','changes.reason','changes.comment','users.name AS user_name','users.lastname AS user_lastname','channels.name AS channel')
+                                  ->get();
+
+            $data['historics'] = DB::table('historics')
+                                  ->join('numbers','numbers.id','=','historics.number_id')
+                                  ->join('users','users.id','=','historics.who_did_id')
+                                  ->where('historics.number_id',$number_id)
+                                  ->select('historics.*','users.name AS user_name','users.lastname AS user_lastname')
+                                  ->get();
+
 
         }else if($service == 'Conecta' || $service == 'Telmex'){
             $dataQuery = DB::table('instalations')
@@ -1410,5 +1463,45 @@ class ClientController extends Controller
         }
         
         return $data;
+    }
+
+    public function unbarring(Request $request){
+        $payID = $request->get('payID');
+        $dataPayment = Pay::where('id',$payID)->first();
+        $activation_id = $dataPayment->activation_id;
+        $dataActivation = Activation::where('id',$activation_id)->first();
+        $number_id = $dataActivation->numbers_id;
+        $dataNumber = Number::where('id',$number_id)->first();
+    
+        $msisdn = $dataNumber->MSISDN;
+        $producto = $dataNumber->producto;
+        $producto = trim($producto);
+
+        $consultUF = app('App\Http\Controllers\AltanController')->consultUF($msisdn);
+        $responseSubscriber = $consultUF['responseSubscriber'];
+        $status = $responseSubscriber['status']['subStatus'];
+        $bool = 0;
+        
+        if($status == "Suspend (B2W)"){
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json'
+            ])->post('http://10.44.0.70/activate-deactivate/DN-api',[
+                'msisdn' => $msisdn,
+                'type' => 'out_in',
+                'status' => 'inactivo'
+            ]);
+            $bool = $response['bool'];
+        }else{
+            $bool = 1;
+        }
+
+        if($bool == 1){
+            if($producto == 'MIFI' || $producto == ' HBB'){
+                Number::where('id',$number_id)->update(['traffic_outbound_incoming'=>'activo']);
+            }
+        }
+
+        return $bool;
+
     }
 }

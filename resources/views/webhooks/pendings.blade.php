@@ -36,6 +36,7 @@ use \Carbon\Carbon;
                 <th scope="col">Número</th>
                 <th scope="col">Monto Esperado</th>
                 <th scope="col">Fecha Pago</th>
+                <th scope="col">Fecha Límite de Pago</th>
                 <th scope="col">Opciones</th>
                 </tr>
             </thead>
@@ -48,6 +49,7 @@ use \Carbon\Carbon;
                     <td>{{$paymentsPending->DN}}</td>
                     <td>${{number_format($paymentsPending->amount,2)}}</td>
                     <td>{{$paymentsPending->date_pay}}</td>
+                    <td>{{$paymentsPending->date_pay_limit}}</td>
                     <td>
                         <a href="{{url('/clients-details/'.$paymentsPending->client_id)}}" class="btn btn-info btn-sm mt-xs " ><i class="fa  fa-eye"></i></a>
                     @php
@@ -72,6 +74,7 @@ use \Carbon\Carbon;
                     <td>{{$paymentsPending2->number_install}}</td>
                     <td>${{number_format($paymentsPending2->amount,2)}}</td>
                     <td>{{$paymentsPending2->date_pay}}</td>
+                    <td>{{$paymentsPending2->date_pay_limit}}</td>
                     <td>
                         <a href="{{url('/clients-details/'.$paymentsPending2->client_id)}}" class="btn btn-info btn-sm mt-xs " ><i class="fa fa-eye"></i></a>
                     @php
@@ -355,40 +358,81 @@ use \Carbon\Carbon;
                         // return console.log(data);
                         if(data == 1){
                             Swal.close();
-                            Swal.fire({
-                                title: 'Pago guardado con éxito.',
-                                html: "<h4 class='text-bold text-dark'>¿Cargar factura?</h4>",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'SÍ',
-                                cancelButtonText: 'NO',
-                                customClass: {
-                                    confirmButton: 'btn btn-success mr-md',
-                                    cancelButton: 'btn btn-danger '
-                                },
-                                buttonsStyling: false,
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    location.href = url+'?payment='+payID+'&type='+service;
-                                } else if (
+                            if(service != 'Telmex'){
+                                $.ajax({
+                                    url:"{{route('unbarring.get')}}",
+                                    method: "GET",
+                                    data: {payID:payID},
+                                    beforeSend: function(){
+                                        Swal.fire({
+                                            title: 'Pago guardado con éxito',
+                                            html: 'El servicio se está reanudando...',
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                            }
+                                        });
+                                    },
+                                    success:function(response){
+                                        
+                                        if(response == 1){
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'El servicio ha sido reanudado.',
+                                                showConfirmButton: false,
+                                            });
+                                            setTimeout(function(){ location.reload(); }, 2500);
+                                        }else{
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Hubo un problema al reanudar el servicio.',
+                                                text: 'Bad Request'
+                                            });
+                                        }
+                                        
+                                    }
+                                });
+                            }else{
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Pago guardado con éxito.',
+                                    showConfirmButton: false,
+                                });
+                                setTimeout(function(){ location.reload(); }, 2500);
+                            }
+                            // Swal.fire({
+                            //     title: 'Pago guardado con éxito.',
+                            //     html: "<h4 class='text-bold text-dark'>¿Cargar factura?</h4>",
+                            //     icon: 'warning',
+                            //     showCancelButton: true,
+                            //     confirmButtonText: 'SÍ',
+                            //     cancelButtonText: 'NO',
+                            //     customClass: {
+                            //         confirmButton: 'btn btn-success mr-md',
+                            //         cancelButton: 'btn btn-danger '
+                            //     },
+                            //     buttonsStyling: false,
+                            // }).then((result) => {
+                            //     if (result.isConfirmed) {
+                            //         location.href = url+'?payment='+payID+'&type='+service;
+                            //     } else if (
                                    
-                                    result.dismiss === Swal.DismissReason.cancel
-                                ) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Operación exitosa',
-                                        text: 'No se cargó alguna factura.',
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    })
-                                    setTimeout(function(){ location.reload(); }, 2000);
-                                }
-                            })
+                            //         result.dismiss === Swal.DismissReason.cancel
+                            //     ) {
+                            //         Swal.fire({
+                            //             icon: 'success',
+                            //             title: 'Operación exitosa',
+                            //             text: 'No se cargó alguna factura.',
+                            //             showConfirmButton: false,
+                            //             timer: 1500
+                            //         })
+                            //         setTimeout(function(){ location.reload(); }, 2000);
+                            //     }
+                            // })
                         }else if(data == 0){
                             Swal.close();
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Hubo un problema.',
+                                title: 'Ocurrió un problema, intente de nuevo o contacte que Desarrollo.',
                                 text: 'Bad Request'
                             })
                         }
