@@ -205,4 +205,59 @@ class PortabilityController extends Controller
         }
         return response()->json(['message'=>'Importación terminada','error'=>$errorBoolean,'errors'=>$errors,'messages'=>$messages]);
     }
+
+    public function csvAltan(Request $request){
+            $csv = request()->file('file');
+            // return $csv;
+            $fp = fopen ($csv,'r');
+
+            $completedStatus = [];
+            $i = 0;
+            while (($data = fgetcsv($fp))) {
+                if ($i > 0) {
+                    $MSISDNPorted = $data[0];
+                    $imsi = $data[1];
+                    $dida = $data[3];
+                    $rida = $data[4];
+                    $dcr = $data[5];
+                    $rcr = $data[6];
+                    $EjecucionPotabilidad = $data[7];
+                    $ResutaldoPortabilidad = $data[8];
+                    $MSISDNTransitorio = $data[9];
+
+                    Portability::where('msisdnPorted', $MSISDNPorted)->where('imsi',$imsi)->where('dida',$dida)->where('rida',$rida)->where('dcr',$dcr)->where('rcr',$rcr)->where('msisdnTransitory',$MSISDNTransitorio)->where('date', $EjecucionPotabilidad)->update(['status'=>"completado"]); 
+
+                    $icc = Portability::select('icc')->get();
+                    
+                    Number::where('imsi','like','%'.$imsi.'%' )->where('icc_id', 'like','%'.$icc.'%')->update(['MSISDN'=>$MSISDNPorted]);
+
+                    $completeds = Portability::all();
+                    
+                    foreach ($completeds as $completed) {
+                        $who_did_it = User::where('id',$completed->who_did_it)->first();
+                        $who_attended = User::where('id',$completed->who_attended)->first();
+                        $client = User::where('id',$completed->client_id)->first();
+                        $rate = Rate::where('id','=',$completed->rate_id)->first();
+                        $complete = Portability::all()->where('status','completado');
+                        
+                        array_push($completedStatus,array(
+                            'msisdnPorted' => $completed->msisdnPorted,
+                            'icc' => $completed->icc,
+                            'msisdnTransitory' => $completed->msisdnTransitory,
+                            'date' => $completed->date,
+                            'nip' => $completed->nip,
+                            'client' => $client->name.' '.$client->lastname,
+                            'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
+                            'who_attended' => $who_attended = $who_attended == null ? 'N/A' : $who_attended->name.' '.$who_attended->lastname,
+                            'rate' => $rate->name.' - $'.number_format($rate->price,2)
+                        ));
+                    }
+                }
+                $i++;
+
+            }
+            return json_encode($completedStatus);
+            // return $csv;
+
+    }
 }

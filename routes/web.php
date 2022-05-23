@@ -250,3 +250,7 @@ Route::get('/unbarring','ClientController@unbarring')->name('unbarring.get')->mi
 
 Route::post('/do-activation','PortabilityController@doActivationPort')->name('doActivationPort')->middleware('auth');
 Route::post('/import-all-ports','PortabilityController@importAllPorts')->name('importAllPorts')->middleware('auth');
+
+
+//CSV ALTAN
+Route::post('/csvAltan','PortabilityController@csvAltan')->name('csvAltan');

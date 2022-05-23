@@ -70,8 +70,15 @@
 
         <h2 class="panel-title">Activadas</h2>
     </header>
-    <div class="col-md-12" style="margin-bottom: 1rem; margin-top: 1rem;">
+    <div class="col-md-3" style="margin-bottom: 1rem; margin-top: 1rem; ">
         <button class="btn btn-success btn-sm" id="importAll" >Importar a Altan</button>
+    </div>
+    <div class="col-md-4"  style="margin-bottom: 1rem; margin-top: 1rem; margin-left: -6rem">
+        <span class="btn btn-default btn-file">
+            <span class="fileupload-new">Selecciona un archivo</span>
+            <input type="file" accept=".csv" id="csvtAltan">
+        </span>
+        <button class="btn btn-primary" id="importAltan">Cargar Archivo</button>
     </div>
     <div class="panel-body" >
         <table class="table table-bordered table-striped mb-none" id="myTable2">
@@ -138,7 +145,7 @@
                     <th>Atendido por</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="body-complate">
             @foreach($completeds as $completed)
                 <tr style="cursor: pointer;" >
                     <td>{{$completed['msisdnPorted']}}</td>
@@ -361,5 +368,51 @@
             }
         });
     });
+</script>
+
+<script>
+    $('#importAltan').click(function(){
+        let firstCSV = $('#csvtAltan').val();
+
+
+        if(firstCSV.length == 0 || /^\s+$/.test(firstCSV)){
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Por favor cargue un fichero con extensión CSV.',
+                showConfirmButton: false,
+                timer: 2000
+            });
+            return false;
+
+            console.log('CSV')
+        }
+
+        let file_data = $('#csvtAltan').prop('files')[0];
+        let form_data = new FormData();
+        form_data.append('file', file_data);
+        form_data.append('_token', '{{csrf_token()}}');
+        $.ajax({
+            url: "{{route('csvAltan')}}",
+            dataType: 'text',
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: form_data,
+            type:'POST',
+           success:function(response){
+               if (response) {
+                window.location.reload();
+               }
+            // x = JSON.parse(response)
+            // let body = ''
+            // x.forEach(data =>
+            //     body+= "<tr>"+"<td>"+data.msisdnPorted+"</td>"+"<td>"+data.icc+"</td>"+"<td>"+data.msisdnTransitory+"</td>"+"<td>"+data.date+"</td>"+"<td>"+data.nip+"</td>"+"<td>"+data.rate+"</td>"+"<td>"+data.client+"</td>"+"<td>"+data.who_did_it+"</td>"+"<td>"+data.who_attended+"</td>"+"</tr>"
+            // );
+            // $('#body-complate').html(body)
+
+           }
+        })
+    })
 </script>
 @endsection
