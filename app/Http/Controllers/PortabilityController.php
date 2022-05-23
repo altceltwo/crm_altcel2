@@ -37,7 +37,8 @@ class PortabilityController extends Controller
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
                 'who_attended' => $who_attended = $who_attended == null ? 'N/A' : $who_attended->name.' '.$who_attended->lastname,
-                'rate' => $rate->name.' - $'.number_format($rate->price,2)
+                'rate' => $rate->name.' - $'.number_format($rate->price,2),
+                'comments' => $pending->comments
             ));
         }
 
@@ -56,7 +57,8 @@ class PortabilityController extends Controller
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
                 'who_attended' => $who_attended = $who_attended == null ? 'N/A' : $who_attended->name.' '.$who_attended->lastname,
-                'rate' => $rate->name.' - $'.number_format($rate->price,2)
+                'rate' => $rate->name.' - $'.number_format($rate->price,2),
+                'comments' => $activated->comments
             ));
         }
 
@@ -74,7 +76,8 @@ class PortabilityController extends Controller
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
                 'who_attended' => $who_attended = $who_attended == null ? 'N/A' : $who_attended->name.' '.$who_attended->lastname,
-                'rate' => $rate->name.' - $'.number_format($rate->price,2)
+                'rate' => $rate->name.' - $'.number_format($rate->price,2),
+                'comments' => $completed->comments
             ));
         }
 

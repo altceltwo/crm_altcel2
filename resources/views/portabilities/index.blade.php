@@ -36,6 +36,7 @@
                     <th>Plan Activación</th>
                     <th>Cliente</th>
                     <th>Enviado por</th>
+                    <th>Comentarios</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -50,6 +51,7 @@
                     <td>{{$pending['rate']}}</td>
                     <td>{{$pending['client']}}</td>
                     <td>{{$pending['who_did_it']}}</td>
+                    <td>{{$pending['comments']}}</td>
                     <td>
                         <button class="btn btn-success btn-xs pending-port" data-id="{{$pending['id']}}" data-msisdn="{{$pending['msisdnTransitory']}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Activar SIM"><li class="fa fa-check-circle"></li></button>
                     </td>
@@ -86,6 +88,7 @@
                     <th>Cliente</th>
                     <th>Enviado por</th>
                     <th>Atendido por</th>
+                    <th>Comentarios</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -101,6 +104,7 @@
                     <td>{{$activated['client']}}</td>
                     <td>{{$activated['who_did_it']}}</td>
                     <td>{{$activated['who_attended']}}</td>
+                    <td>{{$activated['comments']}}</td>
                     <td>
                         <button class="btn btn-success btn-xs activated-port" data-id="{{$activated['id']}}" data-msisdn="{{$activated['msisdnPorted']}}" data-icc="{{$activated['icc']}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Importar a Altán">
                             <li class="fa fa-check-circle"></li>
@@ -136,6 +140,7 @@
                     <th>Cliente</th>
                     <th>Enviado por</th>
                     <th>Atendido por</th>
+                    <th>Comentarios</th>
                 </tr>
             </thead>
             <tbody>
@@ -150,6 +155,7 @@
                     <td>{{$completed['client']}}</td>
                     <td>{{$completed['who_did_it']}}</td>
                     <td>{{$completed['who_attended']}}</td>
+                    <td>{{$completed['comments']}}</td>
                 </tr>
             @endforeach
             </tbody>
