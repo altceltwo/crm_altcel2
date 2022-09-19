@@ -31,6 +31,12 @@ Route::resource('dealer', 'DealerController')->middleware('auth');
 Route::resource('promotion', 'PromotionController')->middleware('auth');
 Route::resource('notification', 'NotificationController')->middleware('auth');
 Route::resource('portabilities', 'PortabilityController')->middleware('auth');
+Route::resource('shipping','ShippingController')->middleware('auth');
+Route::resource('directory','DirectoryController')->middleware('auth');
+Route::resource('petition','PetitionController')->middleware('auth');
+Route::resource('anothercompany','AnothercompanyController')->middleware('auth');
+
+Route::get('/show-shipping-async/{shipping}','ShippingController@showAsync')->name('showShipping.async')->middleware('auth');
 
 // Petitions
 // Route::post('/petition');
@@ -208,6 +214,8 @@ Route::get('/activate-dealer-petition/{petition}','PetitionController@activateDe
 Route::post('/change-rate-petition','PetitionController@changeRatePetition')->name('changeRatePetition')->middleware('auth');
 
 Route::get('/petitions-notifications', 'PetitionController@petitiosNotification');
+//Petitions Línea Nueva Altcel
+Route::get('petitionaltcel', 'PetitionController@lineNewAltcel')->name('petitionaltcel')->middleware('auth');
 
 //reemplazo Sim
 Route::get('replacementSim', 'AltanController@replacementSim')->name('replacementSim');
@@ -254,3 +262,9 @@ Route::post('/import-all-ports','PortabilityController@importAllPorts')->name('i
 
 //CSV ALTAN
 Route::post('/csvAltan','PortabilityController@csvAltan')->name('csvAltan');
+Route::post('/store-client-from-another-company','AnothercompanyController@storeClientFromAnotherCompany')->name('clients.storeFromAnotherCompany')->middleware('auth');
+Route::post('/decline-prospect','AnothercompanyController@declineProspect')->name('declineProspect')->middleware('auth');
+Route::post('/charge-csv-nir','DeviceController@chargeCSVNIR')->name('chargeCSVNIR');
+
+// ALTCEL 1
+Route::get('/portabilities-altcel','PortabilityController@portabilitiesAltcel');

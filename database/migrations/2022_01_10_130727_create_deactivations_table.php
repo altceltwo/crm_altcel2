@@ -13,19 +13,19 @@ class CreateDeactivationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('deactivations', function (Blueprint $table) {
-            $table->id();
-            $table->string('MSISDN',15);
-            $table->dateTime('effectiveDate',0);
-            $table->string('order_id',30);
-            $table->text('reason');
-            $table->unsignedBigInteger('activation_id');
-            $table->unsignedBigInteger('who_did_id');
-            $table->timestamps();
+        // Schema::create('deactivations', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('MSISDN',15);
+        //     $table->dateTime('effectiveDate',0);
+        //     $table->string('order_id',30);
+        //     $table->text('reason');
+        //     $table->unsignedBigInteger('activation_id');
+        //     $table->unsignedBigInteger('who_did_id');
+        //     $table->timestamps();
 
-            $table->foreign('activation_id')->references('id')->on('activations');
-            $table->foreign('who_did_id')->references('id')->on('users');
-        });
+        //     $table->foreign('activation_id')->references('id')->on('activations');
+        //     $table->foreign('who_did_id')->references('id')->on('users');
+        // });
     }
 
     /**

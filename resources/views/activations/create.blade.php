@@ -40,7 +40,8 @@
                     @if($petition != 0)
                         <div class="alert alert-warning">
                             <h3>¡¡ATENCIÓN!!</h3>
-                            <strong>EL PLAN DE ACTIVACIÓN SOLICITADO ES {{$rate_activation}}</strong>.
+                            <strong>EL PLAN DE ACTIVACIÓN SOLICITADO ES {{$rate_activation}}</strong>.<br>
+                            <strong>SE SOLICITÓ LA LADA {{$lada}}, SE DEBE  HACER CAMBIO DE SIM DESPUÉS DE ACTIVAR</strong>.
                         </div>
                     @endif
                         <div class="form-group">
@@ -325,13 +326,13 @@
                                     </div>
 
                                     <div class="col-md-12">
-                                        <div class="checkbox col-md-3">
+                                        <div class="checkbox col-md-3 d-none">
                                             <label class="control-label ml-sm">
                                                 <input type="checkbox" id="activate_bool">
                                                 Producto activado
                                             </label>
                                         </div>
-                                        <div class="checkbox col-md-3">
+                                        <div class="checkbox col-md-3 d-none">
                                             <label class="control-label ml-sm">
                                                 <input type="checkbox" id="statusActivation">
                                                 Preactivación
@@ -1240,6 +1241,13 @@
                 }
             });
     });
+
+    $('#new_address').keyup(function(){
+        let myValue = $(this).val();
+        console.log(myValue);
+        myValue = myValue.replace(/#/g,'No. ');
+        $('#new_address').val(myValue);
+    });
     $('#imei').keyup(function(){
         let imei = $(this).val();
         let price_device = 0;
@@ -1343,7 +1351,7 @@
                     $('#data-dn-list').html(list);
                     getRates(product);
                 }
-            });
+        });
     });
 
     function getRates(product) {

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Http;
 use Illuminate\Http\Request;
 use App\Device;
 use App\Number;
+use App\GuzzleHttp;
 use Illuminate\Support\Facades\DB;
 
 class DeviceController extends Controller
@@ -71,5 +73,22 @@ class DeviceController extends Controller
         $imei = $request->get('imei');
         $response = Device::where('no_serie_imei','LIKE','%'.$imei.'%')->first();
         return $response;
+    }
+
+    public function chargeCSVNIR(Request $request){
+        if(request()->file('nirs')){
+            $x = asset('storage/uploads/TESTNIR.txt');
+            // return $x;
+            // return $request->file('nirs');
+            // return file_get_contents('storage/uploads/TESTNIR.txt');
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer yvHABXCKd11DD19dbEUKu1oscdDy',
+                'Content-Type' => 'multipart/form-data'
+            ])->post('https://altanredes-prod.apigee.net/cm/v1/subscribers/changesmsisdn',[
+                "archivos" => $x
+            ]);
+
+            return $response;
+        }
     }
 }

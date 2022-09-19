@@ -13,9 +13,9 @@ class AddColumnOrderIdToPurchases extends Migration
      */
     public function up()
     {
-        Schema::table('purchases', function (Blueprint $table) {
-            $table->string('order_id',50)->deafult('0')->after('comment');
-        });
+        // Schema::table('purchases', function (Blueprint $table) {
+        //     $table->string('order_id',50)->deafult('0')->after('comment');
+        // });
     }
 
     /**

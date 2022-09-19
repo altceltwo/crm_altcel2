@@ -72,6 +72,7 @@ use \Carbon\Carbon;
                 <th scope="col">Monto Esperado</th>
                 <th scope="col">Monto Recibido</th>
                 <th scope="col">Comisión</th>
+                <th scope="col">Registrado por</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,6 +80,7 @@ use \Carbon\Carbon;
                 $incomesMonthlies = 0;
                 $incomesChanges = 0;
                 $incomesSurplus = 0;
+                $incomesDevices = 0;
                 $totalFeeAmount = 0;
                 ?>
                 @foreach($monthliesCash as $monthly)
@@ -93,6 +95,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($monthly->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($monthly->amount_received,2) }}</span></td>
                     <td><span class="badge label-warning">$0.00</span></td>
+                    <td><span class="badge label-info">{{$monthly->who_name}} {{$monthly->who_lastname}}</span></td>
                 </tr>
                 @php
                 $incomesMonthlies+=$monthly->amount_received;
@@ -111,6 +114,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($monthly->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($monthly->amount_received,2) }}</span></td>
                     <td><span class="badge label-warning">$0.00</span></td>
+                    <td></td>
                 </tr>
                 @php
                 $incomesMonthlies+=$monthly->amount_received;
@@ -129,6 +133,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($monthly->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($monthly->amount_paid,2) }}</span></td>
                     <td><span class="badge label-warning">${{ number_format($monthly->comision,2) }}</span></td>
+                    <td><span class="badge label-info">Automático</span></td>
                 </tr>
                 @php
                 $incomesMonthlies+=$monthly->amount_paid;
@@ -148,6 +153,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($monthly->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($monthly->amount_paid,2) }}</span></td>
                     <td><span class="badge label-warning">${{ number_format($monthly->comision,2) }}</span></td>
+                    <td><td><span class="badge label-info">Automático</span></td></td>
                 </tr>
                 @php
                 $incomesMonthlies+=$monthly->amount_paid;
@@ -167,6 +173,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($change->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($change->amount,2) }}</span></td>
                     <td><span class="badge label-warning">${{ $comision = $change->comision == null ? '0.00' : number_format($change->comision,2) }}</span></td>
+                    <td><span class="badge label-info">{{ $who_changed = $change->who_name == null ? 'Automático' : $change->who_name.' '.$change->who_lastname }}</span></td>
                 </tr>
                 @php
                 $incomesChanges+=$change->amount;
@@ -186,6 +193,7 @@ use \Carbon\Carbon;
                     <td>${{ number_format($surplus->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($surplus->amount,2) }}</span></td>
                     <td><span class="badge label-warning">${{ number_format($surplus->fee_amount,2) }}</span></td>
+                    <td><span class="badge label-info">Automático</span></td>
                 </tr>
                 @php
                 $incomesSurplus+=$surplus->amount;
@@ -201,19 +209,41 @@ use \Carbon\Carbon;
                     <td>COMPRA DE GBs</td>
                     <td><span class="badge label-primary">{{ $surplus->msisdn }}</span></td>
                     <td><span class="badge label-primary">{{ $surplus->service }}</span></td>
-                    <td>Efectivo</td>
+                    <td>{{ $channel = $surplus->gestor == null ? $channel = $surplus->order_id_conekta == null ? 'Efectivo' : 'Conekta' : strtoupper($surplus->gestor) }}</td>
                     <td>${{ number_format($surplus->amount,2) }}</td>
                     <td><span class="badge label-success">${{ number_format($surplus->amount,2) }}</span></td>
-                    <td><span class="badge label-warning">$0.00</span></td>
+                    <td><span class="badge label-warning">${{ number_format($surplus->fee_amount,2) }}</span></td>
+                    <td><span class="badge label-info">{{$surplus->who_name}} {{$surplus->who_lastname}}</span></td>
                 </tr>
                 @php
                 $incomesSurplus+=$surplus->amount;
+                $totalFeeAmount+=$surplus->fee_amount;
+                @endphp
+                @endforeach
+
+                @foreach($devicesChannels as $device)
+                <tr>
+                    <td>{{ $device->updated_at }}</td>
+                    <td>{{ $device->updated_at }}</td>
+                    <td>{{ $device->reference }}</td>
+                    <td>VENTA DE DISPOSITIVO</td>
+                    <td><span class="badge label-primary">N/A</span></td>
+                    <td><span class="badge label-primary">N/A</span></td>
+                    <td>{{ $channel = $device->channel == null ? 'N/A' : $device->channel }}</td>
+                    <td>${{ number_format($device->amount,2) }}</td>
+                    <td><span class="badge label-success">${{ number_format($device->amount,2) }}</span></td>
+                    <td><span class="badge label-warning">${{ number_format($device->fee_amount,2) }}</span></td>
+                    <td><span class="badge label-info">Automático</span></td>
+                </tr>
+                @php
+                $incomesDevices+=$device->amount;
+                $totalFeeAmount+=$device->fee_amount;
                 @endphp
                 @endforeach
             </tbody>
         </table>
         <?php
-        $incomeSubtotal = $incomesMonthlies+$incomesChanges+$incomesSurplus;
+        $incomeSubtotal = $incomesMonthlies+$incomesChanges+$incomesSurplus+$incomesDevices;
         $incomeTotal = $incomeSubtotal-$totalFeeAmount;
         ?>
         <div class="col-md-12">
@@ -221,6 +251,7 @@ use \Carbon\Carbon;
                 <h2 class="badge label-primary" style="font-size:1.75rem;">Mensualidades: ${{number_format($incomesMonthlies,2)}}</h2> 
                 <h2 class="badge label-primary" style="font-size:1.75rem;">Cambios de Plan: ${{number_format($incomesChanges,2)}}</h2>
                 <h2 class="badge label-primary" style="font-size:1.75rem;">Excedentes: ${{number_format($incomesSurplus,2)}}</h2>
+                <h2 class="badge label-primary" style="font-size:1.75rem;">Ventas Dispositivos: ${{number_format($incomesDevices,2)}}</h2>
             </div>
             <div class="col-md-12"><h2 class="badge label-primary" style="font-size:1.75rem; margin-top: 0 !important;">Subtotal: ${{number_format($incomeSubtotal,2)}}</h2></div>
             <div class="col-md-12"><h2 class="badge label-warning" style="font-size:1.75rem; margin-top: 0 !important;">Comisiones: ${{number_format($totalFeeAmount,2)}}</h2></div>
@@ -243,7 +274,7 @@ use \Carbon\Carbon;
                 extend: 'excel',
                 title: 'Pagos Completados',
                 exportOptions : {
-                    columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+                    columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
                 }
             }]
         });

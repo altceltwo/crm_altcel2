@@ -12,6 +12,8 @@ use App\Device;
 use App\Number;
 use App\Petition;
 use App\Activation;
+use App\Directory;
+// use App\Linenewaltcel;
 use App\Mail\SendPetition;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -59,6 +61,7 @@ class PetitionController extends Controller
                 'rate_activation' => $x->rate_name,
                 'payment_way' => $x->payment_way,
                 'plazo' => $x->plazo,
+                'lada' => $x->lada,
                 'type' => $type
             ));
 
@@ -89,33 +92,31 @@ class PetitionController extends Controller
         return view('petitions.solicitudOperaciones', $data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $request['date_sent'] = date('Y-m-d H:i:s');
+        $directory_id = $request['directory_id'];
+        $attended_by = $request['sender'];
+        $request = request()->except('_token','directory_id');
+        $x = Petition::insert($request);
+        
+        if($x){
+            $x = Directory::where('id',$directory_id)->update(['attended_by'=>$attended_by]);
+            if($x){
+                return 1;
+            }else{
+                return 0;
+            }
+        }else{
+            return 0;
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Petition  $petition
-     * @return \Illuminate\Http\Response
-     */
     public function show(Petition $petition)
     {
         $currentRol = auth()->user()->role_id;
@@ -209,6 +210,7 @@ class PetitionController extends Controller
                 'rate_activation' => $y->rate_name,
                 'payment_way' => $payment_way,
                 'plazo' => $plazo,
+                'name_sender' => $name_sender
             )); 
         }
         // return $data['completadas'];
@@ -482,7 +484,7 @@ class PetitionController extends Controller
         $product = $request->get('product');
         $email_remitente = $request->get('email_remitente');
 
-        $email = ['laura_coutino@altcel.com', 'joel_maza@altcel.com', 'sandra_corzo@altcel.com', 'keila_vazquez@altcel.com', 'mario_molina@altcel.com', 'marco.aguilar@altcel2.com', 'leopoldo_martinez@altcel.com','carlos_vazquez@altcel.com'];
+        $email = ['armando.g@altcel.com', 'soporte1@altcel.com', 'sandra_corzo@altcel.com', 'keila_vazquez@altcel.com', 'jeremias_vicente@altcel.com', 'jalexis_santana@altcel.com', 'leopoldo_martinez@altcel.com','soporte2@altcel.com','auxiliar_contable@altcel.com'];
         
         if ($status == 'solicitud') {
             $data= [
@@ -498,6 +500,7 @@ class PetitionController extends Controller
                 "email"=>$email,
                 "body"=>$email[1].", ".$email[0]." y ".$email[7].", tienen una nueva solicitud de",
             ];
+            Mail::to('charlesrootsman97@gmail.com')->send(new SendPetition($data));
             Mail::to($email[0])->send(new SendPetition($data));
             Mail::to($email[1])->send(new SendPetition($data));
             Mail::to($email[7])->send(new SendPetition($data));
@@ -521,6 +524,7 @@ class PetitionController extends Controller
             Mail::to($email[4])->send(new SendPetition($data));
             Mail::to($email[5])->send(new SendPetition($data));
             Mail::to($email[6])->send(new SendPetition($data));
+            Mail::to($email[8])->send(new SendPetition($data));
             return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
         }elseif ($status == 'recibido') {
             $data= [
@@ -562,6 +566,39 @@ class PetitionController extends Controller
             Mail::to($email[1])->send(new SendPetition($data));
             Mail::to($email[7])->send(new SendPetition($data));
             return response()->json(['http_code'=>'200','message'=>'Correo enviado...']);
+        }
+    }
+
+    public function lineNewAltcel(){
+        $ldate = date('Y-m-d');
+        // return $ldate;
+        // $data['solicitudes']= DB::connection('mysql2')->table('alt_solicitudeslineasnuevas')->where('status', '=', 'Solicitud')->get();
+        $data['solicitudes']= DB::connection('mysql2')->table('alt_solicitudeslineasnuevas')->join('alt_price_plan','alt_price_plan.id','alt_solicitudeslineasnuevas.price_plan_nuevo_id')->join('alt_tarifas','alt_tarifas.id','alt_solicitudeslineasnuevas.tarifa_nuevo_id')->where('alt_solicitudeslineasnuevas.status', '=', 'Solicitud')->select('alt_solicitudeslineasnuevas.*','alt_price_plan.price_plan','alt_tarifas.*','alt_solicitudeslineasnuevas.id AS idPetition')->get();
+        // return $data['solicitudes'];
+        $data['finalizados']= DB::connection('mysql2')->table('alt_solicitudeslineasnuevas')->join('alt_price_plan','alt_price_plan.id','alt_solicitudeslineasnuevas.price_plan_nuevo_id')->join('alt_tarifas','alt_tarifas.id','alt_solicitudeslineasnuevas.tarifa_nuevo_id')->where('alt_solicitudeslineasnuevas.status', '=', 'Finalizado')->select('alt_solicitudeslineasnuevas.*','alt_price_plan.price_plan','alt_tarifas.*')->get();
+        return view('petitions.lineaNuevaAltcel', $data);
+    }
+
+    public function changeStatusLine(Request $request){
+        // return $request;
+        $petition = $request->idPetion;
+        $userId = $request->get('userId');
+
+        $data = DB::table('users')->where('id', $userId)->get();
+        $name = $data[0]->name;
+        $lastname = $data[0]->lastname;
+
+        $user = $name.' '.$lastname;
+        return $user;
+
+        $x = DB::connection('mysql2')->table('alt_solicitudeslineasnuevas')->where('id', $petition)->update([
+            'status' => 'Finalizado'
+        ]);
+
+        if($x){
+            return response()->json(['http_code'=>1]);
+        }else{
+            return response()->json(['http_code'=>0]);
         }
     }
 }

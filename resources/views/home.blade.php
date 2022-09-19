@@ -15,13 +15,13 @@
         <a class="sidebar-right-toggle" ><i class="fa fa-chevron-left"></i></a>
     </div>
 </header>
-
+<div id="conektaIframeContainer" style="height: 700px;"></div>
 <!-- Dashboard -->
 @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 4 || Auth::user()->role_id == 5)
 <div class="row">
-    <div class="col-md-6 col-lg-12 col-xl-6">
+    <div class="col-md-12 col-lg-12 col-xl-12">
         <div class="row">
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4 ">
                 <section class="panel panel-featured-left panel-featured-warning">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -49,7 +49,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-secondary">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -60,24 +60,22 @@
                             </div>
                             <div class="widget-summary-col">
                                 <div class="summary">
-                                    <h4 class="title">Pagos Vencidos</h4>
+                                    <h4 class="title">Por Llamar</h4>
                                     <div class="info">
-                                        <strong class="amount">{{$overdues}}</strong><br>
-                                        <span class="text-primary">{{$formatDate}}</span>
+                                        <strong class="amount">{{$toCall}}</strong><br>
+                                        <span class="text-primary">Atender cuanto antes :)</span>
                                     </div>
                                 </div>
                                 <div class="summary-footer">
                                     <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
-                                    @if(Auth::user()->id != 1)
-                                    <a href="{{route('webhook-payments-overdue.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
-                                    @endif
+                                    <a href="{{route('directory.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-success">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -105,7 +103,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-quartenary">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -133,7 +131,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-info">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -161,7 +159,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-success">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -193,9 +191,9 @@
 </div>
 @elseif(Auth::user()->role_id == 2)
 <div class="row">
-    <div class="col-md-6 col-lg-12 col-xl-6">
+    <div class="col-md-12">
         <div class="row">
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-warning">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -221,7 +219,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-secondary">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -232,22 +230,22 @@
                             </div>
                             <div class="widget-summary-col">
                                 <div class="summary">
-                                    <h4 class="title">Pagos Vencidos</h4>
+                                    <h4 class="title">Por Llamar</h4>
                                     <div class="info">
-                                        <strong class="amount">{{$overdues}}</strong><br>
-                                        <span class="text-primary">{{$formatDate}}</span>
+                                        <strong class="amount">{{$toCall}}</strong><br>
+                                        <span class="text-primary">Atender cuanto antes :)</span>
                                     </div>
                                 </div>
                                 <div class="summary-footer">
                                     <!-- <a href="" class="text-muted text-uppercase mr-xs">Reporte <i class="fa fa-cloud-download"></i></a> -->
-                                    <a href="{{route('webhook-payments-overdue.get')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
+                                    <a href="{{route('directory.index')}}" class="text-muted text-uppercase">Ver <i class="fa fa-arrow-circle-right"></i></a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-success">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -273,7 +271,7 @@
                     </div>
                 </section>
             </div>
-            <div class="col-md-12 col-lg-6 col-xl-6">
+            <div class="col-md-4">
                 <section class="panel panel-featured-left panel-featured-info">
                     <div class="panel-body">
                         <div class="widget-summary">
@@ -442,6 +440,12 @@
         </div>
     </section>
 
+
+
+
+ 
+   
+
 <div class="modal fade" id="reference" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -462,12 +466,22 @@
 </div>
 @endif
 
-
+<script type="text/javascript" src="https://pay.conekta.com/v1.0/js/conekta-checkout.min.js"></script>
 
 <script>
 
     
-    
+window.ConektaCheckoutComponents.Integration({
+        targetIFrame: "#conektaIframeContainer",
+        checkoutRequestId: "32ecaa6e-4ca9-47cc-8806-52792e0ca1eb", // checkout request id
+        publicKey: "key_D1ovsHrPniMraUA6iftCxQA",
+        options: {},
+        styles: {},
+        onFinalizePayment: function(event){
+            console.log(event);
+        }
+    })
+
     function ref(reference_id){
         let link = 'https://sandbox-dashboard.openpay.mx/paynet-pdf/mvtmmoafnxul8oizkhju/';
 

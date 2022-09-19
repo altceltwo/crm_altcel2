@@ -13,16 +13,16 @@ class CreateHistoricsTable extends Migration
      */
     public function up()
     {
-        Schema::create('historics', function (Blueprint $table) {
-            $table->id();
-            $table->string('oldMSISDN',15);
-            $table->dateTime('date_change',0);
-            $table->string('order_id',15);
-            $table->unsignedBigInteger('number_id');
-            $table->timestamps();
+        // Schema::create('historics', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('oldMSISDN',15);
+        //     $table->dateTime('date_change',0);
+        //     $table->string('order_id',15);
+        //     $table->unsignedBigInteger('number_id');
+        //     $table->timestamps();
 
-            $table->foreign('number_id')->references('id')->on('numbers');
-        });
+        //     $table->foreign('number_id')->references('id')->on('numbers');
+        // });
     }
 
     /**

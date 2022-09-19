@@ -20,6 +20,10 @@ class ReferenceController extends Controller
             $x = $this->ConektaPayment->createOrder($request);
         }else if($channel == 3){
             $x = $this->ConektaPayment->createPaymentLink($request);
+        }else if($channel == 4){
+            $x = $this->ConektaPayment->createPaymentLinkAllMethods($request);
+        }else if($channel == 'T'){
+            $x = $this->ConektaPayment->createCustomer($request);
         }
         return $x;
     }

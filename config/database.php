@@ -63,6 +63,31 @@ return [
             ]) : [],
         ],
 
+        'mysql2' => array(
+            'driver'    => 'mysql',
+            'host'      => '10.44.0.4',
+            'database'  => 'consumos',
+            'username'  => 'user_consumos',
+            'password'  => '20_Phantom_19',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+            'options'   => [
+                \PDO::ATTR_EMULATE_PREPARES => true
+            ]
+        ),
+
+        'corp_portability' => array(
+            'driver'    => 'mysql',
+            'host'      => 'corpaltcel.xyz',
+            'database'  => 'corpaltc_portabilidad',
+            'username'  => 'corpaltc_us_porta',
+            'password'  => '*++6v$!tzAHK',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+        ),
+        
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

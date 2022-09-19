@@ -389,7 +389,7 @@ class ClientController extends Controller
 
             if($status == 'Active'){
                 $data['consultUF']['status_color'] = 'success';
-            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)' || $status == 'Barring (B1W) (By NoB28)' || $status == 'Suspend (B2W) (By mobility)'){
+            }else if($status == 'Suspend (B2W)' || $status == 'Barring (B1W) (Notified by client)' || $status == 'Barring (B1W) (By NoB28)' || $status == 'Suspend (B2W) (By mobility)' || $status = 'Suspend (B2W) (By IMEI locked)' || $status == 'Predeactivate'){
                 $data['consultUF']['status_color'] = 'warning';
             }
 

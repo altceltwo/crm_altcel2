@@ -34,6 +34,7 @@
                 <th scope="col">Fecha de envio</th>
                 <th scope="col">Cliente</th>
                 <th scope="col">Producto</th>
+                <th scope="col">LADA</th>
                 <th scope="col">Plan Activación</th>
                 <th scope="col">Forma Pago</th>
                 <th scope="col">Comentario</th>
@@ -48,12 +49,13 @@
                     <td>{{$solicitud['date_sent']}}</td>
                     <td>{{$solicitud['client']}}</td>
                     <td>{{$solicitud['product']}}</td>
+                    <td>{{$solicitud['lada']}}</td>
                     <td>{{$solicitud['rate_activation']}}</td>
                     <td>{{$solicitud['payment_way'].' - Plazo: '.$solicitud['plazo']}}</td>
                     <td>{{$solicitud['comment']}}</td>
                     <td>
                         @if($solicitud['type'] == 'local')
-                        <button class="btn btn-warning solicitud" id="notification" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}" data-comment="{{$solicitud['comment']}}">Activar</button>
+                        <button class="btn btn-warning solicitud" id="notification" data-id="{{$solicitud['id']}}" data-client="{{$solicitud['id_client']}}" data-comment="{{$solicitud['comment']}}" data-lada="{{$solicitud['lada']}}">Activar</button>
                         @elseif($solicitud['type'] == 'external')
                         <a href="{{url('/activate-dealer-petition/'.$solicitud['id'])}}" class="btn btn-success" id="notification" data-id="{{$solicitud['id']}}" >Activar</a>
                         @endif
@@ -104,6 +106,7 @@
     $('.solicitud').click(function(){
         let idClient = $(this).attr('data-client');
         let id_petition = $(this).attr('data-id');
+        let lada = $(this).attr('data-lada');
         let route = "{{route('activations.create')}}"
         let comment = $(this).attr('data-comment');
         $.ajax({
@@ -111,6 +114,7 @@
             method:'GET',
             data:{idClient:idClient, comment:comment},
             success:function(response){
+
                 let name = response[0].name;
                 let lastname = response[0].lastname;
                 let rfc = response[0].rfc;
@@ -121,7 +125,7 @@
                 let ine_code = response[0].ine_code;
                 let id = id_petition;
                 
-                let url = route+'?from=petition&name='+name+'&lastname='+lastname+'&rfc='+rfc+'&date_born='+date_born+'&address='+address+'&email='+email+'&ine_code='+ine_code+'&cellphone='+cellphone+'&petition='+id;
+                let url = route+'?from=petition&name='+name+'&lastname='+lastname+'&rfc='+rfc+'&date_born='+date_born+'&address='+address+'&email='+email+'&ine_code='+ine_code+'&cellphone='+cellphone+'&petition='+id+'&lada='+lada;
                 // console.log(url);
                 location.href=url;
             }

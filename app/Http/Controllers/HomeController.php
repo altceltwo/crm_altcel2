@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use DateTime;
+use App\Directory;
 use App\Pay;
 use App\Ethernetpay;
 use App\Rate;
@@ -100,11 +101,11 @@ class HomeController extends Controller
             $changes = Change::all();
             $purchases = Purchase::all();
             $references = Reference::all();
+            $toCall = Directory::all()->where('attended_by',null);
 
             $pendingPayments = $statement->where('status','pendiente');
             $pendingPayments2 = $statement2->where('status','pendiente');
-            $overduePayments = $statement->where('status','pendiente')->where('date_pay',$date);
-            $overduePayments2 = $statement2->where('status','vencido')->where('date_pay',$date);
+
             $completePayments = $statement->where('status','completado')->whereBetween('updated_at',[$date.' 00:00:00',$date_now.' 23:59:59']);
             $changesAll = $changes->where('reason','!=','bonificacion')->whereBetween('date',[$date.' 00:00:00',$date_now.' 23:59:59']);
             $purchasesAll = $purchases->where('reason','!=','bonificacion')->whereBetween('date',[$date.' 00:00:00',$date_now.' 23:59:59']);
@@ -128,11 +129,11 @@ class HomeController extends Controller
             $sales = $salesActivation+$salesInstalation;
 
             $data['pendings'] =  sizeof($pendingPayments)+sizeof($pendingPayments2);
-            $data['overdues'] =  sizeof($overduePayments)+sizeof($overduePayments2);
             $data['completes'] =  sizeof($completePayments)+sizeof($completePayments2)+sizeof($changesAll)+sizeof($purchasesAll)+sizeof($referencesPurchasesAll);
             $data['newClients'] = sizeof($newClients);
             $data['ratesActives'] = sizeof($ratesActives);
             $data['sales'] = $sales;
+            $data['toCall'] = sizeof($toCall);
 
             $data['formatDate'] = 'Del '.$day.' al '.$dayTwo.' de '.$month.' de '.$year;
         }

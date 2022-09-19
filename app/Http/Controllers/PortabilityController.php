@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\Rate;
 use App\User;
 use App\Offer;
@@ -33,6 +34,7 @@ class PortabilityController extends Controller
                 'icc' => $pending->icc,
                 'msisdnTransitory' => $pending->msisdnTransitory,
                 'date' => $pending->date,
+                'approvedDateABD' => $pending->approvedDateABD,
                 'nip' => $pending->nip,
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
@@ -53,6 +55,7 @@ class PortabilityController extends Controller
                 'icc' => $activated->icc,
                 'msisdnTransitory' => $activated->msisdnTransitory,
                 'date' => $activated->date,
+                'approvedDateABD' => $activated->approvedDateABD,
                 'nip' => $activated->nip,
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
@@ -72,6 +75,7 @@ class PortabilityController extends Controller
                 'icc' => $completed->icc,
                 'msisdnTransitory' => $completed->msisdnTransitory,
                 'date' => $completed->date,
+                'approvedDateABD' => $completed->approvedDateABD,
                 'nip' => $completed->nip,
                 'client' => $client->name.' '.$client->lastname,
                 'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
@@ -129,14 +133,14 @@ class PortabilityController extends Controller
         $product = $offer->product;
         $product = trim($product);
         $msisdn = $portability->msisdnTransitory;
-        $msisdn = trim($msisdn);
         $icc = $portability->icc;
         $number = Number::where('icc_id',$icc)->first();
         $number_id = $number->id;
         $who_did_id = $request['user_id'];
         $amount = $rate->price;
-        $date_activation = date('Y-m-d');
-        $scheduleDate = date('Ymd');
+        $date_activation = $portability->date;
+        $scheduleDate = $portability->date;
+        $scheduleDate = str_replace('-','',$scheduleDate);
 
         $insertActivation = [
             "client_id" => $client_id,
@@ -154,6 +158,7 @@ class PortabilityController extends Controller
         $accessToken = app('App\Http\Controllers\AltanController')->accessTokenRequestPost();
         if($accessToken['status'] == 'approved'){
             $accessToken = $accessToken['accessToken'];
+            $activationAltan = app('App\Http\Controllers\AltanController')->activationRequestPost($accessToken,$msisdn,$offerID,'','',$product,$scheduleDate);
 
             $consultUF = app('App\Http\Controllers\AltanController')->consultUF($msisdn);
             $responseSubscriber = $consultUF['responseSubscriber'];
@@ -161,9 +166,9 @@ class PortabilityController extends Controller
 
             if($status == 'Idle'){
                 $activationAltan = app('App\Http\Controllers\AltanController')->activationRequestPost($accessToken,$msisdn,$offerID,'','',$product,$scheduleDate);
-            }else{
+            }else if($status == 'Active'){
                 $activationAltan['msisdn'] = $msisdn;
-                $activationAltan['order']['id'] = null;
+                $activationAltan['order']['id'] = $msisdn;
             }
             
             if(isset($activationAltan['msisdn']) && $activationAltan['msisdn'] == $msisdn){
@@ -211,12 +216,11 @@ class PortabilityController extends Controller
 
     public function csvAltan(Request $request){
             $csv = request()->file('file');
-            // return $csv;
             $fp = fopen ($csv,'r');
-
             $completedStatus = [];
             $i = 0;
             while (($data = fgetcsv($fp))) {
+                
                 if ($i > 0) {
                     $MSISDNPorted = $data[0];
                     $imsi = $data[1];
@@ -227,34 +231,32 @@ class PortabilityController extends Controller
                     $EjecucionPotabilidad = $data[7];
                     $ResutaldoPortabilidad = $data[8];
                     $MSISDNTransitorio = $data[9];
+                    // return $MSISDNPorted.'-'.$imsi.'-'.$MSISDNTransitorio.'-'.$EjecucionPotabilidad;
+                    $port = Portability::where('msisdnPorted', $MSISDNPorted)
+                                        ->where('msisdnTransitory',$MSISDNTransitorio)
+                                        ->where('approvedDateABD', $EjecucionPotabilidad);
 
-                    Portability::where('msisdnPorted', $MSISDNPorted)->where('imsi',$imsi)->where('dida',$dida)->where('rida',$rida)->where('dcr',$dcr)->where('rcr',$rcr)->where('msisdnTransitory',$MSISDNTransitorio)->where('date', $EjecucionPotabilidad)->update(['status'=>"completado"]); 
+                    $x = $port->exists(); 
 
-                    $icc = Portability::select('icc')->get();
+                    if($x){
+                        $port->update([
+                            'status' => 'completado'
+                        ]);
+                        $getPort = $port->first();
                     
-                    Number::where('imsi','like','%'.$imsi.'%' )->where('icc_id', 'like','%'.$icc.'%')->update(['MSISDN'=>$MSISDNPorted]);
-
-                    $completeds = Portability::all();
-                    
-                    foreach ($completeds as $completed) {
-                        $who_did_it = User::where('id',$completed->who_did_it)->first();
-                        $who_attended = User::where('id',$completed->who_attended)->first();
-                        $client = User::where('id',$completed->client_id)->first();
-                        $rate = Rate::where('id','=',$completed->rate_id)->first();
-                        $complete = Portability::all()->where('status','completado');
-                        
-                        array_push($completedStatus,array(
-                            'msisdnPorted' => $completed->msisdnPorted,
-                            'icc' => $completed->icc,
-                            'msisdnTransitory' => $completed->msisdnTransitory,
-                            'date' => $completed->date,
-                            'nip' => $completed->nip,
-                            'client' => $client->name.' '.$client->lastname,
-                            'who_did_it' => $who_did_it->name.' '.$who_did_it->lastname,
-                            'who_attended' => $who_attended = $who_attended == null ? 'N/A' : $who_attended->name.' '.$who_attended->lastname,
-                            'rate' => $rate->name.' - $'.number_format($rate->price,2)
-                        ));
+                        Number::where('MSISDN', $MSISDNTransitorio)->where('icc_id', 'like','%'.$getPort->icc.'%')->update(['MSISDN'=>$MSISDNPorted]);
                     }
+                    array_push($completedStatus,array(
+                        'ported'=>$MSISDNPorted,
+                        'transitory' => $MSISDNTransitorio,
+                        'imsi' => $imsi,
+                        'dida' => $dida,
+                        'rida' => $rida,
+                        'dcr' => $dcr,
+                        'rcr' => $rcr,
+                        'approvedDateABD' => $EjecucionPotabilidad,
+                        'flag'=>$x
+                    ));
                 }
                 $i++;
 
@@ -262,5 +264,11 @@ class PortabilityController extends Controller
             return json_encode($completedStatus);
             // return $csv;
 
+    }
+
+    public function portabilitiesAltcel(){
+        $data['pendientes'] = DB::connection('corp_portability')->table('por_portabilidades')->where('status','Solicitud')->get();
+        $data['completadas'] = DB::connection('corp_portability')->table('por_portabilidades')->where('status','Solicitud')->get();
+        return $data;
     }
 }

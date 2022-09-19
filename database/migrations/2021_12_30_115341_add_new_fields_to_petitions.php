@@ -13,15 +13,15 @@ class AddNewFieldsToPetitions extends Migration
      */
     public function up()
     {
-        Schema::table('petitions', function (Blueprint $table) {
-            $table->unsignedBigInteger('number_id')->nullable();
-            $table->unsignedBigInteger('device_id')->nullable();
-            $table->date('date_to_activation')->nullable();
-            $table->string('lat_hbb',50)->nullable();
-            $table->string('lng_hbb',50)->nullable();
+        // Schema::table('petitions', function (Blueprint $table) {
+        //     $table->unsignedBigInteger('number_id')->nullable();
+        //     $table->unsignedBigInteger('device_id')->nullable();
+        //     $table->date('date_to_activation')->nullable();
+        //     $table->string('lat_hbb',50)->nullable();
+        //     $table->string('lng_hbb',50)->nullable();
 
-            $table->foreign('company_id')->references('id')->on('companies');
-        });
+        //     $table->foreign('company_id')->references('id')->on('companies');
+        // });
     }
 
     /**

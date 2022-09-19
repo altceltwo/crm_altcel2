@@ -12,9 +12,9 @@ class ConektaPayment{
 
     function __construct(){
         // KEY de Prueba
-        Conekta::setApiKey('key_qbK6zfeHtAHSXJxsMHciLw');
+        // Conekta::setApiKey('key_qbK6zfeHtAHSXJxsMHciLw');
         // KEY de Producción
-        // Conekta::setApiKey('key_duJxSBstM6rsGAqH3NLWkQ');
+        Conekta::setApiKey('key_duJxSBstM6rsGAqH3NLWkQ');
         Conekta::setApiVersion('2.0.0');
     }
 
@@ -183,5 +183,49 @@ class ConektaPayment{
             $err['message'] = $error->getMessage();
             return $err;
         }
+    }
+
+    public function createCustomer($request){
+        $name = $request['name'];
+        $email = $request['email'];
+        $amount = $request['amount'];
+        $concepto = $request['concepto'];
+
+        // KEY de Prueba
+        // Conekta::setApiKey('key_qbK6zfeHtAHSXJxsMHciLw');
+        // KEY de Producción
+        Conekta::setApiKey('key_duJxSBstM6rsGAqH3NLWkQ');
+        Conekta::setApiVersion('2.0.0');
+
+        $validCustomer = [
+            'name' => $name,
+            'email' => $email
+          ];
+          $customer = \Conekta\Customer::create($validCustomer);
+          $response = ConektaPayment::createOrderEmpty($customer->id,$amount,$concepto);
+          return $response;
+    }
+
+    public function createOrderEmpty($customerID,$amount,$concepto){
+        $validOrderWithCheckout = array(
+        'line_items'=> array(
+            array(
+            'name'=> $concepto,
+            'description'=> 'Servicios Conecta Altcel',
+            'unit_price'=> $amount*100,
+            'quantity'=> 1,
+            )
+        ),
+        'checkout' => array(
+            'allowed_payment_methods' => array("card"),
+            'monthly_installments_enabled' => false,
+        ),
+        'customer_info' => array(
+            'customer_id'   =>  $customerID
+        ),
+        'currency'    => 'mxn'
+        );
+        $order = \Conekta\Order::create($validOrderWithCheckout);
+        return $order;
     }
 }

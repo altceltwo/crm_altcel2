@@ -31,6 +31,7 @@
                     <th>Número Portado</th>
                     <th>ICC</th>
                     <th>Número Transitorio</th>
+                    <th>Fecha para Activar</th>
                     <th>Fecha para Portar</th>
                     <th>NIP</th>
                     <th>Plan Activación</th>
@@ -47,6 +48,7 @@
                     <td>{{$pending['icc']}}</td>
                     <td>{{$pending['msisdnTransitory']}}</td>
                     <td>{{$pending['date']}}</td>
+                    <td>{{$pending['approvedDateABD']}}</td>
                     <td>{{$pending['nip']}}</td>
                     <td>{{$pending['rate']}}</td>
                     <td>{{$pending['client']}}</td>
@@ -72,58 +74,119 @@
 
         <h2 class="panel-title">Activadas</h2>
     </header>
-    <div class="col-md-3" style="margin-bottom: 1rem; margin-top: 1rem; ">
-        <button class="btn btn-success btn-sm" id="importAll" >Importar a Altan</button>
+    <div class="col-md-12">
+        <div class="col-md-3" style="margin-bottom: 1rem; margin-top: 1rem; ">
+            <button class="btn btn-success btn-sm" id="importAll" >Importar a Altan</button>
+        </div>
+        <div class="col-md-4"  style="margin-bottom: 1rem; margin-top: 1rem; margin-left: -6rem">
+            <span class="btn btn-default btn-file">
+                <span class="fileupload-new">Selecciona un archivo</span>
+                <input type="file" accept=".csv" id="csvtAltan">
+            </span>
+            <button class="btn btn-primary" id="importAltan">Cargar Archivo</button>
+        </div>
     </div>
-    <div class="col-md-4"  style="margin-bottom: 1rem; margin-top: 1rem; margin-left: -6rem">
-        <span class="btn btn-default btn-file">
-            <span class="fileupload-new">Selecciona un archivo</span>
-            <input type="file" accept=".csv" id="csvtAltan">
-        </span>
-        <button class="btn btn-primary" id="importAltan">Cargar Archivo</button>
-    </div>
-    <div class="panel-body" >
-        <table class="table table-bordered table-striped mb-none" id="myTable2">
-            <thead style="cursor: pointer;">
-                <tr>
-                    <th>Número Portado</th>
-                    <th>ICC</th>
-                    <th>Número Transitorio</th>
-                    <th>Fecha para Portar</th>
-                    <th>NIP</th>
-                    <th>Plan Activación</th>
-                    <th>Cliente</th>
-                    <th>Enviado por</th>
-                    <th>Atendido por</th>
-                    <th>Comentarios</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach($activateds as $activated)
-                <tr style="cursor: pointer;" >
-                    <td>{{$activated['msisdnPorted']}}</td>
-                    <td>{{$activated['icc']}}</td>
-                    <td>{{$activated['msisdnTransitory']}}</td>
-                    <td>{{$activated['date']}}</td>
-                    <td>{{$activated['nip']}}</td>
-                    <td>{{$activated['rate']}}</td>
-                    <td>{{$activated['client']}}</td>
-                    <td>{{$activated['who_did_it']}}</td>
-                    <td>{{$activated['who_attended']}}</td>
-                    <td>{{$activated['comments']}}</td>
-                    <td>
-                        <button class="btn btn-success btn-xs activated-port" data-id="{{$activated['id']}}" data-msisdn="{{$activated['msisdnPorted']}}" data-icc="{{$activated['icc']}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Importar a Altán">
-                            <li class="fa fa-check-circle"></li>
-                        </button>
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-       
+    <div class="panel-body table-responsive" >
+        <!-- <div class="table-responsive"> -->
+            <table class="table table-bordered table-striped mb-none" id="myTable2">
+                <thead style="cursor: pointer;">
+                    <tr>
+                        <th>Número Portado</th>
+                        <th>ICC</th>
+                        <th>Número Transitorio</th>
+                        <th>Fecha para Activar</th>
+                        <th>Fecha para Portar</th>
+                        <th>NIP</th>
+                        <th>Plan Activación</th>
+                        <th>Cliente</th>
+                        <th>Enviado por</th>
+                        <th>Atendido por</th>
+                        <th>Comentarios</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($activateds as $activated)
+                    <tr style="cursor: pointer;" id="activada_{{$activated['id']}}">
+                        <td id='msisdnPorted_{{$activated["id"]}}'>{{$activated['msisdnPorted']}}</td>
+                        <td id='icc_{{$activated["id"]}}'>{{$activated['icc']}}</td>
+                        <td id='msisdnTransitory_{{$activated["id"]}}'>{{$activated['msisdnTransitory']}}</td>
+                        <td id='date_{{$activated["id"]}}'>{{$activated['date']}}</td>
+                        <td id='approvedDateABD_{{$activated["id"]}}'>{{$activated['approvedDateABD']}}</td>
+                        <td id='nip_{{$activated["id"]}}'>{{$activated['nip']}}</td>
+                        <td id='rate_{{$activated["id"]}}'>{{$activated['rate']}}</td>
+                        <td id='client_{{$activated["id"]}}'>{{$activated['client']}}</td>
+                        <td id='who_did_it_{{$activated["id"]}}'>{{$activated['who_did_it']}}</td>
+                        <td id='who_attended_{{$activated["id"]}}'>{{$activated['who_attended']}}</td>
+                        <td id='comments_{{$activated["id"]}}'>{{$activated['comments']}}</td>
+                        <td>
+                            <button class="btn btn-success btn-xs activated-port btnPortabilidad" data-id="{{$activated['id']}}" data-msisdn="{{$activated['msisdnPorted']}}" data-icc="{{$activated['icc']}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Importar a Altán">
+                                <i class="fa fa-check" ></i>
+                            </button>
+                            <button class="btn btn-warning btn-xs activated-port btnEditPorta" data-id="{{$activated['id']}}" data-msisdn="{{$activated['msisdnPorted']}}" data-icc="{{$activated['icc']}}" data-toggle="tooltip" data-placement="left" title="" data-original-title="Editar Portabilidad">
+                                <i class="fa fa-edit" ></i>
+                            </button>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        <!-- </div> -->
     </div>
 </section>
+
+
+<div class="modal fade" id="modalPortabilidades" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title text-dark text-bold">Datos de la Portabilidad</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal form-bordered" action="" method="" id="form-update-rate">
+                
+                    <div class="form-group"  style="padding-right: 1rem; padding-left: 1rem;">
+                        <div class="form-group col-md-12">
+                            <div class="col-md-12">
+                                <div class="col-md-4">
+                                    <label for="edit_noPortabilidad" class="form-label">Número Portado</label>
+                                    <input type="text" class="form-control" id="edit_noPortabilidad" name="edit_noPortabilidad" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_icc" class="form-label">ICC</label>
+                                    <input type="text" class="form-control" id="edit_icc" name="edit_icc" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_noTransitorio" class="form-label">Número Transitorio</label>
+                                    <input type="text" class="form-control" id="edit_noTransitorio" name="edit_noTransitorio" maxlength="10" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_fechaActivar" class="form-label">Fecha para Activar</label>
+                                    <input type="date" class="form-control" id="edit_fechaActivar" name="edit_fechaActivar" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_fechaPortar" class="form-label">Fecha para Portar</label>
+                                    <input type="date" class="form-control" id="edit_fechaPortar" name="edit_fechaPortar" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit_nip" class="form-label">NIP</label>
+                                    <input type="text" class="form-control" id="edit_nip" name="edit_nip" required>
+                                </div>
+                                <input type="hidden" id="id_to_edit">
+                            </div>
+                        </div>
+                    </div>              
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="add_updatePorta">Guardar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <section class="panel">
     <header class="panel-heading">
@@ -141,6 +204,7 @@
                     <th>Número Portado</th>
                     <th>ICC</th>
                     <th>Número Transitorio</th>
+                    <th>Fecha para Activar</th>
                     <th>Fecha para Portar</th>
                     <th>NIP</th>
                     <th>Plan Activación</th>
@@ -157,6 +221,7 @@
                     <td>{{$completed['icc']}}</td>
                     <td>{{$completed['msisdnTransitory']}}</td>
                     <td>{{$completed['date']}}</td>
+                    <td>{{$completed['approvedDateABD']}}</td>
                     <td>{{$completed['nip']}}</td>
                     <td>{{$completed['rate']}}</td>
                     <td>{{$completed['client']}}</td>
@@ -194,6 +259,154 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
+
+<script>
+    $('.btnEditPorta').click(function(){
+        let id = $(this).attr('data-id');
+
+        $.ajax({
+            url:"{{route('getAllDataPorta')}}",
+            method: "POST",
+            data: {id},
+            success: function(data){
+                // console.log(data);
+                $('#edit_noPortabilidad').val(data.msisdnPorted);
+                $('#edit_icc').val(data.icc);
+                $('#edit_noTransitorio').val(data.msisdnTransitory);
+                $('#edit_fechaActivar').val(data.approvedDateABD);
+                $('#edit_fechaPortar').val(data.date);
+                $('#edit_nip').val(data.nip);
+                $('#id_to_edit').val(id);
+
+                $('#modalPortabilidades').modal('show');
+            }
+        }); 
+        
+    });
+
+    $('#add_updatePorta').click(function(){
+        let id = $('#id_to_edit').val();
+
+        Swal.fire({
+            title: '¿Estás seguro de modificar la información?',
+            showCancelButton: true,
+            confirmButtonText: 'SI, ESTOY SEGURO',
+            }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+
+                var msisdnPorted = $('#edit_noPortabilidad').val();
+                var icc = $('#edit_icc').val();
+                var msisdnTransitory = $('#edit_noTransitorio').val();
+                var approvedDateABD = $('#edit_fechaActivar').val();
+                var date = $('#edit_fechaPortar').val();
+                var nip = $('#edit_nip').val();
+
+                let data = {
+                    msisdnPorted:msisdnPorted,
+                    icc:icc,
+                    msisdnTransitory:msisdnTransitory,
+                    approvedDateABD:approvedDateABD,
+                    date:date,
+                    nip:nip
+                };
+
+                $.ajax({
+                    url:"{{route('setAllDataPorta')}}",
+                    method: "POST",
+                    data: data,
+                    success: function(response){
+                        if(response == 1 ){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Hecho!!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then((result) => {
+                                $('#msisdnPorted_'+id).html(msisdnPorted);
+                                $('#icc_'+id).html(icc);
+                                $('#msisdnTransitory_'+id).html(msisdnTransitory);
+                                $('#approvedDateABD_'+id).html(approvedDateABD);
+                                $('#date_'+id).html(date);
+                                $('#nip_'+id).html(nip);
+                                $('#modalPortabilidades').modal('hide');
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Woops!!',
+                                text: 'Ocurrio un error, intente de nuevo o notifique a Desarrollo',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                        
+                    }
+                });  
+            } else{
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Operación Cancelada',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        })
+    });
+
+
+    $('.btnPortabilidad').click(function(){
+        let icc = $(this).attr('data-icc');
+        let msisdn_portado = $(this).attr('data-msisdn');
+        let id = $(this).attr('data-id');
+
+        Swal.fire({
+            title: '¿Estás seguro de marcar como completada la Portabilidad?',
+            showCancelButton: true,
+            confirmButtonText: 'SI, ESTOY SEGURO',
+            }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"{{route('getAllDataPortPendiente')}}",
+                    method: "POST",
+                    data: {icc, msisdn_portado},
+                    success: function(data){
+                        console.log(data)
+                        if(data == 1){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Hecho!!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            $('#activada_'+id).remove();
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Woops!!',
+                                text: 'Ocurrio un error, intente de nuevo o notifique a Desarrollo',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
+                }); 
+                
+            } else{
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Operación Cancelada',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        })
+
+    });
+</script>
+
 <script >
     $(document).ready( function () {
         $('#myTable').DataTable({
@@ -389,7 +602,6 @@
                 showConfirmButton: false,
                 timer: 2000
             });
-            return false;
 
             console.log('CSV')
         }
@@ -407,6 +619,8 @@
             data: form_data,
             type:'POST',
            success:function(response){
+               console.log(response);
+            //    return false;
                if (response) {
                 window.location.reload();
                }

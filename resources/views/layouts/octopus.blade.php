@@ -42,7 +42,7 @@
 
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/select2/select2.css')}}" />
 
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
+    @if(request()->is('bulk-activations*') || request()->is('generalConcesiones*') || request()->is('portabilities*') || request()->is('anothercompanies*') || request()->is('petitionaltcel*'))
     
     @else
     <link rel="stylesheet" href="{{asset('octopus/assets/vendor/jquery-datatables-bs3/assets/css/datatables.css')}}" />
@@ -62,7 +62,7 @@
     <script src="{{asset('octopus/assets/vendor/modernizr/modernizr.js')}}"></script>
     <script src="{{asset('octopus/assets/vendor/jquery/jquery.js')}}"></script>
 
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
+    @if(request()->is('bulk-activations*') || request()->is('generalConcesiones*') || request()->is('portabilities*') || request()->is('anothercompanies*') || request()->is('completadas*') || request()->is('petitionaltcel*'))
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css">
     @else
@@ -70,6 +70,7 @@
     @endif
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+   
     
     <!-- <script src="{{ asset('js/app.js') }}" defer></script> -->
 
@@ -428,6 +429,9 @@
                                                 <a href="{{route('prospects.index')}}">Prospectos</a>
                                             </li>
                                             <li>
+                                                <a href="{{route('anothercompany.index')}}">Otras Compañías</a>
+                                            </li>
+                                            <li>
                                                 <a href="{{route('operations.specials')}}">Operaciones Especiales</a>
                                             </li>
                                             <li>
@@ -572,6 +576,9 @@
                                             <li>
                                                 <a href="{{route('completadas')}}">Completadas</a>
                                             </li>
+                                            <li>
+                                                <a href="{{route('petitionaltcel')}}">Líneas Nuevas Altcel</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     <li class="nav-parent">
@@ -582,6 +589,20 @@
                                         <ul class="nav nav-children">
                                             <li>
                                                 <a href="{{url('/portabilities')}}">Todas</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url('/portabilities-altcel')}}">Altcel</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Envíos</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('shipping.index')}}">Todo</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -637,6 +658,7 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    
                                 @elseif(Auth::user()->role_id == 2)
                                     <li class="nav-parent">
                                         <a>
@@ -655,6 +677,9 @@
                                             </li>
                                             <li>
                                                 <a href="{{route('prospects.index')}}">Prospectos</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('anothercompany.index')}}">Otras Compañías</a>
                                             </li>
                                             <li>
                                                 <a href="{{route('operations.specials')}}">Operaciones Especiales</a>
@@ -927,6 +952,37 @@
                                             </li>
                                         </ul>
                                     </li>
+
+                                @elseif(Auth::user()->role_id == 9)
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                            <span>Clientes</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('activations.create')}}">Nuevo</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('clients-pay-all.get')}}"> Ver</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{route('clients.index')}}">Resumen</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+
+                                    <li class="nav-parent">
+                                        <a>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <span>Solicitudes</span>
+                                        </a>
+                                        <ul class="nav nav-children">
+                                            <li>
+                                                <a href="{{route('shipping.index')}}">Todo</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 @endif
                                 
                             </ul>
@@ -971,7 +1027,7 @@
     
     <!-- Librerías DataTable -->
     <script src="{{asset('octopus/assets/vendor/select2/select2.js')}}"></script>
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*'))
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('anothercompanies*') || request()->is('petitionaltcel*'))
     
     @else
     <script src="{{asset('octopus/assets/vendor/jquery-datatables/media/js/jquery.dataTables.js')}}"></script>
@@ -994,7 +1050,7 @@
     <!-- Theme Initialization Files -->
     <script src="{{asset('octopus/assets/javascripts/theme.init.js')}}"></script>
     <!-- Examples -->
-    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*'))
+    @if(request () -> is ('bulk-activations*') || request () -> is ('generalConcesiones*') || request () -> is ('portabilities*') || request () -> is ('anothercompanies*') || request () -> is ('completadas*') || request()->is('petitionaltcel*'))
     
     @else
     <script src="{{asset('octopus/assets/javascripts/tables/examples.datatables.default.js')}}"></script>

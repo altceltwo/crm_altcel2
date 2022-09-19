@@ -13,9 +13,9 @@ class AddAmountToDeactivations extends Migration
      */
     public function up()
     {
-        Schema::table('deactivations', function (Blueprint $table) {
-            $table->float('amount',8,2);
-        });
+        // Schema::table('deactivations', function (Blueprint $table) {
+        //     $table->float('amount',8,2);
+        // });
     }
 
     /**

@@ -352,10 +352,11 @@ class PaymentController extends Controller
         $data['monthliesCash'] = DB::table('pays')
                                     ->join('activations','activations.id','=','pays.activation_id')
                                     ->join('numbers','numbers.id','=','activations.numbers_id')
+                                    ->leftJoin('users','users.id','=','pays.who_did_id')
                                     ->whereBetween('pays.updated_at',[$init_date,$final_date])
                                     ->where('pays.reference_id','=',null)
                                     ->where('pays.status','=','completado')
-                                    ->select('pays.*','numbers.MSISDN as msisdn','numbers.producto AS service')
+                                    ->select('pays.*','numbers.MSISDN as msisdn','numbers.producto AS service','users.name AS who_name','users.lastname AS who_lastname')
                                     ->get();
 
         $data['monthliesChannels'] = DB::table('pays')
@@ -393,10 +394,11 @@ class PaymentController extends Controller
                               ->join('numbers','numbers.id','=','changes.number_id')
                               ->leftJoin('references','references.reference_id','=','changes.reference_id')
                               ->leftJoin('channels','channels.id','=','references.channel_id')
+                              ->leftJoin('users','users.id','=','changes.who_did_id')
                               ->whereBetween('changes.date',[$init_date,$final_date])
                               ->where(function($query){
                                 $query->where('changes.reason','cobro')->orWhere('changes.reason','referenciado');
-                            })->select('changes.*','numbers.MSISDN AS msisdn','numbers.producto AS service','channels.name AS channel','references.fee_amount AS comision','references.reference AS reference')
+                            })->select('changes.*','numbers.MSISDN AS msisdn','numbers.producto AS service','channels.name AS channel','references.fee_amount AS comision','references.reference AS reference','users.name AS who_name','users.lastname AS who_lastname')
                               ->get();
 
         $data['surplusChannels'] = DB::table('references')
@@ -409,9 +411,17 @@ class PaymentController extends Controller
 
         $data['surpluses'] = DB::table('purchases')
                                 ->join('numbers','numbers.id','=','purchases.number_id')
+                                ->leftJoin('users','users.id','=','purchases.who_did_id')
                                 ->whereBetween('purchases.date',[$init_date,$final_date])
                                 ->where('purchases.reason','cobro')
-                                ->select('purchases.*','numbers.MSISDN AS msisdn','numbers.producto AS service')
+                                ->select('purchases.*','numbers.MSISDN AS msisdn','numbers.producto AS service','users.name AS who_name','users.lastname AS who_lastname')
+                                ->get();
+
+        $data['devicesChannels'] = DB::table('references')
+                                ->join('channels','channels.id','=','references.channel_id')
+                                ->whereBetween('references.updated_at',[$init_date,$final_date])
+                                ->where('references.referencestype_id',7)
+                                ->select('references.*','channels.name AS channel')
                                 ->get();
         // return $data;
         // return $data['paysReferencedCompleted'];

@@ -56,6 +56,12 @@
                     </div>              
 
                 </form>
+
+                <form action="{{route('chargeCSVNIR')}}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" name="nirs" >
+                    <button type="submit">Send</button>
+                </form>
             </div>
         </section>
 

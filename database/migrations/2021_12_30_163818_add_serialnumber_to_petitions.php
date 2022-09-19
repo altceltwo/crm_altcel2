@@ -13,10 +13,10 @@ class AddSerialnumberToPetitions extends Migration
      */
     public function up()
     {
-        Schema::table('petitions', function (Blueprint $table) {
-            $table->string('serial_number',100)->nullable();
-            $table->string('mac_address',100)->nullable();
-        });
+        // Schema::table('petitions', function (Blueprint $table) {
+        //     $table->string('serial_number',100)->nullable();
+        //     $table->string('mac_address',100)->nullable();
+        // });
     }
 
     /**

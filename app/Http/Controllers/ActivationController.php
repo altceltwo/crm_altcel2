@@ -80,6 +80,7 @@ class ActivationController extends Controller
             $data['ine_code'] = $request->get('ine_code');
             $data['cellphone'] = $request->get('cellphone');
             $data['petition'] = $request->get('petition');
+            $data['lada'] = $request->get('lada');
             // return $request;
             $petitionData = Petition::where('id',$data['petition'])->first();
             // return $petitionData;

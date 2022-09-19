@@ -13,9 +13,9 @@ class AddColumnRechargesToActivations extends Migration
      */
     public function up()
     {
-        Schema::table('activations', function (Blueprint $table) {
-            $table->integer('recharges')->default(0)->after('rate_subsequent');
-        });
+        // Schema::table('activations', function (Blueprint $table) {
+        //     $table->integer('recharges')->default(0)->after('rate_subsequent');
+        // });
     }
 
     /**
